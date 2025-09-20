@@ -23,7 +23,7 @@ const CATEGORIES = [
   { icon: <Headset size={18} />, label: "Hỗ trợ / Khiếu nại", href: "/support" },
 ]
 
-const Header = () => {
+const Header = ({ user = 0 }) => {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -65,48 +65,41 @@ const Header = () => {
         </div>
 
         {/* Actions */}
-        <nav className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" className="relative text-white hover:text-white hover:bg-white/10">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">3</Badge>
-          </Button>
+        {user === 1 ? (
+          <nav className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/10">
+              <Bell className="h-5 w-5" />
+              <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">3</Badge>
+            </Button>
 
-          <Button variant="ghost" size="sm" className="relative text-white hover:text-white hover:bg-white/10">
-            <ShoppingCart className="h-5 w-5" />
-            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">2</Badge>
-          </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-2 h-auto px-2 py-1 text-white hover:bg-white/10">
+                  <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-semibold text-sm">PT</div>
+                  <span className="hidden sm:inline">USER</span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem>Tài khoản</DropdownMenuItem>
+                <DropdownMenuItem>Tin đăng của tôi</DropdownMenuItem>
+                <DropdownMenuItem>Yêu thích</DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600">Đăng xuất</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2 h-auto px-2 py-1 text-white hover:bg-white/10">
-                <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-semibold text-sm">
-                  PT
-                </div>
-                <span className="font-medium hidden sm:inline">USER</span>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">USER</p>
-                  <p className="text-xs leading-none text-muted-foreground">USER@example.com</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem><User className="mr-2 h-4 w-4" />Tài khoản</DropdownMenuItem>
-              <DropdownMenuItem>Tin đăng của tôi</DropdownMenuItem>
-              <DropdownMenuItem>Yêu thích</DropdownMenuItem>
-              <DropdownMenuItem>Cài đặt</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">Đăng xuất</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
-            Đăng tin
-          </Button>
-        </nav>
+            <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold">Đăng tin</Button>
+          </nav>
+        ) : (
+          <nav className="flex items-center space-x-2">
+            <Button asChild variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20">
+              <a href="/login">Đăng nhập</a>
+            </Button>
+            <Button asChild className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold">
+              <a href="/register">Đăng ký</a>
+            </Button>
+          </nav>
+        )}
       </div>
 
       {/* Sidebar Danh mục */}
