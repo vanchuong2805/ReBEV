@@ -2,9 +2,15 @@ import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import BackGround from "@/features/admin/pages/BackGround";
 import AdminSidebar from "./AdminSidebar";
+import DoanhThu from "./DoanhThu";
+import HomeAdmim from "../Content/HomeAdmim";
 
 function Home() {
-  return <h1 className="mb-3">Trang Chủ Admin</h1>;
+  return (
+    <>
+      <HomeAdmim></HomeAdmim>
+    </>
+  );
 }
 function Users() {
   return <h1 className="mb-3">Quản lý người dùng</h1>;
