@@ -4,16 +4,17 @@ import BackGround from "@/features/admin/pages/BackGround";
 import AdminSidebar from "./AdminSidebar";
 import DoanhThu from "./DoanhThu";
 import HomeAdmim from "../Content/HomeAdmim";
+import ManageUser from "../Content/ManageUser";
 
 function Home() {
   return (
     <>
-      <HomeAdmim></HomeAdmim>
+      <HomeAdmim />
     </>
   );
 }
 function Users() {
-  return <h1 className="mb-3">Quản lý người dùng</h1>;
+  return <ManageUser />;
 }
 function Posts() {
   return <h1 className="mb-3">Quản lý tin đăng</h1>;
@@ -55,9 +56,7 @@ export default function Dashboard() {
         <main className="flex-grow-1 p-4">
           {renderContent()}
           {/* nội dung chi tiết của từng trang để dưới đây */}
-          <div className="card shadow-sm">
-            <div className="card-body">Nội dung {active}</div>
-          </div>
+          <div className="card shadow-sm"></div>
         </main>
       </div>
     </BackGround>

@@ -17,7 +17,7 @@ export default function BackGround({ children }) {
         {/* Your Content/Components */}
         <div className="relative z-10">{children}</div>
       </div>
-      <div></div>
+      
     </>
   );
 }
