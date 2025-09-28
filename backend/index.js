@@ -1,22 +1,19 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import sequelize from './config/db.js';
-import { DataTypes } from 'sequelize';
-import InitProvinces from './models/provinces.js';
+import { ApolloServer } from 'apollo-server-express';
+import { typeDefs, resolvers } from './graphql/index.js';
+async function run() {
+    const PORT = process.env.PORT || 3000;
+    dotenv.config();
+    const app = express();
+    app.use(express.json());
 
-dotenv.config();
+    const graphqlServer = new ApolloServer({ typeDefs, resolvers });
+    await graphqlServer.start();
+    graphqlServer.applyMiddleware({ app });
+    app.listen(PORT, () => {
+        console.log(`App is running. http://localhost:${PORT}`);
+    });
+}
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(express.json());
-
-app.get('/', async (req, res) => {
-    const Provinces = InitProvinces(sequelize, DataTypes);
-    const provinces = await Provinces.findAll();
-    res.status(200).json(provinces);
-});
-
-app.listen(PORT, () => {
-    console.log(`App is running.`);
-});
+run();
