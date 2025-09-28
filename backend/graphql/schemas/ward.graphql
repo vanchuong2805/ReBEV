@@ -1,0 +1,10 @@
+type Ward {
+    id: Int!
+    name: String!
+    province: Province
+}
+
+type Query {
+    wards: [Ward]
+    ward(id: Int!): Ward
+}
