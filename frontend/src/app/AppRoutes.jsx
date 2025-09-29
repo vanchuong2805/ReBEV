@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
 import LoginFormDialog from "../features/auth/components/LoginForm.jsx";
 import { ROUTES } from "../constants/routes.js";
-import Dashboard from "@/features/admin/pages/Dashboard";
+import Dashboard from "@/features/admin/pages/AdminPage.jsx";
 import RegisterForm from "@/features/auth/components/RegisterForm.jsx";
 
 export default function AppRoutes() {

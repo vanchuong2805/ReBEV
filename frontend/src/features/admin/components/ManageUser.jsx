@@ -198,61 +198,6 @@ export default function ManageUser() {
 
       {/* Hiển thị bảng thông tin người dùng */}
       <UserTable />
-
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">Thêm/Chỉnh sửa người dùng</h5>
-          <form>
-            <div className="mb-3">
-              <label htmlFor="userName" className="form-label">
-                Tên người dùng
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="userName"
-                placeholder="Nhập tên người dùng"
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="userEmail" className="form-label">
-                Email
-              </label>
-              <input
-                type="email"
-                className="form-control"
-                id="userEmail"
-                placeholder="Nhập email"
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="userPhone" className="form-label">
-                Số điện thoại
-              </label>
-              <input
-                type="tel"
-                className="form-control"
-                id="userPhone"
-                placeholder="Nhập số điện thoại"
-              />
-            </div>
-            <div className="mb-3">
-              <label htmlFor="citizenId" className="form-label">
-                Số CCCD
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="citizenId"
-                placeholder="Nhập số căn cước công dân"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Lưu thông tin
-            </button>
-          </form>
-        </div>
-      </div>
     </>
   );
 }

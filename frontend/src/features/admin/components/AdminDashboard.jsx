@@ -1,6 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Chart from "@/components/common/Chart";
+import Header from "@/components/common/Header";
 
 export default function HomeAdmim() {
   return (

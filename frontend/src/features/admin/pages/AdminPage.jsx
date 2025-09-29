@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import BackGround from "@/features/admin/pages/BackGround";
-import AdminSidebar from "./AdminSidebar";
-import DoanhThu from "./DoanhThu";
-import HomeAdmim from "../Content/HomeAdmim";
-import ManageUser from "../Content/ManageUser";
+import BackGround from "@/features/admin/components/BackGround";
+import AdminSidebar from "../components/AdminSidebar";
+import DoanhThu from "../components/DoanhThu";
+import HomeAdmim from "../components/AdminDashboard";
+import ManageUser from "../components/ManageUser";
 
 function Home() {
   return (
@@ -53,11 +53,7 @@ export default function Dashboard() {
     <BackGround>
       <div className="d-flex" style={{ minHeight: "100vh" }}>
         <AdminSidebar active={active} onSelect={setActive} />
-        <main className="flex-grow-1 p-4">
-          {renderContent()}
-          {/* nội dung chi tiết của từng trang để dưới đây */}
-          <div className="card shadow-sm"></div>
-        </main>
+        <main className="flex-grow-1 p-4">{renderContent()}</main>
       </div>
     </BackGround>
   );
