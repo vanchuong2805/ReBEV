@@ -6,8 +6,8 @@ type User {
   role: Role             
   balance: Float!
   avatar: String
-  is_locked: Boolean!
-  create_at: String!
+  isLocked: Boolean!
+  createAt: String!
 }
 
 type Role {

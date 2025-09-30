@@ -1,0 +1,23 @@
+type Variation {
+    id: Int!
+    categoryId: Int!
+    name: String!
+    isNumber: Boolean!
+    isRequire: Boolean!
+    variationValues: [VariationValue]
+}
+
+type VariationValue {
+    id: Int!
+    variation: Variation
+    parentValue: VariationValue
+    childrenValues: [VariationValue]
+    value: String
+}
+
+type Query {
+    variations: [Variation]
+    variationValues: [VariationValue]
+    variation(id: ID): Variation
+    variationValue(id: ID): VariationValue
+}

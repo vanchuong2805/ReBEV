@@ -1,10 +1,10 @@
 type Province{
-    id: Int!
+    id: ID!
     name: String!
     wards: [Ward]
 }
 
 type Query {
   provinces: [Province]
-  province(id: Int!): Province
+  province(id: ID!): Province
 }

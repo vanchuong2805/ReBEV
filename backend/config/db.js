@@ -7,7 +7,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
     port: process.env.DB_PORT,
     dialectOptions: {
         options: {
-            encrypt: false,
+            encrypt: true,
             trustServerCertificate: true,
         },
     },
