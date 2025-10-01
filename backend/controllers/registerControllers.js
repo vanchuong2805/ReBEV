@@ -1,5 +1,3 @@
-// note
-
 import userRepo from "../repositories/userRepo.js";
 
 export const registerUser = async (req, res) => {
