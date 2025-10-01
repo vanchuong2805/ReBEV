@@ -10,7 +10,7 @@ async function run() {
 
     const graphqlServer = new ApolloServer({ typeDefs, resolvers });
     await graphqlServer.start();
-    graphqlServer.applyMiddleware({ app });
+    graphqlServer.applyMiddleware({ app});
     app.listen(PORT, () => {
         console.log(`App is running. http://localhost:${PORT}`);
     });

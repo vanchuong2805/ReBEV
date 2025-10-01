@@ -1,0 +1,14 @@
+type Category {
+    id: Int!
+    parentCategory: Category
+    name: String!
+    is_deposit: Boolean!
+    deposit_rate: Int!
+    commission_rate: Int!
+    variations: [Variation]!
+}
+
+type Query {
+    categories: [Category]
+    category(id: ID!): Category
+}
