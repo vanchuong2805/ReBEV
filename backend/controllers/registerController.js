@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import userRepo from "../repositories/userRepo.js";
 
 export const registerUser = async (req, res) => {
@@ -31,6 +30,4 @@ export const registerUser = async (req, res) => {
 }
 
 export default registerUser;
-=======
 // note
->>>>>>> origin/main
