@@ -1,9 +1,9 @@
 type Variation {
     id: Int!
-    categoryId: Int!
+    category: Category!
     name: String!
-    isNumber: Boolean!
-    isRequire: Boolean!
+    is_number: Boolean!
+    is_require: Boolean!
     variationValues: [VariationValue]
 }
 
@@ -18,6 +18,6 @@ type VariationValue {
 type Query {
     variations: [Variation]
     variationValues: [VariationValue]
-    variation(id: ID): Variation
-    variationValue(id: ID): VariationValue
+    variation(id: ID!): Variation
+    variationValue(id: ID!): VariationValue
 }

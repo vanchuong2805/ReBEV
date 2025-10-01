@@ -1,18 +1,20 @@
-import Variations from '../../repositories/variationRepo.js';
+import Variations from '../../services/variationService.js';
+import Categories from '../../services/categoryService.js';
 
 const variationResolver = {
     Query: {
-        variations: Variations.getAllVariations,
-        variationValues: Variations.getAllValues,
-        variation: (_, { id }) => Variations.getVariationByID(id),
-        variationValue: (_, { id }) => Variations.getValueByID(id),
+        variations: Variations.getVariations,
+        variationValues: Variations.getVariationValues,
+        variation: (_, { id }) => Variations.getVariation(id),
+        variationValue: (_, { id }) => Variations.getVariationValue(id),
     },
     Variation: {
         variationValues: (parent) => Variations.getValuesByVariationID(parent.id),
+        category: (parent) => Categories.getCategory(parent.category_id),
     },
     VariationValue: {
-        variation: (parent) => Variations.getVariationByID(parent.id),
-        parentValue: (parent) => Variations.getValueByID(parent.parent_id),
+        variation: (parent) => Variations.getVariation(parent.id),
+        parentValue: (parent) => Variations.getVariationValue(parent.parent_id),
         childrenValues: (parent) => Variations.getChildrenValues(parent.id),
     },
 };

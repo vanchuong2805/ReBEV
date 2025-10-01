@@ -1,0 +1,35 @@
+type Post {
+  id: ID!
+  user: User!
+  category: Category!
+  title: String!
+  description: String!
+  price: Float!
+  Base: Base
+  sellerContact: UserContact
+  is_hidden: Boolean!
+  is_deleted: Boolean!
+  create_at: String!
+  media: [PostMedia]
+  status: [PostStatus]
+}
+
+type PostMedia {
+  id: ID!
+  url: String!
+  is_thumbnail: Boolean!
+}
+
+type PostStatus {
+  id: ID!
+  status: String!
+  description: String
+  create_at: String!
+}
+
+type Query {
+  posts: [Post!]!
+  post(id: ID!): Post
+  postMedia(post_id: ID!): [PostMedia!]!
+  postStatus(post_id: ID!): [PostStatus!]!
+}

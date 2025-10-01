@@ -1,9 +1,9 @@
-import Wards from '../../repositories/wardRepo.js';
-import Provinces from '../../repositories/provinceRepo.js';
+import Wards from '../../services/wardService.js';
+import Provinces from '../../services/provinceService.js';
 const provinceResolver = {
     Query: {
-        provinces: Provinces.getAllProvinces,
-        province: (_, { id }) => Provinces.getProvinceByID(id),
+        provinces: Provinces.getProvinces,
+        province: (_, { id }) => Provinces.getProvince(id),
     },
     Province: {
         wards: (parent) => Wards.getWardsByProvinceID(parent.id),

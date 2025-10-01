@@ -1,0 +1,14 @@
+type Base {
+    id: ID!
+    detail: String!
+    ward: Ward!
+    name: String!
+    phone: String!
+    is_default: Boolean!
+    is_delete: Boolean!
+}
+
+type Query {
+    bases: [Base]
+    base(id: ID!): Base
+}
