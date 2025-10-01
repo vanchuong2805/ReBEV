@@ -1,4 +1,4 @@
-// note
+
 import userRepo from "../repositories/userRepo.js";
 
 export const registerUser = async (req, res) => {
@@ -32,9 +32,3 @@ export const registerUser = async (req, res) => {
 
 export default registerUser;
 
-// import userContacts from '../repositories/userContactRepo.js';
-
-// const getUserContacts = async () => {
-//     const data = await userContacts.findAll();
-//     return data;
-// };
