@@ -1,4 +1,0 @@
-{
-  "appService.defaultWebAppToDeploy": "/subscriptions/29f922c0-db6e-4054-b92b-acd3a414e4ba/resourceGroups/rebev/providers/Microsoft.Web/sites/rebev",
-  "appService.deploySubpath": "backend"
-}
