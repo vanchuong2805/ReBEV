@@ -1,4 +1,4 @@
-import categories from '../repositories/categoryRepo.js';
+import categories from '../../repositories/categoryRepo.js';
 
 const getCategories = async () => {
     const data = await categories.findAll();

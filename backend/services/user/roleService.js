@@ -1,4 +1,4 @@
-import roles from '../repositories/roleRepo.js';
+import roles from '../../repositories/roleRepo.js';
 
 const getRoles = async () => {
     const data = await roles.findAll();

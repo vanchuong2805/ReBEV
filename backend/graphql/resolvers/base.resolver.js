@@ -1,5 +1,5 @@
-import Bases from '../../services/baseService.js';
-import Wards from '../../services/wardService.js';
+import Bases from '../../services/address/baseService.js';
+import Wards from '../../services/address/wardService.js';
 const baseResolver = {
     Query: {
         bases: Bases.getBases,

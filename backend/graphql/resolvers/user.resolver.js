@@ -1,7 +1,7 @@
-import Users from '../../services/userService.js';
-import Roles from '../../services/roleService.js';
-import UserContacts from '../../services/userContactService.js';
-import Wards from '../../services/wardService.js';
+import Users from '../../services/user/userService.js';
+import Roles from '../../services/user/roleService.js';
+import UserContacts from '../../services/user/userContactService.js';
+import Wards from '../../services/address/wardService.js';
 
 const userResolver = {
     Query: {
