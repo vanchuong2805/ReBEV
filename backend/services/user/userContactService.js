@@ -1,4 +1,4 @@
-import userContacts from '../repositories/userContactRepo.js';
+import userContacts from '../../repositories/userContactRepo.js';
 
 const getUserContacts = async () => {
     const data = await userContacts.findAll();

@@ -1,5 +1,5 @@
-import Wards from '../../services/wardService.js';
-import Provinces from '../../services/provinceService.js';
+import Wards from '../../services/address/wardService.js';
+import Provinces from '../../services/address/provinceService.js';
 const provinceResolver = {
     Query: {
         provinces: Provinces.getProvinces,

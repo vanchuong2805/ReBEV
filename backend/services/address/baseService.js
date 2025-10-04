@@ -1,4 +1,4 @@
-import bases from '../repositories/baseRepo.js';
+import bases from '../../repositories/baseRepo.js';
 const getBases = async () => {
     const data = await bases.findAll();
     return data;

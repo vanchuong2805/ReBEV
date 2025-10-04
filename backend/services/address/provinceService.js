@@ -1,4 +1,4 @@
-import provinces from '../repositories/provinceRepo.js';
+import provinces from '../../repositories/provinceRepo.js';
 
 const getProvinces = async () => {
     const data = await provinces.findAll();

@@ -1,4 +1,4 @@
-import { variations, variationValues } from '../repositories/variationRepo.js';
+import { variations, variationValues } from '../../repositories/variationRepo.js';
 
 const getVariations = async () => {
     const data = await variations.findAll();

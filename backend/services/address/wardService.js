@@ -1,4 +1,4 @@
-import wards from '../repositories/wardRepo.js';
+import wards from '../../repositories/wardRepo.js';
 
 const getWards = async () => {
     const data = await wards.findAll();

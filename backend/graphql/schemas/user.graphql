@@ -6,9 +6,9 @@ type User {
     role: Role
     balance: Float!
     avatar: String
-    isLocked: Boolean!
+    is_locked: Boolean!
     userContacts: [UserContact]
-    createAt: String!
+    create_at: String!
 }
 
 type Role {

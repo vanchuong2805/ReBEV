@@ -1,5 +1,5 @@
-import Variations from '../../services/variationService.js';
-import Categories from '../../services/categoryService.js';
+import Variations from '../../services/post/variationService.js';
+import Categories from '../../services/post/categoryService.js';
 
 const variationResolver = {
     Query: {
