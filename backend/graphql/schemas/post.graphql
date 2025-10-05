@@ -13,6 +13,7 @@ type Post {
     media: [PostMedia]
     status: [PostStatus]
     details: [PostDetail]
+    currentStatus: PostStatus
 }
 
 type PostMedia {

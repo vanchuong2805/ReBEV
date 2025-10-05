@@ -23,5 +23,4 @@ Thumbs.db
 .vscode/
 .idea/
 
-test.http
 .prettierrc

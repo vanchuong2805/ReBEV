@@ -28,7 +28,7 @@ const createController = async (req, res) => {
             media.length === 0 ||
             details.length === 0
         ) {
-            return res.status(400).send('Missing required fields');
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
         const { dataValues: newPost } = await postService.create(
