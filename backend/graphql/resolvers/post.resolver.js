@@ -14,6 +14,7 @@ const postResolver = {
         media: (parent) => postMediaService.getByPostId(parent.id),
         status: (parent) => postStatusService.getByPostId(parent.id),
         details: (parent) => postDetailService.getByPostId(parent.id),
+        currentStatus: (parent) => postStatusService.getCurrent(parent.id),
     },
 };
 
