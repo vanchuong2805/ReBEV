@@ -15,7 +15,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true,
       references: {
-        model: 'variations',
+        model: 'categories',
         key: 'id'
       }
     },
@@ -38,7 +38,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__post_det__85D448B6770414F5",
+        name: "PK__post_det__85D448B61FA5E0C7",
         unique: true,
         fields: [
           { name: "post_id" },

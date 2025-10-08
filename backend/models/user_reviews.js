@@ -29,7 +29,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     comment: {
       type: DataTypes.STRING(1000),
-      allowNull: false
+      allowNull: true
     },
     create_at: {
       type: DataTypes.DATE,
@@ -48,7 +48,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__user_rev__3213E83FF97DADC8",
+        name: "PK__user_rev__3213E83F81859882",
         unique: true,
         fields: [
           { name: "id" },

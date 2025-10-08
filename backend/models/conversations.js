@@ -38,7 +38,7 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "PK__conversa__3213E83F804E8FAC",
+        name: "PK__conversa__3213E83F8D7C4F00",
         unique: true,
         fields: [
           { name: "id" },

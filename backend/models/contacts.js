@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('user_contacts', {
+  return sequelize.define('contacts', {
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -19,13 +19,29 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(250),
       allowNull: false
     },
-    ward_id: {
+    ward_code: {
+      type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    ward_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
+    },
+    district_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'wards',
-        key: 'id'
-      }
+      allowNull: false
+    },
+    district_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
+    },
+    province_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    province_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
     },
     name: {
       type: DataTypes.STRING(100),
@@ -47,12 +63,12 @@ module.exports = function(sequelize, DataTypes) {
     }
   }, {
     sequelize,
-    tableName: 'user_contacts',
+    tableName: 'contacts',
     schema: 'dbo',
     timestamps: false,
     indexes: [
       {
-        name: "PK__user_con__3213E83FF870D966",
+        name: "PK__contacts__3213E83F8252A8C3",
         unique: true,
         fields: [
           { name: "id" },

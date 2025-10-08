@@ -56,7 +56,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     status: {
-      type: DataTypes.BOOLEAN,
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     create_at: {
@@ -71,7 +71,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__transact__3213E83F57EEBE64",
+        name: "PK__transact__3213E83FD8657DF6",
         unique: true,
         fields: [
           { name: "id" },

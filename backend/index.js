@@ -5,8 +5,8 @@ import { typeDefs, resolvers } from './graphql/index.js';
 import router from './routes/index.js';
 
 async function run() {
-    const PORT = process.env.PORT || 3000;
     dotenv.config();
+    const PORT = process.env.PORT || 3000;
     const app = express();
     app.use(express.json());
     app.use('/api', router);
