@@ -45,17 +45,12 @@ const CATEGORIES = [
 const Header = ({ user = 0 }) => {
   // Query danh sách tỉnh
   const { loading, error, data } = useQuery(GET_PROVINCES)
-
+   if (error) return <p className="p-4 text-red-500">Lỗi: {error.message}</p>
   // Lazy query để lấy xã theo tỉnh
   const [getWards, { loading: wardLoading, error: wardError, data: wardData }] =
     useLazyQuery(GET_WARDS_BY_PROVINCE)
-
   const [selectedProvince, setSelectedProvince] = useState("")
   const [selectedWard, setSelectedWard] = useState("")
-
-
-  if (error) return <p className="p-4 text-red-500">Lỗi: {error.message}</p>
-
   const provinces = data?.provinces || []
   const wards = wardData?.province?.wards || []
 
