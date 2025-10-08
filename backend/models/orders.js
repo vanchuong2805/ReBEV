@@ -23,48 +23,27 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
-    customer_contact_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'user_contacts',
-        key: 'id'
-      }
-    },
-    seller_contact_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'user_contacts',
-        key: 'id'
-      }
-    },
-    base_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'bases',
-        key: 'id'
-      }
-    },
     order_type: {
       type: DataTypes.TINYINT,
       allowNull: false
     },
-    shipping_price: {
+    from_contact: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    to_contact: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    delivery_price: {
       type: DataTypes.DECIMAL(18,2),
       allowNull: false
+    },
+    delivery_code: {
+      type: DataTypes.STRING(100),
+      allowNull: true
     },
     total_amount: {
-      type: DataTypes.DECIMAL(18,2),
-      allowNull: false
-    },
-    paid_amount: {
-      type: DataTypes.DECIMAL(18,2),
-      allowNull: false,
-      defaultValue: 0
-    },
-    unpaid_amount: {
       type: DataTypes.DECIMAL(18,2),
       allowNull: false
     },
@@ -80,7 +59,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__orders__3213E83F6C613714",
+        name: "PK__orders__3213E83FC40A9373",
         unique: true,
         fields: [
           { name: "id" },

@@ -17,15 +17,15 @@ module.exports = function(sequelize, DataTypes) {
     },
     sender_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
+      allowNull: false
     },
     content: {
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    media: {
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     is_read: {
       type: DataTypes.BOOLEAN,
@@ -44,7 +44,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: true,
     indexes: [
       {
-        name: "PK__messages__3213E83FE4C23BBE",
+        name: "PK__messages__3213E83FA8217FB6",
         unique: true,
         fields: [
           { name: "id" },

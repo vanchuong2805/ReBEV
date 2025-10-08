@@ -23,6 +23,10 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(500),
       allowNull: true
     },
+    media: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     create_at: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -35,7 +39,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__order_st__3213E83FAE1FF549",
+        name: "PK__order_st__3213E83F77EF2F94",
         unique: true,
         fields: [
           { name: "id" },

@@ -7,14 +7,10 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       primaryKey: true
     },
-    parent_category_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     name: {
       type: DataTypes.STRING(250),
       allowNull: false,
-      unique: "UQ__categori__72E12F1B9BD9789A"
+      unique: "UQ__categori__72E12F1B4B209044"
     },
     is_deposit: {
       type: DataTypes.BOOLEAN,
@@ -38,14 +34,14 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__categori__3213E83F8229A0AB",
+        name: "PK__categori__3213E83FC8ED6AAF",
         unique: true,
         fields: [
           { name: "id" },
         ]
       },
       {
-        name: "UQ__categori__72E12F1B9BD9789A",
+        name: "UQ__categori__72E12F1B4B209044",
         unique: true,
         fields: [
           { name: "name" },

@@ -11,17 +11,33 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(250),
       allowNull: false
     },
+    ward_code: {
+      type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    ward_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
+    },
+    district_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    district_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
+    },
+    province_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    province_name: {
+      type: DataTypes.STRING(250),
+      allowNull: false
+    },
     name: {
       type: DataTypes.STRING(100),
       allowNull: false
-    },
-    ward_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'wards',
-        key: 'id'
-      }
     },
     phone: {
       type: DataTypes.STRING(20),
@@ -44,7 +60,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__bases__3213E83FC2BB6337",
+        name: "PK__bases__3213E83F6FF60E63",
         unique: true,
         fields: [
           { name: "id" },

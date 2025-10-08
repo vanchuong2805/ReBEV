@@ -25,20 +25,20 @@ module.exports = function(sequelize, DataTypes) {
     },
     conplaint_type: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'complaint_types',
-        key: 'id'
-      }
+      allowNull: false
     },
     description: {
       type: DataTypes.STRING(500),
-      allowNull: true
+      allowNull: false
     },
     complaint_status: {
       type: DataTypes.TINYINT,
       allowNull: false,
-      defaultValue: 1
+      defaultValue: 0
+    },
+    media: {
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     create_at: {
       type: DataTypes.DATE,
@@ -57,7 +57,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__complain__3213E83F36F0758E",
+        name: "PK__complain__3213E83F1AE29B98",
         unique: true,
         fields: [
           { name: "id" },

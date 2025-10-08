@@ -47,9 +47,18 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
       allowNull: true,
       references: {
-        model: 'user_contacts',
+        model: 'contacts',
         key: 'id'
       }
+    },
+    status: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    media: {
+      type: DataTypes.TEXT,
+      allowNull: false
     },
     is_hidden: {
       type: DataTypes.BOOLEAN,
@@ -65,6 +74,11 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.Sequelize.fn('getdate')
+    },
+    update_at: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.Sequelize.fn('getdate')
     }
   }, {
     sequelize,
@@ -73,7 +87,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__posts__3213E83F104DA97D",
+        name: "PK__posts__3213E83F844E4663",
         unique: true,
         fields: [
           { name: "id" },
