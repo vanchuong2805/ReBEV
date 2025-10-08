@@ -11,6 +11,7 @@ import Footer from '@/components/common/Footer'
 import PurchasesSection from '../components/purchases/PurchasesSection'
 import SalesSection from '../components/sales/SalesSection'
 import FavoritesList from '../components/favorites/FavoritesList'
+import SettingsPage from '../components/settings/SettingsPage'
 const ProfilePage = () => {
     const [activeTab, setActiveTab] = useState('overview')
 
@@ -75,7 +76,9 @@ const ProfilePage = () => {
                                 <TabsContent value='favorites'>
                                     <FavoritesList />
                                 </TabsContent>
-
+                                <TabsContent value='settings'>
+                                    <SettingsPage />
+                                </TabsContent>
 
                             </Tabs>
                         </div>

@@ -53,7 +53,7 @@ const Header = ({ user = 0 }) => {
   const [selectedProvince, setSelectedProvince] = useState("")
   const [selectedWard, setSelectedWard] = useState("")
 
-  if (loading) return <p className="p-4">Đang tải ...</p>
+
   if (error) return <p className="p-4 text-red-500">Lỗi: {error.message}</p>
 
   const provinces = data?.provinces || []

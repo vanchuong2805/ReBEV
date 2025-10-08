@@ -29,10 +29,10 @@ const SidebarNav = ({ activeTab, setActiveTab }) => {
                     <Item value='sales' icon={Package} label='Đơn bán' />
                     <Item value='transactions' icon={FileText} label='Giao dịch' />
                     <Item value='favorites' icon={Heart} label='Quan tâm' />
-                    <Item value='edit' icon={Edit3} label='Chỉnh sửa' />
+                    <Item value='settings' icon={Edit3} label='Chỉnh sửa' />
                     <Item value='wallet' icon={Wallet} label='Ví ReBEV' />
                     <Item value='dashboard' icon={BarChart3} label='Thống kê' />
-                    <Item value='settings' icon={LogOut} label='Đăng xuất' />
+                    <Item value='logout' icon={LogOut} label='Đăng xuất' />
                 </nav>
             </CardContent>
         </Card>
