@@ -1,9 +1,13 @@
 export const ROUTES = {
   HOME: "/",
-  LOGIN: "/login",
-  REGISTER: "/register",
   PROFILE: "/profile",
   MARKETPLACE: "/marketplace",
+  POSTS: "/posts",
+  UPGRADE: "/upgrade",
+  CART: "/cart",
+  CHECKOUT: "/checkout",
+  SUCCESS: "/checkout/success",
+  FAIL: "/checkout/fail",
   ADMIN: {
     DASHBOARD: "/admin",
   },
