@@ -11,15 +11,20 @@ export const ERROR_MESSAGE = {
     LOGIN_FAIL: 'Login failed.',
     EMAIL_PASSWORD_INCORRECT: 'Email or password is incorrect.',
     ADD_CONTACT_DETAIL_FAIL: 'Adding contact detail failed.',
+    CONTACT_NAME_BLANK: 'Contact name cannot be left blank.',
+    CONTACT_PHONE_BLANK: 'Contact phone cannot be left blank.',
     CONTACT_DETAIL_BLANK: 'Contact detail cannot be left blank.',
+    CONTACT_NOT_FOUND: 'Contact ID cannot be found.',
+    UPDATE_CONTACT_DETAIL_FAIL: 'Updating contact detail failed.',
+
 }
 
 export const SUCCESS_MESSAGE = {
     REGISTER_SUCCESS: 'Register successful',
     LOGIN_SUCCESS: 'Login successful',
     ADD_CONTACT_DETAIL_SUCCESS: 'Adding contact detail successful',
+    UPDATE_CONTACT_DETAIL_SUCCESS: 'Updating contact detail successful',
 }
-
 
 export const POST_STATUS = {
     PENDING: 'pending',
