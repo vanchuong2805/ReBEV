@@ -1,15 +1,25 @@
-import React from "react"
-import { createRoot } from "react-dom/client"
-import { ApolloProvider } from "@apollo/client/react"
-import client from "../client"
+import React from "react";
+import { createRoot } from "react-dom/client";
+import "./assets/index.css";
+import client from "../client.js";
+import { ApolloProvider } from "@apollo/client/react";
 import AppRoutes from "./app/AppRoutes.jsx";
 import "./assets/index.css"
 import { BrowserRouter } from "react-router";
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-  <ApolloProvider client={client}>
-    <AppRoutes />
-  </ApolloProvider>
-</BrowserRouter>
-)
+  <React.StrictMode>
+    <BrowserRouter>
+      <ApolloProvider client={client}>
+        <CartProvider>
+          <AuthDialogProvider>
+            <AppRoutes />
+            <AuthOverlay />
+          </AuthDialogProvider>
+        </CartProvider>
+        <Toaster position="top-center" richColors closeButton />
+      </ApolloProvider>
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
