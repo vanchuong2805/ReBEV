@@ -1,7 +1,9 @@
 import React from "react";
 import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
-import Header from "@/components/common/Header.jsx"; 
+
+import { ROUTES } from "../constants/routes.js";
+import Home from "@/features/home/pages/Home";
 import ProfilePage from "@/features/profile/pages/ProfilePage.jsx";
 import PackagePage from "@/features/package/pages/PackagePage.jsx";
 import CartPage from "@/features/cart/pages/Cart.jsx";

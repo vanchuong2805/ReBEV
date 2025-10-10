@@ -20,15 +20,19 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@tailwindcss/vite": "^4.1.13",
     "axios": "^1.12.2",
-    "checkbox": "^0.0.1",
+
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "graphql": "^16.11.0",
+    "json-server": "^1.0.0-beta.3",
+
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.62.0",
     "react-router": "^7.9.1",
+    "react-router-dom": "^7.9.1",
+
     "separator": "^0.1.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",

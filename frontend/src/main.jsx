@@ -6,6 +6,10 @@ import { ApolloProvider } from "@apollo/client/react";
 import AppRoutes from "./app/AppRoutes.jsx";
 import "./assets/index.css"
 import { BrowserRouter } from "react-router";
+import AuthOverlay from "@/features/auth/AuthOverlay.jsx";
+import { AuthDialogProvider } from "@/contexts/AuthDialogContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
