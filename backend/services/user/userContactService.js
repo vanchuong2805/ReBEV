@@ -2,8 +2,13 @@ import models from '../../models/index.js';
 const { contacts } = models;
 const { user } = models;
 
-const getUserContacts = async () => {
-    const data = await contacts.findAll();
+const getUserContacts = async (options) => {
+    const data = await contacts.findAll({
+        where: {
+            ...options,
+            is_deleted: false
+        },
+    });
     return data;
 };
 
@@ -89,12 +94,19 @@ const updateUserContact = async ({
 const deleteUserContact = async ({
     id
 }) => {
-    const data = await contacts.destroy({
+    const data = await contacts.update({
+        is_deleted: true
+    }, {
         where: {
             id: id
         }
     });
-    return data;
+    const updatedContact = await contacts.findOne({
+        where: {
+            id: id
+        }
+    })
+    return updatedContact;
 }
 
 export default {

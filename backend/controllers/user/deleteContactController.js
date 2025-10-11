@@ -6,7 +6,7 @@ const deleteContact = async (req, res) => {
     try {
         const {
             id,
-        } = req.body;
+        } = req.params;
 
         const contact = await userContactService.getUserContact(id);
 
