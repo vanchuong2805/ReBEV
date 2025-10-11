@@ -41,3 +41,16 @@ export const ROLE = {
     STAFF: 1,
     ADMIN: 2,
 };
+
+export const ORDER_TYPE = {
+    BUY: 1,
+    DEPOSIT: 2,
+}
+
+export const ORDER_STATUS = {
+    PENDING: 'PENDING',
+    CONFIRMED: 'CONFIRMED',
+    DELIVERING: 'DELIVERING',
+    DELIVERED: 'DELIVERED',
+    CANCELLED: 'CANCELLED',
+};
