@@ -1,19 +1,24 @@
-import postDetail from '../../repositories/postDetailRepo.js';
-
+import models from '../../models/index.js';
+const { post_detail } = models;
 const getAll = async () => {
-    return await postDetail.findAll();
-};
-
-const getById = async (id) => {
-    return await postDetail.findByPk(id);
+    const data = await post_detail.findAll();
+    return data;
 };
 
 const getByPostId = async (postId) => {
-    return await postDetail.findAll({ where: { post_id: postId } });
+    const data = await post_detail.findAll({
+        where: { post_id: postId },
+    });
+    return data;
 };
 
-const create = async (data, transaction) => {
-    return await postDetail.create(data, { transaction });
+const createPostDetails = async (data, options) => {
+    const postDetails = await post_detail.bulkCreate(data, options);
+    return postDetails;
 };
 
-export default { getAll, getById, getByPostId, create };
+export default {
+    getAll,
+    getByPostId,
+    createPostDetails,
+};

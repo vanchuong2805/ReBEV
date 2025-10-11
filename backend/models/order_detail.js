@@ -40,7 +40,7 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false
     },
     contract_file: {
-      type: DataTypes.STRING(500),
+      type: DataTypes.STRING(1000),
       allowNull: true
     },
     create_at: {
@@ -60,7 +60,7 @@ module.exports = function(sequelize, DataTypes) {
     timestamps: false,
     indexes: [
       {
-        name: "PK__order_de__3213E83F87999A86",
+        name: "PK__order_de__3213E83F455ADA13",
         unique: true,
         fields: [
           { name: "id" },

@@ -1,11 +1,9 @@
-import sequelize from '../../config/db.js';
 import postService from '../../services/post/postService.js';
-import { POST_STATUS } from '../../config/constants.js';
-import postStatusService from '../../services/post/postStatusService.js';
-import postMediaService from '../../services/post/postMediaService.js';
+import categoryService from '../../services/post/categoryService.js';
+import { sequelize } from '../../models/index.js';
 import postDetailService from '../../services/post/postDetailService.js';
-const createController = async (req, res) => {
-    const trans = await sequelize.transaction();
+const createPost = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const {
             user_id,
@@ -15,43 +13,69 @@ const createController = async (req, res) => {
             price,
             base_id,
             seller_contact_id,
-            media,
+            mediaFiles,
             details,
         } = req.body;
         if (
             !user_id ||
             !category_id ||
             !title ||
+            price === undefined ||
             !description ||
-            !price ||
             (!base_id && !seller_contact_id) ||
-            media.length === 0 ||
+            !mediaFiles ||
+            mediaFiles.length === 0 ||
+            !details ||
             details.length === 0
         ) {
-            return res.status(400).json({ message: 'Missing required fields' });
+            return res.status(400).json({
+                message: 'Missing required fields',
+            });
         }
 
-        const { dataValues: newPost } = await postService.create(
-            { user_id, category_id, title, description, price, base_id, seller_contact_id },
-            trans
+        const category = await categoryService.getById(category_id);
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        if (category.is_deposit && !base_id) {
+            return res.status(400).json({ message: 'Base ID is required for deposit categories' });
+        }
+        if (!category.is_deposit && !seller_contact_id) {
+            return res
+                .status(400)
+                .json({ message: 'Seller contact ID is required for non-deposit categories' });
+        }
+
+        const media = JSON.stringify(mediaFiles);
+
+        const newPost = await postService.createPost(
+            {
+                user_id,
+                category_id,
+                title,
+                description,
+                price,
+                base_id,
+                seller_contact_id,
+                media,
+            },
+            { transaction: t }
         );
-        await postStatusService.create({ post_id: newPost.id, status: POST_STATUS.PENDING }, trans);
 
-        for (const item of media) {
-            item.post_id = newPost.id;
-            await postMediaService.create(item, trans);
-        }
+        const data = details.map(detail => ({ ...detail, post_id: newPost.id }));
+        
+        await postDetailService.createPostDetails(data, { transaction: t });
 
-        for (const item of details) {
-            item.post_id = newPost.id;
-            await postDetailService.create(item, trans);
-        }
-        await trans.commit();
-        res.status(201).json({ message: 'Post created successfully', post: newPost });
+        await t.commit();
+        res.status(201).json({post: newPost, details: data });
     } catch (error) {
-        await trans.rollback();
-        res.status(500).send('Internal Server Error');
+        await t.rollback();
+        res.status(500).json({
+            message: 'Failed to create post',
+            error: error.message || 'Internal Server Error',
+        });
     }
 };
 
-export default createController;
+export default createPost;
