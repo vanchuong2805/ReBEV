@@ -4,6 +4,7 @@ import orderService from '../../services/order/orderService.js';
 import orderStatusService from '../../services/order/orderStatusService.js';
 import { ORDER_STATUS, ORDER_TYPE } from '../../config/constants.js';
 import orderDetailService from '../../services/order/orderDetailService.js';
+import userContactService from '../../services/user/userContactService.js';
 import dayjs from 'dayjs';
 
 const createOrder = async (req, res) => {
@@ -37,9 +38,19 @@ const createOrder = async (req, res) => {
         if (order_type === ORDER_TYPE.DEPOSIT) {
             const base = await baseService.getById(from_contact_id);
             if (!base) {
-                return res.status(404).json({ error: 'From address not found' });
+                return res.status(404).json({ error: 'Base address not found' });
             }
             from_contact = base;
+        } else {
+            const sellerContact = await userContactService.getUserContact(from_contact_id);
+            if (!sellerContact) {
+                return res.status(404).json({ error: 'Seller contact not found' });
+            }
+            from_contact = sellerContact;
+        }
+        const to_contact = await userContactService.getUserContact(to_contact_id);
+        if (!to_contact) {
+            return res.status(404).json({ error: 'Customer contact not found' });
         }
         const newOrder = await orderService.createOrder(
             {
@@ -47,7 +58,7 @@ const createOrder = async (req, res) => {
                 seller_id,
                 order_type,
                 from_contact: JSON.stringify(from_contact),
-                to_contact: JSON.stringify(from_contact),
+                to_contact: JSON.stringify(to_contact),
                 delivery_price,
                 order_details,
                 total_amount,
@@ -69,7 +80,7 @@ const createOrder = async (req, res) => {
         }));
         await orderDetailService.createOrderDetails(details, { transaction: t });
         await t.commit();
-        res.status(201).json({message: 'Order created successfully'});
+        res.status(201).json({ message: 'Order created successfully' });
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ error: 'Internal server error' });
