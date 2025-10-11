@@ -1,16 +1,16 @@
 import express from 'express';
-// import createController from '../controllers/post/createController.js';
-// import approveController from '../controllers/post/approveController.js';
-// import rejectController from '../controllers/post/rejectController.js';
-// import deleteController from '../controllers/post/deleteController.js';
-// import visibilityController from '../controllers/post/visibilityController.js';
-
+import createPost from '../controllers/post/createController.js';
+import getPosts from '../controllers/post/getPostsController.js';
+import getPost from '../controllers/post/getPostController.js';
+import deleteController from '../controllers/post/deleteController.js';
+import visibilityController from '../controllers/post/visibilityController.js';
+import changeStatusController from '../controllers/post/changeStatusController.js';
 const router = express.Router();
 
-// router.post('/', createController);
-// router.post('/:postId/approve', approveController);
-// router.post('/:postId/reject', rejectController);
-// router.patch('/:postId/visibility', visibilityController);
-// router.patch('/:postId/delete', deleteController);
-
+router.post('/', createPost);
+router.get('/', getPosts);
+router.get('/:id', getPost);
+router.patch('/:id/visibility', visibilityController);
+router.patch('/:id/delete', deleteController);
+router.patch('/:id/status', changeStatusController);
 export default router;
