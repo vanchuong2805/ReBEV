@@ -86,11 +86,23 @@ const updateUserContact = async ({
     return data;
 }
 
+const deleteUserContact = async ({
+    id
+}) => {
+    const data = await contacts.destroy({
+        where: {
+            id: id
+        }
+    });
+    return data;
+}
+
 export default {
     getUserContacts,
     getUserContact,
     getUserContactsByUserId,
     createUserContact,
     updateUserContact,
-    getUserById
+    getUserById,
+    deleteUserContact
 };

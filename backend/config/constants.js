@@ -16,7 +16,7 @@ export const ERROR_MESSAGE = {
     CONTACT_DETAIL_BLANK: 'Contact detail cannot be left blank.',
     CONTACT_NOT_FOUND: 'Contact ID cannot be found.',
     UPDATE_CONTACT_DETAIL_FAIL: 'Updating contact detail failed.',
-
+    DELETE_CONTACT_FAIL: 'Deleting contact failed.',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -24,6 +24,7 @@ export const SUCCESS_MESSAGE = {
     LOGIN_SUCCESS: 'Login successful',
     ADD_CONTACT_DETAIL_SUCCESS: 'Adding contact detail successful',
     UPDATE_CONTACT_DETAIL_SUCCESS: 'Updating contact detail successful',
+    DELETE_CONTACT_SUCCESS: 'Deleting contact successful',
 }
 
 export const POST_STATUS = {
