@@ -28,10 +28,24 @@ export const SUCCESS_MESSAGE = {
 }
 
 export const POST_STATUS = {
-    PENDING: 'pending',
-    APPROVED: 'approved',
-    REJECTED: 'rejected',
-    SOLD: 'sold',
-    DEPOSITED: 'deposited',
-    CANCELED: 'canceled',
+    PENDING: 0,
+    APPROVED: 1,
+    REJECTED: 2,
+    SOLD: 3,
+    DEPOSITED: 4,
+    CANCELLED: 5,
+    VERIFIED: 6,
+};
+
+export const TRANSITION_STATUS = {
+    [POST_STATUS.APPROVED]: [POST_STATUS.PENDING],
+    [POST_STATUS.REJECTED]: [POST_STATUS.PENDING],
+    [POST_STATUS.CANCELLED]: [POST_STATUS.PENDING],
+    [POST_STATUS.VERIFIED]: [POST_STATUS.PENDING, POST_STATUS.APPROVED],
+}
+
+export const ROLE = {
+    MEMBER: 0,
+    STAFF: 1,
+    ADMIN: 2,
 };
