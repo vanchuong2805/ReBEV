@@ -1,8 +1,8 @@
-// import { ERROR_MESSAGE } from '../../config/constants.js';
-// import { SUCCESS_MESSAGE } from '../../config/constants.js';
+import { ERROR_MESSAGE } from '../../config/constants.js';
+import { SUCCESS_MESSAGE } from '../../config/constants.js';
 
-// const loginUserByGoogle = async (req, res) => {
+const loginUserByGoogle = async (req, res) => {
 
-// }
+}
 
-// export default loginUserByGoogle;
+export default loginUserByGoogle;

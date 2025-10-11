@@ -6,6 +6,12 @@ const getAll = async () => {
     return data;
 };
 
+const getById = async (id) => {
+    const data = await bases.findByPk(id);
+    return data;
+};
+
 export default {
     getAll,
+    getById,
 };
