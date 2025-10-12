@@ -34,12 +34,7 @@ const ReportsStatistics = () => {
               <Users className="h-6 w-6 text-blue-600" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-500">
-              +12% so với tháng trước
-            </span>
-          </div>
+          <div className="mt-4 flex items-center"></div>
         </Card>
 
         <Card className="p-6">
@@ -54,12 +49,6 @@ const ReportsStatistics = () => {
               <BarChart3 className="h-6 w-6 text-green-600" />
             </div>
           </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-500">
-              +8% so với tháng trước
-            </span>
-          </div>
         </Card>
 
         <Card className="p-6">
@@ -73,12 +62,6 @@ const ReportsStatistics = () => {
             <div className="p-3 bg-yellow-100 rounded-full">
               <TrendingUp className="h-6 w-6 text-yellow-600" />
             </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-500">
-              +15% so với tháng trước
-            </span>
           </div>
         </Card>
 
@@ -95,12 +78,6 @@ const ReportsStatistics = () => {
             <div className="p-3 bg-purple-100 rounded-full">
               <DollarSign className="h-6 w-6 text-purple-600" />
             </div>
-          </div>
-          <div className="mt-4 flex items-center">
-            <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-            <span className="text-sm text-green-500">
-              +22% so với tháng trước
-            </span>
           </div>
         </Card>
       </div>

@@ -1,8 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import ReportsStatistics from "./ReportsStatistics";
-import OrderManagement from "./OrderManagement";
-import ComplaintManagement from "./ComplaintManagement";
 import SystemFeesManagement from "./SystemFeesManagement";
 import TransactionManagement from "./TransactionManagement";
 import ListingManagement from "./ListingManagement";
@@ -16,10 +14,6 @@ const AdminPage = () => {
     switch (activeTab) {
       case "reports":
         return <ReportsStatistics />;
-      case "orders":
-        return <OrderManagement />;
-      case "complaints":
-        return <ComplaintManagement />;
       case "fees":
         return <SystemFeesManagement />;
       case "transactions":
