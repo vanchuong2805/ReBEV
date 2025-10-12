@@ -34,8 +34,8 @@ import {
 import { Link } from "react-router"
 
 // ========== GHN CONFIG ==========
-const GHN_API = "https://dev-online-gateway.ghn.vn/shiip/public-api"
-const TOKEN = "10293b98-a314-11f0-bdaf-ae7fa045a771"
+const GHN_API = import.meta.env.VITE_GHN_API
+const TOKEN = import.meta.env.VITE_GHN_TOKEN
 
 // ===== Header Component =====
 const Header = ({ user = 0 }) => {
