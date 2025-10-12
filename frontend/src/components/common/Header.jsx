@@ -1,97 +1,205 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"
+import axios from "axios"
+import { useAuthDialog } from "@/contexts/AuthDialogContext"
 import {
   Search,
   ShoppingCart,
   Menu,
-  ChevronDown,
+  ChevronRight,
   Battery,
-  Car,
-  Scale,
-  Heart,
-  Headset,
+  Zap,
   MapPin,
-} from "lucide-react";
+  Factory,
+  Calendar,
+  Globe,
+  Gauge,
+  Power,
+  Clock,
+  Route,
+  ChevronDown,
+} from "lucide-react"
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Link } from "react-router";
-import { gql } from "@apollo/client";
-import { useQuery, useLazyQuery } from "@apollo/client/react";
-import { useAuthDialog } from "@/contexts/AuthDialogContext";
-// import { useAuth } from "@/hooks/useAuth";
-// ==================== GraphQL ====================
-const GET_PROVINCES = gql`
-  query {
-    provinces {
-      id
-      name
-    }
-  }
-`;
+  DropdownMenuContent,
+} from "@/components/ui/dropdown-menu"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
+import { Link } from "react-router"
 
-const GET_WARDS_BY_PROVINCE = gql`
-  query GetWards($provinceId: ID!) {
-    province(id: $provinceId) {
-      wards {
-        id
-        name
+// ========== GHN CONFIG ==========
+const GHN_API = "https://dev-online-gateway.ghn.vn/shiip/public-api"
+const TOKEN = "10293b98-a314-11f0-bdaf-ae7fa045a771"
+
+// ===== Header Component =====
+const Header = ({ user = 0 }) => {
+  const { openLogin, openRegister } = useAuthDialog()
+
+  // ====== LOCATION STATES ======
+  const [provinces, setProvinces] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [wards, setWards] = useState([])
+
+  const [selectedProvince, setSelectedProvince] = useState("")
+  const [selectedDistrict, setSelectedDistrict] = useState("")
+  const [selectedWard, setSelectedWard] = useState("")
+
+  const [provLoading, setProvLoading] = useState(false)
+  const [districtLoading, setDistrictLoading] = useState(false)
+  const [wardLoading, setWardLoading] = useState(false)
+  const [provError, setProvError] = useState(null)
+  const [wardError, setWardError] = useState(null)
+
+  // ======= FETCH PROVINCES =======
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      setProvLoading(true)
+      try {
+        const res = await axios.get(`${GHN_API}/master-data/province`, {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        })
+        setProvinces(res.data.data)
+      } catch (err) {
+        console.error("❌ Error loading provinces:", err)
+        setProvError(err)
+      } finally {
+        setProvLoading(false)
       }
     }
+    fetchProvinces()
+  }, [])
+
+  // ======= FETCH DISTRICTS =======
+  const handleProvinceChange = async (e) => {
+    const id = e.target.value
+    setSelectedProvince(id)
+    setSelectedDistrict("")
+    setSelectedWard("")
+    setDistricts([])
+    setWards([])
+
+    if (!id) return
+    try {
+      setDistrictLoading(true)
+      const res = await axios.post(
+        `${GHN_API}/master-data/district`,
+        { province_id: Number(id) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        }
+      )
+      setDistricts(res.data.data)
+    } catch (err) {
+      console.error("❌ Error loading districts:", err)
+    } finally {
+      setDistrictLoading(false)
+    }
   }
-`;
 
-// ==================== Danh mục ====================
-const CATEGORIES = [
-  { icon: <Car size={20} />, label: "Xe điện đã qua sử dụng", href: "" },
-  { icon: <Battery size={20} />, label: "Pin EV đã qua sử dụng", href: "" },
-];
+  // ======= FETCH WARDS =======
+  const handleDistrictChange = async (e) => {
+    const id = e.target.value
+    setSelectedDistrict(id)
+    setSelectedWard("")
+    setWards([])
 
-// ==================== Component ====================
-const Header = ({ user = 0 }) => {
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
-  const { openLogin, openRegister } = useAuthDialog();
-  const [getWards, { loading: wardLoading, error: wardError, data: wardData }] =
-    useLazyQuery(GET_WARDS_BY_PROVINCE);
-  // Query danh sách tỉnh
-  const { loading, error, data } = useQuery(GET_PROVINCES);
-  if (error) return <p className="p-4 text-red-500">Lỗi: {error.message}</p>;
-  // Lazy query để lấy xã theo tỉnh
+    if (!id) return
+    try {
+      setWardLoading(true)
+      const res = await axios.post(
+        `${GHN_API}/master-data/ward`,
+        { district_id: Number(id) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        }
+      )
+      setWards(res.data.data)
+    } catch (err) {
+      console.error("❌ Error loading wards:", err)
+      setWardError(err)
+    } finally {
+      setWardLoading(false)
+    }
+  }
 
-  const provinces = data?.provinces || [];
-  const wards = wardData?.province?.wards || [];
+  // ===== VARIATIONS (Giữ nguyên phần này) =====
+  const [groups, setGroups] = useState({})
+  const [loadingVariations, setLoadingVariations] = useState(true)
 
-  const handleProvinceChange = (e) => {
-    const provinceId = e.target.value;
-    setSelectedProvince(provinceId);
-    setSelectedWard("");
-    if (provinceId) getWards({ variables: { provinceId } });
-  };
+  useEffect(() => {
+    const fetchVariations = async () => {
+      try {
+        const res = await axios.get("http://localhost:5050/api/variationValues")
+        const roots = res.data.filter((item) => item.parent_id === null)
 
+        const grouped = roots.reduce((acc, item) => {
+          if (!acc[item.variation_id]) acc[item.variation_id] = []
+          acc[item.variation_id].push(item)
+          return acc
+        }, {})
+
+        setGroups({
+          xe: {
+            "Thương hiệu": { icon: <Factory size={14} />, data: grouped[1] },
+            "Công suất (W)": { icon: <Power size={14} />, data: grouped[3] },
+
+            "Xuất xứ": { icon: <Globe size={14} />, data: grouped[6] },
+          },
+          pin: {
+            "Loại pin": { icon: <Battery size={14} />, data: grouped[8] },
+            "Dung lượng (Ah)": { icon: <Gauge size={14} />, data: grouped[9] },
+            "Điện áp (V)": { icon: <Zap size={14} />, data: grouped[10] },
+            "Thời gian sạc": { icon: <Clock size={14} />, data: grouped[11] },
+            "Quãng đường (km)": { icon: <Route size={14} />, data: grouped[12] },
+            "Tình trạng pin (%)": { icon: <Battery size={14} />, data: grouped[14] },
+            "Hãng pin": { icon: <Factory size={14} />, data: grouped[15] },
+          },
+        })
+      } catch (err) {
+        console.error("❌ Lỗi khi tải variationValues:", err)
+      } finally {
+        setLoadingVariations(false)
+      }
+    }
+    fetchVariations()
+  }, [])
+
+  // ======== UI ========
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#007BFF]">
       <div className="container px-4 mx-auto lg:px-6">
         <div className="flex items-center justify-between gap-4 py-3">
-          {/* Logo + Menu */}
-          <div className="flex items-center gap-2 lg:gap-4">
-            <a className="flex items-center gap-1.5 group" href="/">
+
+          {/* ===== Logo + Danh mục ===== */}
+          <div className="flex items-center gap-3">
+            <Link className="flex items-center gap-1.5" to="/">
               <div className="bg-white px-3 py-1.5 rounded-lg shadow-md">
                 <span className="text-[#007BFF] font-bold text-xl">Re</span>
               </div>
               <span className="text-xl font-bold text-white">BEV</span>
-            </a>
+            </Link>
 
+            {/* Dropdown Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm"
+                  className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:bg-[#68b1ff] transition-all shadow-sm"
                 >
                   <Menu className="w-6 h-6" />
                   <span className="hidden ml-2 font-medium lg:inline">
@@ -100,35 +208,124 @@ className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:
                   <ChevronDown className="w-5 h-5 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent
                 align="start"
-                sideOffset={12}
-                className="shadow-xl w-80"
+                alignOffset={-102}
+                sideOffset={15}
+                className="relative w-72 p-2 bg-white rounded-2xl border border-gray-100 shadow-2xl z-[9999]"
               >
-                {CATEGORIES.map((c) => (
-                  <DropdownMenuItem
-                    key={c.label}
-                    asChild
-                    className="py-3 cursor-pointer hover:bg-blue-50"
-                  >
-                    <Link to={c.href} className="flex items-center gap-3">
-                      <div className="bg-blue-100 text-[#007BFF] p-2 rounded-lg">
-                        {c.icon}
-                      </div>
-                      <span className="font-medium text-gray-700">
-                        {c.label}
+                {/* === Xe điện cũ === */}
+                {/* === Xe điện cũ === */}
+                <HoverCard openDelay={80} closeDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                        <Zap size={18} className="text-[#007BFF]" />
+                        Xe máy điện cũ
                       </span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent
+                    side="right"
+                    align="start"
+                    sideOffset={15}
+                    alignOffset={-9}
+                    className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
+                  >
+                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                      Bộ lọc xe điện
+                    </h3>
+
+                    {loadingVariations ? (
+                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
+                        {Object.entries(groups.xe).map(([name, group]) =>
+                          group.data ? (
+                            <div key={name}>
+                              <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
+                                {group.icon} {name}
+                              </p>
+                              <div className="flex flex-col gap-1">
+                                {group.data.map((item) => (
+                                  <Link
+                                    key={item.id}
+                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
+                                  >
+                                    {item.value}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
+
+                {/* === Pin EV cũ === */}
+                <HoverCard openDelay={80} closeDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                        <Battery size={18} className="text-[#007BFF]" />
+                        Pin EV cũ
+                      </span>
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent
+                    side="right"
+                    align="start"
+                    sideOffset={15}
+                    alignOffset={-49}
+                    className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
+                  >
+                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                      Bộ lọc pin điện
+                    </h3>
+
+                    {loadingVariations ? (
+                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
+                        {Object.entries(groups.pin).map(([name, group]) =>
+                          group.data ? (
+                            <div key={name}>
+                              <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
+                                {group.icon} {name}
+                              </p>
+                              <div className="flex flex-col gap-1">
+                                {group.data.map((item) => (
+                                  <Link
+                                    key={item.id}
+                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
+                                  >
+                                    {item.value}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
 
-          {/* Search + Địa chỉ */}
+          {/* ===== Search + Location (phần này giữ nguyên, chỉ đổi lấy GHN API) ===== */}
           <div className="flex-1 max-w-3xl mx-4">
-            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white rounded-lg shadow-md">
-              {/* Ô tìm kiếm */}
+            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white rounded-xl shadow-md">
               <div className="relative flex-1">
                 <Search className="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
                 <Input
@@ -138,18 +335,21 @@ className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:
                 />
               </div>
 
-              {/* Dropdown chọn tỉnh/xã */}
+              {/* Dropdown chọn tỉnh / quận / xã */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
-                    className="flex items-center h-10 gap-2 px-10 border rounded-md shadow-sm hover:bg-gray-50"
+                    className="flex items-center h-10 gap-2 px-4 border rounded-md shadow-sm hover:bg-gray-50"
+                    disabled={provLoading}
                   >
                     <MapPin className="h-4 w-4 text-[#007BFF]" />
                     <span className="font-medium text-gray-700">
                       {selectedProvince
-                        ? provinces.find((p) => p.id === selectedProvince)?.name
-                        : "Chọn khu vực"}
+                        ? provinces.find((p) => p.ProvinceID === Number(selectedProvince))?.ProvinceName
+                        : provLoading
+                          ? "Đang tải khu vực..."
+                          : "Chọn khu vực"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </Button>
@@ -159,121 +359,125 @@ className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:
                   align="end"
                   className="p-4 space-y-4 rounded-lg shadow-xl w-80"
                 >
-<h3 className="text-base font-semibold text-gray-800">
+                  <h3 className="text-base font-semibold text-gray-800">
                     Chọn khu vực
                   </h3>
 
+                  {provError && (
+                    <div className="p-2 text-sm text-red-600 rounded bg-red-50">
+                      Lỗi tải tỉnh: {provError.message}
+                    </div>
+                  )}
+
                   <div className="space-y-3">
-                    {/* Chọn tỉnh */}
+                    {/* Tỉnh */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Chọn tỉnh thành *
+                        Tỉnh/Thành *
                       </label>
                       <select
                         value={selectedProvince}
                         onChange={handleProvinceChange}
+                        disabled={provLoading}
                         className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
                       >
-                        <option value="">-- Chọn tỉnh --</option>
+                        <option value="">
+                          {provLoading ? "Đang tải..." : "-- Chọn tỉnh --"}
+                        </option>
                         {provinces.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
+                          <option key={p.ProvinceID} value={p.ProvinceID}>
+                            {p.ProvinceName}
                           </option>
                         ))}
                       </select>
                     </div>
 
-                    {/* Chọn xã */}
+                    {/* Quận/Huyện */}
                     <div>
                       <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Chọn xã/phường *
+                        Quận/Huyện *
+                      </label>
+                      <select
+                        value={selectedDistrict}
+                        onChange={handleDistrictChange}
+                        disabled={!selectedProvince || districtLoading}
+                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                      >
+                        <option value="">
+                          {!selectedProvince
+                            ? "Chọn tỉnh trước"
+                            : districtLoading
+                              ? "Đang tải..."
+                              : "-- Chọn quận --"}
+                        </option>
+                        {districts.map((d) => (
+                          <option key={d.DistrictID} value={d.DistrictID}>
+                            {d.DistrictName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Xã/Phường */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
+                        Xã/Phường *
                       </label>
                       <select
                         value={selectedWard}
                         onChange={(e) => setSelectedWard(e.target.value)}
-                        disabled={!selectedProvince || wardLoading}
+                        disabled={!selectedDistrict || wardLoading}
                         className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
                       >
                         <option value="">
-                          {wardLoading ? "Đang tải..." : "-- Chọn xã --"}
+                          {!selectedDistrict
+                            ? "Chọn quận trước"
+                            : wardLoading
+                              ? "Đang tải..."
+                              : "-- Chọn xã --"}
                         </option>
                         {wards.map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
+                          <option key={w.WardCode} value={w.WardCode}>
+                            {w.WardName}
                           </option>
                         ))}
                       </select>
+
                       {wardError && (
                         <p className="mt-1 text-sm text-red-500">
-                          Không thể tải danh sách xã
+                          Không thể tải danh sách xã.
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <Button className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md">
+                  <Button className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
+                    disabled={provLoading}
+                  >
                     Áp dụng
                   </Button>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Nút tìm kiếm */}
-              <Button className="h-10 px-5 bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold rounded-md shadow-sm">
+              <Button className="h-10 px-5 bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold rounded-lg shadow-sm">
                 Tìm kiếm
               </Button>
             </div>
           </div>
 
-          {/* User actions */}
-          {user === 1 ? (
+          {/* ===== User Actions (giữ nguyên) ===== */}
+          {user === 0 ? (
             <nav className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-className="w-10 h-10 text-white rounded-full hover:bg-white/20"
+                className="w-10 h-10 text-white rounded-full hover:bg-white/20"
               >
                 <ShoppingCart className="w-5 h-5" />
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center h-10 gap-2 px-3 text-white transition-colors rounded-full hover:bg-white/20"
-                  >
-                    <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
-                      PT
-                    </div>
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 shadow-xl">
-                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/profile">Tài khoản</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/posts">Tin đăng của tôi</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/upgrade">Nâng cấp tài khoản</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    //onClick={logout}
-                    className="text-red-600 cursor-pointer py-2.5"
-                  >
-                    Đăng xuất
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
-                Đăng tin
-              </Button>
-            </nav>
-          ) : (
-            <nav className="flex items-center gap-2">
               <Button
                 onClick={openLogin}
-                variant="ghost"
-                className="bg-[#339CFF] text-white hover:bg-[#68b1ff] hover:text-white h-10 px-4 shadow-sm"
+                className="bg-[#339CFF] text-white hover:bg-[#68b1ff] h-10 px-4 shadow-sm"
               >
                 Đăng nhập
               </Button>
@@ -284,11 +488,17 @@ className="w-10 h-10 text-white rounded-full hover:bg-white/20"
                 Đăng ký
               </Button>
             </nav>
+          ) : (
+            <nav className="flex items-center gap-2">
+              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
+                Đăng tin
+              </Button>
+            </nav>
           )}
         </div>
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Header;
+export default Header
