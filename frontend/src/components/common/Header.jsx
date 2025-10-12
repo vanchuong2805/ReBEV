@@ -67,7 +67,11 @@ const Header = ({ user = 0 }) => {
             Token: TOKEN,
           },
         })
-        setProvinces(res.data.data)
+        setProvinces(
+          res.data.data.filter(
+            p => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
+          )
+        )
       } catch (err) {
         console.error("❌ Error loading provinces:", err)
         setProvError(err)
