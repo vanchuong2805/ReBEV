@@ -48,10 +48,22 @@ const createCart = async ({
     return data;
 }
 
+const deleteCart = async ({
+    post_id,
+}) => {
+    const data = await cart_items.destroy({
+        where: {
+            post_id: post_id
+        }
+    });
+    return data;
+}
+
 export default {
     getCarts,
     getCartByPostId,
     getCartByUserId,
     createCart,
-    findCartItem
+    findCartItem,
+    deleteCart
 };
