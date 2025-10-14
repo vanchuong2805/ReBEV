@@ -25,6 +25,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import {
   HoverCard,
@@ -148,7 +149,7 @@ const Header = ({ user = 0 }) => {
   useEffect(() => {
     const fetchVariations = async () => {
       try {
-        const res = await axios.get("http://localhost:5050/api/variationValues")
+        const res = await axios.get("https://rebev.onrender.com/api/variationValues")
         const roots = res.data.filter((item) => item.parent_id === null)
 
         const grouped = roots.reduce((acc, item) => {
@@ -468,9 +469,8 @@ const Header = ({ user = 0 }) => {
               </Button>
             </div>
           </div>
-
-          {/* ===== User Actions (giữ nguyên) ===== */}
-          {user === 0 ? (
+          {/* User actions */}
+          {user == 0 ? (
             <nav className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -479,8 +479,45 @@ const Header = ({ user = 0 }) => {
               >
                 <ShoppingCart className="w-5 h-5" />
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center h-10 gap-2 px-3 text-white transition-colors rounded-full hover:bg-white/20"
+                  >
+                    <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+                      PT
+                    </div>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 shadow-xl">
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="/profile">Tài khoản</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="">Tin đăng của tôi</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="/upgrade">Nâng cấp tài khoản</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    //onClick={logout}
+                    className="text-red-600 cursor-pointer py-2.5"
+                  >
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
+                Đăng tin
+              </Button>
+            </nav>
+          ) : (
+            <nav className="flex items-center gap-2">
               <Button
                 onClick={openLogin}
+                variant="ghost"
                 className="bg-[#339CFF] text-white hover:bg-[#68b1ff] h-10 px-4 shadow-sm"
               >
                 Đăng nhập
@@ -492,17 +529,11 @@ const Header = ({ user = 0 }) => {
                 Đăng ký
               </Button>
             </nav>
-          ) : (
-            <nav className="flex items-center gap-2">
-              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
-                Đăng tin
-              </Button>
-            </nav>
           )}
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
