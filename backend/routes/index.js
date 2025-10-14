@@ -8,6 +8,7 @@ import variationRouter from './variationRoutes.js';
 import variationValueRouter from './variationValueRoutes.js';
 import orderRouter from './orderRoutes.js';
 import cartRouter from './cartRoutes.js';
+import contactRouter from './contactRoutes.js';
 const router = express.Router();
 
 router.use('/users', userRouter);
@@ -18,5 +19,6 @@ router.use('/variations', variationRouter);
 router.use('/variationValues', variationValueRouter);
 router.use('/orders', orderRouter);
 router.use('/carts', cartRouter);
+router.use('/contacts', contactRouter);
 
 export default router;
