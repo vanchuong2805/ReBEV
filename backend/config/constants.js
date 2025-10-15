@@ -1,3 +1,4 @@
+
 export const ERROR_MESSAGE = {
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
@@ -17,7 +18,11 @@ export const ERROR_MESSAGE = {
     CONTACT_NOT_FOUND: 'Contact ID cannot be found.',
     UPDATE_CONTACT_DETAIL_FAIL: 'Updating contact detail failed.',
     DELETE_CONTACT_FAIL: 'Deleting contact failed.',
-};
+    CREATE_CART_FAIL: 'Creating cart failed.',
+    CART_ITEM_EXISTED: 'This item is already in the cart.',
+    CART_ITEM_NOT_FOUND: 'Cart item not found.',
+    DELETE_CART_FAIL: 'Deleting cart item failed.',
+}
 
 export const SUCCESS_MESSAGE = {
     REGISTER_SUCCESS: 'Register successful',
@@ -25,7 +30,9 @@ export const SUCCESS_MESSAGE = {
     ADD_CONTACT_DETAIL_SUCCESS: 'Adding contact detail successful',
     UPDATE_CONTACT_DETAIL_SUCCESS: 'Updating contact detail successful',
     DELETE_CONTACT_SUCCESS: 'Deleting contact successful',
-};
+    CREATE_CART_SUCCESS: 'Creating cart successful',
+    DELETE_CART_SUCCESS: 'Deleting cart item successful',
+}
 
 export const POST_STATUS = {
     PENDING: 0,

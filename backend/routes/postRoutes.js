@@ -5,6 +5,7 @@ import getPost from '../controllers/post/getPostController.js';
 import deleteController from '../controllers/post/deleteController.js';
 import visibilityController from '../controllers/post/visibilityController.js';
 import changeStatusController from '../controllers/post/changeStatusController.js';
+
 const router = express.Router();
 
 router.post('/', createPost);
