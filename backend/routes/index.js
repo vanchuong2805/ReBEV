@@ -8,6 +8,7 @@ import variationValueRouter from './variationValueRoutes.js';
 import orderRouter from './orderRoutes.js';
 import cartRouter from './cartRoutes.js';
 import contactRouter from './contactRoutes.js';
+import authRouter from './authRoutes.js';
 const router = express.Router();
 
 router.use('/users', userRouter);
@@ -19,5 +20,6 @@ router.use('/variationValues', variationValueRouter);
 router.use('/orders', orderRouter);
 router.use('/carts', cartRouter);
 router.use('/contacts', contactRouter);
+router.use('/auth', authRouter);
 
 export default router;

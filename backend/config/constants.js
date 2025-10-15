@@ -22,6 +22,7 @@ export const ERROR_MESSAGE = {
     CART_ITEM_EXISTED: 'This item is already in the cart.',
     CART_ITEM_NOT_FOUND: 'Cart item not found.',
     DELETE_CART_FAIL: 'Deleting cart item failed.',
+    ACCOUNT_LOCKED: 'Your account has been locked. Please contact the administrator.',
 }
 
 export const SUCCESS_MESSAGE = {
