@@ -1,5 +1,4 @@
 import express from 'express';
-
 import userRouter from './userRoutes.js';
 import postRouter from './postRoutes.js';
 import baseRouter from './baseRoutes.js';
