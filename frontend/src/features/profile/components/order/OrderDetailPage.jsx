@@ -237,15 +237,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Payment Notice */}
-          <div className="bg-[#E6F0FF] border border-[#007BFF]/20 rounded-lg p-3 mt-4 flex items-start gap-2">
-            <span className="text-[#007BFF] flex-shrink-0">ℹ️</span>
-            <span className="text-sm text-[#005BB5]">
-              Vui lòng thanh toán{" "}
-              <span className="font-semibold">{money(order.total_amount)}</span> khi nhận hàng.
-            </span>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex gap-3 mt-6">
             <Button variant="outline" className="flex-1 h-11 border-[#007BFF] text-[#007BFF] hover:bg-[#E6F0FF]">

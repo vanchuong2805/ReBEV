@@ -14,9 +14,15 @@ export const posts = [
   { id: 301, user_id: 1, category_id: 1, title: 'YADEA G5 – pin 88%', description: 'Đã bảo dưỡng định kỳ', price: 16500000, base_id: 10, is_hidden: 0, create_at: '2025-09-18T16:00:00+07:00' },
   { id: 302, user_id: 1, category_id: 1, title: 'Pega Aura – 9.2k km', description: 'Ẩn để cập nhật hình ảnh', price: 9200000, base_id: 12, is_hidden: 1, create_at: '2025-09-23T08:10:00+07:00' },
   { id: 303, user_id: 1, category_id: 1, title: 'Xmen GT cũ – pin yếu', description: 'Xe cần thay pin, máy êm', price: 4800000, base_id: 12, is_hidden: 0, create_at: '2025-09-24T08:10:00+07:00' },
-  { id: 304, user_id: 2, category_id: 1, title: 'VinFast Vento – mới 3 tháng', description: 'Mới 90%, cần bán gấp', price: 28900000, base_id: 11, is_hidden: 0, create_at: '2025-09-30T09:00:00+07:00' },
+  { id: 304, user_id: 1, category_id: 1, title: 'VinFast Vento – mới 3 tháng', description: 'Mới 90%, cần bán gấp', price: 28900000, base_id: 11, is_hidden: 0, create_at: '2025-09-30T09:00:00+07:00' },
   { id: 401, user_id: 1, category_id: 1, title: 'Xe điện cũ không rõ nguồn gốc', description: 'Thiếu giấy tờ', price: 5000000, base_id: 12, is_hidden: 0, create_at: '2025-09-20T10:00:00+07:00' },
   { id: 501, user_id: 1, category_id: 2, title: 'Pin Lithium 48V 30Ah - huỷ đăng', description: 'Người bán đã huỷ tin này', price: 2900000, base_id: 13, is_hidden: 0, create_at: '2025-09-27T14:30:00+07:00' },
+  { id: 601, user_id: 2, category_id: 1, title: 'VinFast Feliz Ultra 2024 – pin mới thay, màu bạc ánh kim', description: 'Đời mới, chạy mượt, pin thay chính hãng tháng 9/2025', price: 22800000, base_id: 10, is_hidden: 0, create_at: '2025-10-01T10:20:00+07:00' },
+  { id: 602, user_id: 3, category_id: 1, title: 'VinFast Vento Premium – bản thể thao, màu xanh navy', description: 'Mới 3 tháng, còn bảo hành, xe như mới', price: 30900000, base_id: 11, is_hidden: 0, create_at: '2025-10-02T09:10:00+07:00' },
+  { id: 603, user_id: 4, category_id: 1, title: 'DatBike Weaver Lite 2024 – chạy 2.000km, pin 98%', description: 'Xe chính chủ, bảo dưỡng định kỳ tại hãng', price: 34800000, base_id: 11, is_hidden: 0, create_at: '2025-10-03T08:45:00+07:00' },
+  { id: 604, user_id: 5, category_id: 2, title: 'Pin LFP 60V 22Ah – hiệu năng cao, còn bảo hành 6 tháng', description: 'Pin mạnh, giữ điện tốt, dùng ít', price: 2400000, base_id: 12, is_hidden: 0, create_at: '2025-10-04T11:30:00+07:00' },
+  { id: 605, user_id: 6, category_id: 2, title: 'Pin CATL 72V 30Ah – chuẩn cao cấp, mới 95%', description: 'Pin CATL chính hãng, kiểm định đầy đủ', price: 3500000, base_id: 13, is_hidden: 0, create_at: '2025-10-05T14:10:00+07:00' },
+  { id: 606, user_id: 7, category_id: 1, title: 'YADEA G5 Limited – bản màu đỏ đô, pin 90%', description: 'Bản giới hạn, pin khoẻ, xe mới đi hơn 1.000km', price: 17200000, base_id: 13, is_hidden: 0, create_at: '2025-10-06T09:55:00+07:00' },
 ];
 
 // post_media
@@ -42,6 +48,12 @@ export const post_status = [
   { post_id: 304, status: 'approved', description: 'Đang bán', create_at: '2025-09-30T09:10:00+07:00' },
   { post_id: 401, status: 'pending', description: 'Chờ duyệt', create_at: '2025-09-20T10:05:00+07:00' },
   { post_id: 501, status: 'cancelled', description: 'Người bán huỷ tin trước khi duyệt', create_at: '2025-09-27T15:00:00+07:00' },
+   { post_id: 601, status: 'approved', description: 'Đang bán', create_at: '2025-10-01T11:00:00+07:00' },
+  { post_id: 602, status: 'approved', description: 'Đang bán', create_at: '2025-10-02T09:30:00+07:00' },
+  { post_id: 603, status: 'approved', description: 'Đang bán', create_at: '2025-10-03T09:00:00+07:00' },
+  { post_id: 604, status: 'sold', description: 'Đã bán', create_at: '2025-10-04T12:00:00+07:00' },
+  { post_id: 605, status: 'approved', description: 'Đang bán', create_at: '2025-10-05T14:30:00+07:00' },
+  { post_id: 606, status: 'sold', description: 'Đã bán', create_at: '2025-10-06T10:10:00+07:00' },
 ];
 
 // category
@@ -114,6 +126,29 @@ export const post_detail = [
 
   { post_id: 501, variation_id: 4, custom_value: '48' },
   { post_id: 501, variation_id: 5, custom_value: '30' },
+    // ===== Yêu thích mới =====
+  { post_id: 601, variation_id: 1, custom_value: '1500' },
+  { post_id: 601, variation_id: 2, custom_value: '98' },
+  { post_id: 601, variation_id: 3, custom_value: '59X3-999.01' },
+
+  { post_id: 602, variation_id: 1, custom_value: '1200' },
+  { post_id: 602, variation_id: 2, custom_value: '96' },
+  { post_id: 602, variation_id: 3, custom_value: '59Y3-888.02' },
+
+  { post_id: 603, variation_id: 1, custom_value: '2000' },
+  { post_id: 603, variation_id: 2, custom_value: '98' },
+  { post_id: 603, variation_id: 3, custom_value: '59Z3-777.03' },
+
+  { post_id: 604, variation_id: 4, custom_value: '60' },
+  { post_id: 604, variation_id: 5, custom_value: '22' },
+
+  { post_id: 605, variation_id: 4, custom_value: '72' },
+  { post_id: 605, variation_id: 5, custom_value: '30' },
+
+  { post_id: 606, variation_id: 1, custom_value: '1100' },
+  { post_id: 606, variation_id: 2, custom_value: '90' },
+  { post_id: 606, variation_id: 3, custom_value: '59T3-666.04' },
+
 ];
 
 // users (người bán)

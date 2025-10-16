@@ -4,18 +4,18 @@
 // post
 export const posts = [
   { id: 101, user_id: 1, category_id: 1, title: 'VinFast Klara S 2021 - pin 85%', description: 'Xe giữ gìn, chính chủ, bao test', price: 14500000, base_id: 10, is_hidden: 0, create_at: '2025-09-20T09:15:00+07:00' },
-  { id: 102, user_id: 2, category_id: 1, title: 'DatBike Weaver++ 2023', description: 'Chạy 6.5k km, bảo dưỡng đầy đủ', price: 36500000, base_id: 11, is_hidden: 0, create_at: '2025-09-25T18:40:00+07:00' },
-  { id: 103, user_id: 3, category_id: 1, title: 'VinFast Feliz 2022 – mới thay pin', description: 'Xe ít đi, bảo hành chính hãng', price: 21500000, base_id: 10, is_hidden: 0, create_at: '2025-09-28T09:50:00+07:00' },
-  { id: 104, user_id: 4, category_id: 1, title: 'Gogo E-Scooter Classic', description: 'Xe nữ đi, pin 95%, nhẹ và êm', price: 17800000, base_id: 11, is_hidden: 0, create_at: '2025-09-27T14:30:00+07:00' },
-  { id: 105, user_id: 5, category_id: 1, title: 'YADEA Xmen Neo 2022', description: 'Mới bảo dưỡng, pin tốt, xe đẹp', price: 13500000, base_id: 11, is_hidden: 0, create_at: '2025-09-21T17:10:00+07:00' },
-  { id: 201, user_id: 3, category_id: 2, title: 'Pin LFP 60V 20Ah (like-new)', description: 'Dùng ít, pin khoẻ', price: 2500000, base_id: 10, is_hidden: 0, create_at: '2025-09-26T10:02:00+07:00' },
-  { id: 202, user_id: 6, category_id: 2, title: 'Pin CATL 72V 25Ah', description: 'Chuẩn zin, test thực tế trước khi bán', price: 3200000, base_id: 12, is_hidden: 0, create_at: '2025-09-29T11:15:00+07:00' },
-  { id: 203, user_id: 6, category_id: 2, title: 'Pin LFP 48V 15Ah (còn 90%)', description: 'Tặng sạc nhanh', price: 1800000, base_id: 12, is_hidden: 0, create_at: '2025-09-22T09:10:00+07:00' },
+  { id: 102, user_id: 1, category_id: 1, title: 'DatBike Weaver++ 2023', description: 'Chạy 6.5k km, bảo dưỡng đầy đủ', price: 36500000, base_id: 11, is_hidden: 0, create_at: '2025-09-25T18:40:00+07:00' },
+  { id: 103, user_id: 1, category_id: 1, title: 'VinFast Feliz 2022 – mới thay pin', description: 'Xe ít đi, bảo hành chính hãng', price: 21500000, base_id: 10, is_hidden: 0, create_at: '2025-09-28T09:50:00+07:00' },
+  { id: 104, user_id: 1, category_id: 1, title: 'Gogo E-Scooter Classic', description: 'Xe nữ đi, pin 95%, nhẹ và êm', price: 17800000, base_id: 11, is_hidden: 0, create_at: '2025-09-27T14:30:00+07:00' },
+  { id: 105, user_id: 1, category_id: 1, title: 'YADEA Xmen Neo 2022', description: 'Mới bảo dưỡng, pin tốt, xe đẹp', price: 13500000, base_id: 11, is_hidden: 0, create_at: '2025-09-21T17:10:00+07:00' },
+  { id: 201, user_id: 1, category_id: 2, title: 'Pin LFP 60V 20Ah (like-new)', description: 'Dùng ít, pin khoẻ', price: 2500000, base_id: 10, is_hidden: 0, create_at: '2025-09-26T10:02:00+07:00' },
+  { id: 202, user_id: 1, category_id: 2, title: 'Pin CATL 72V 25Ah', description: 'Chuẩn zin, test thực tế trước khi bán', price: 3200000, base_id: 12, is_hidden: 0, create_at: '2025-09-29T11:15:00+07:00' },
+  { id: 203, user_id: 1, category_id: 2, title: 'Pin LFP 48V 15Ah (còn 90%)', description: 'Tặng sạc nhanh', price: 1800000, base_id: 12, is_hidden: 0, create_at: '2025-09-22T09:10:00+07:00' },
   { id: 301, user_id: 1, category_id: 1, title: 'YADEA G5 – pin 88%', description: 'Đã bảo dưỡng định kỳ', price: 16500000, base_id: 10, is_hidden: 0, create_at: '2025-09-18T16:00:00+07:00' },
-  { id: 302, user_id: 2, category_id: 1, title: 'Pega Aura – 9.2k km', description: 'Ẩn để cập nhật hình ảnh', price: 9200000, base_id: 12, is_hidden: 1, create_at: '2025-09-23T08:10:00+07:00' },
-  { id: 303, user_id: 5, category_id: 1, title: 'Xmen GT cũ – pin yếu', description: 'Xe cần thay pin, máy êm', price: 4800000, base_id: 12, is_hidden: 0, create_at: '2025-09-24T08:10:00+07:00' },
-  { id: 304, user_id: 5, category_id: 1, title: 'VinFast Vento – mới 3 tháng', description: 'Mới 90%, cần bán gấp', price: 28900000, base_id: 11, is_hidden: 0, create_at: '2025-09-30T09:00:00+07:00' },
-  { id: 401, user_id: 4, category_id: 1, title: 'Xe điện cũ không rõ nguồn gốc', description: 'Thiếu giấy tờ', price: 5000000, base_id: 12, is_hidden: 0, create_at: '2025-09-20T10:00:00+07:00' },
+  { id: 302, user_id: 1, category_id: 1, title: 'Pega Aura – 9.2k km', description: 'Ẩn để cập nhật hình ảnh', price: 9200000, base_id: 12, is_hidden: 1, create_at: '2025-09-23T08:10:00+07:00' },
+  { id: 303, user_id: 1, category_id: 1, title: 'Xmen GT cũ – pin yếu', description: 'Xe cần thay pin, máy êm', price: 4800000, base_id: 12, is_hidden: 0, create_at: '2025-09-24T08:10:00+07:00' },
+  { id: 304, user_id: 1, category_id: 1, title: 'VinFast Vento – mới 3 tháng', description: 'Mới 90%, cần bán gấp', price: 28900000, base_id: 11, is_hidden: 0, create_at: '2025-09-30T09:00:00+07:00' },
+  { id: 401, user_id: 1, category_id: 1, title: 'Xe điện cũ không rõ nguồn gốc', description: 'Thiếu giấy tờ', price: 5000000, base_id: 12, is_hidden: 0, create_at: '2025-09-20T10:00:00+07:00' },
   // ✅ thêm tin huỷ
   { id: 501, user_id: 7, category_id: 2, title: 'Pin Lithium 48V 30Ah - huỷ đăng', description: 'Người bán đã huỷ tin này', price: 2900000, base_id: 13, is_hidden: 0, create_at: '2025-09-27T14:30:00+07:00' }
 ]
