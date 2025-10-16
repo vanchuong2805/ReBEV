@@ -14,8 +14,13 @@ import RefundedPurchaseCard from '@/features/profile/components/purchases/Refund
 
 // dữ liệu giả (đảm bảo file MockPurchases.js export const mockPurchases = [...])
 import { mockPurchases } from '@/features/profile/components/purchases/MockPurchases'
+import { useSearchParams } from 'react-router-dom'
 
 const PurchasesSection = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const type = searchParams.get("type") || "all"
+
+  const handleTabChange = (value) => setSearchParams({ type: value })
   const getStatus = (o) => (o?.status_vi || o?.status || '').trim()
   const all = Array.isArray(mockPurchases) ? mockPurchases : []
 
@@ -28,8 +33,9 @@ const PurchasesSection = () => {
   const total = all.length
   const navigate = useNavigate()
   const handleView = (purchase) => {
-     console.log('Đi đến:', purchase.id)
-    navigate(`/profile/purchases/${purchase.id}`)
+     navigate(`/profile/purchases/${purchase.id}`, {
+      state: { from: `/profile/purchases?type=${type}` },
+    })
   }
 
   return (
@@ -48,8 +54,8 @@ const PurchasesSection = () => {
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-7">
+        <Tabs value={type} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
             <TabsTrigger value="pending" className="text-sm">Chờ xác nhận ({pendingOrders.length})</TabsTrigger>
             <TabsTrigger value="processing" className="text-sm">Đang xử lý ({processingOrders.length})</TabsTrigger>

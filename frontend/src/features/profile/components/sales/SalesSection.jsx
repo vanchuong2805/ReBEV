@@ -11,22 +11,27 @@ import SuccessSaleCard from '@/features/profile/components/sales/SuccessSaleCard
 import CanceledSaleCard from '@/features/profile/components/sales/CanceledSaleCard'
 
 import { mockSales } from '@/features/profile/components/sales/MockSales'
+import { useSearchParams } from 'react-router-dom'
 
 const SalesSection = () => {
   const getStatus = (s) => (s?.status_vi || s?.status || '').trim()
   const all = Array.isArray(mockSales) ? mockSales : []
 
-  const pending    = all.filter(x => getStatus(x) === 'Chờ xác nhận')
+  const pending = all.filter(x => getStatus(x) === 'Chờ xác nhận')
   const processing = all.filter(x => getStatus(x) === 'Đang xử lý')
-  const shipping   = all.filter(x => getStatus(x) === 'Đang vận chuyển')
-  const success    = all.filter(x => getStatus(x) === 'Hoàn tất')
-  const canceled   = all.filter(x => getStatus(x) === 'Đã huỷ')
+  const shipping = all.filter(x => getStatus(x) === 'Đang vận chuyển')
+  const success = all.filter(x => getStatus(x) === 'Hoàn tất')
+  const canceled = all.filter(x => getStatus(x) === 'Đã huỷ')
 
   const total = all.length
+  const [searchParams, setSearchParams] = useSearchParams()
+  const type = searchParams.get("type") || "all"
+  const handleTabChange = (value) => setSearchParams({ type: value })
   const navigate = useNavigate()
   const handleView = (sale) => {
-     console.log('Đi đến:', sale.id)
-    navigate(`/profile/sale/${sale.id}`)
+    navigate(`/profile/sale/${sale.id}`, {
+      state: { from: `/profile/sales?type=${type}` },
+    })
   }
 
   return (
@@ -45,7 +50,7 @@ const SalesSection = () => {
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs value={type} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
             <TabsTrigger value="pending" className="text-sm">Chờ xác nhận ({pending.length})</TabsTrigger>
@@ -59,11 +64,11 @@ const SalesSection = () => {
             {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có đơn bán</div>}
             {all.map(o => {
               const s = getStatus(o)
-              if (s === 'Chờ xác nhận')    return <PendingSaleCard    key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đang xử lý')      return <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đang vận chuyển') return <ShippingSaleCard   key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Hoàn tất')        return <SuccessSaleCard    key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đã huỷ')          return <CanceledSaleCard   key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Chờ xác nhận') return <PendingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đang xử lý') return <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đang vận chuyển') return <ShippingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Hoàn tất') return <SuccessSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đã huỷ') return <CanceledSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
               return null
             })}
           </TabsContent>
