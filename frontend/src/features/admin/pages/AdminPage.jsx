@@ -1,60 +1,48 @@
-import React, { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import BackGround from "@/features/admin/components/BackGround";
-import AdminSidebar from "../components/AdminSidebar";
-import DoanhThu from "../components/DoanhThu";
-import HomeAdmim from "../components/AdminDashboard";
-import ManageUser from "../components/ManageUser";
+import { useState } from "react";
+import Sidebar from "../components/Sidebar";
+import ReportsStatistics from "./ReportsStatistics";
+import SystemFeesManagement from "./SystemFeesManagement";
+import TransactionManagement from "./TransactionManagement";
+import ListingManagement from "./ListingManagement";
+import UserManagement from "./UserManagement";
 
-function Home() {
-  return (
-    <>
-      <HomeAdmim />
-    </>
-  );
-}
-function Users() {
-  return <ManageUser />;
-}
-function Posts() {
-  return <h1 className="mb-3">Quản lý tin đăng</h1>;
-}
-function Deals() {
-  return <h1 className="mb-3">Quản lý giao dịch</h1>;
-}
-function Fees() {
-  return <h1 className="mb-3">Quản lý phí & hoa hồng</h1>;
-}
-function Reports() {
-  return <h1 className="mb-3">Thống kê & Báo cáo</h1>;
-}
-
-export default function Dashboard() {
-  const [active, setActive] = useState("home");
+const AdminPage = () => {
+  const [activeTab, setActiveTab] = useState("reports");
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const renderContent = () => {
-    switch (active) {
-      case "users":
-        return <Users />;
-      case "posts":
-        return <Posts />;
-      case "deals":
-        return <Deals />;
-      case "fees":
-        return <Fees />;
+    switch (activeTab) {
       case "reports":
-        return <Reports />;
+        return <ReportsStatistics />;
+      case "fees":
+        return <SystemFeesManagement />;
+      case "transactions":
+        return <TransactionManagement />;
+      case "listings":
+        return <ListingManagement />;
+      case "users":
+        return <UserManagement />;
       default:
-        return <Home />;
+        return <ReportsStatistics />;
     }
   };
 
   return (
-    <BackGround>
-      <div className="d-flex" style={{ minHeight: "100vh" }}>
-        <AdminSidebar active={active} onSelect={setActive} />
-        <main className="flex-grow-1 p-4">{renderContent()}</main>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-auto">
+        <main className="h-full">{renderContent()}</main>
       </div>
-    </BackGround>
+    </div>
   );
-}
+};
+
+export default AdminPage;
