@@ -12,6 +12,8 @@ import RejectedListingCard from './RejectedListingCard'
 import CanceledListingCard from './CanceledListingCard' // 🔹 thêm
 
 import { mockListings } from './MockListings'
+import { useSearchParams } from 'react-router-dom'
+
 
 const ListingsSection = () => {
   const getStatus = (l) => (l?.current_status || l?.status || '').trim()
@@ -29,10 +31,15 @@ const ListingsSection = () => {
    const handleViewDetail = (listing) => {
      console.log('Đi đến:', listing.id)
     navigate(`/marketplace/listing/${listing.id}`, {
-      state: { from: "/profile/listings" }
+      state: { from: `/profile/listings?type=${type}` }
     })
   }
+  const [searchParams, setSearchParams] = useSearchParams()
+  const type = searchParams.get("type") || "all"
 
+  const handleTabChange = (value) => {
+    setSearchParams({ type: value })
+  }
   return (
     <Card>
       <CardHeader>
@@ -49,7 +56,7 @@ const ListingsSection = () => {
       </CardHeader>
 
       <CardContent>
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs value={type} onValueChange={handleTabChange} className="w-full">
           {/* 🔹 Thêm 1 cột cho tab Tin huỷ (tổng 7 tab) */}
           <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
