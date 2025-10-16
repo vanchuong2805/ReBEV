@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Car } from 'lucide-react'
-
+import { useNavigate } from "react-router-dom"
 import ListingCard from './ListingCard'
 import PendingListingCard from './PendingListingCard'
 import SoldListingCard from './SoldListingCard'
@@ -25,6 +25,13 @@ const ListingsSection = () => {
   const canceledListings = all.filter(l => getStatus(l) === 'Tin huỷ') // ✅ thêm filter
 
   const total = all.length
+  const navigate = useNavigate()
+   const handleViewDetail = (listing) => {
+     console.log('Đi đến:', listing.id)
+    navigate(`/marketplace/listing/${listing.id}`, {
+      state: { from: "/profile/listings" }
+    })
+  }
 
   return (
     <Card>
@@ -57,19 +64,19 @@ const ListingsSection = () => {
           {/* === ALL === */}
           <TabsContent value="all" className="space-y-4">
             {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có tin đăng</div>}
-            {activeListings.map(l => <ListingCard key={`a-${l.id}`} listing={l} />)}
-            {pendingListings.map(l => <PendingListingCard key={`p-${l.id}`} listing={l} />)}
-            {soldListings.map(l => <SoldListingCard key={`s-${l.id}`} listing={l} />)}
-            {expiredListings.map(l => <ExpiredListingCard key={`e-${l.id}`} listing={l} />)}
-            {rejectedListings.map(l => <RejectedListingCard key={`r-${l.id}`} listing={l} />)}
-            {canceledListings.map(l => <CanceledListingCard key={`c-${l.id}`} listing={l} />)} {/* ✅ thêm */}
+            {activeListings.map(l => <ListingCard key={`a-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {pendingListings.map(l => <PendingListingCard key={`p-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {soldListings.map(l => <SoldListingCard key={`s-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {expiredListings.map(l => <ExpiredListingCard key={`e-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {rejectedListings.map(l => <RejectedListingCard key={`r-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {canceledListings.map(l => <CanceledListingCard key={`c-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
           </TabsContent>
 
           {/* === ACTIVE === */}
           <TabsContent value="active">
             <div className="space-y-4">
               {activeListings.length === 0 && <div className="text-gray-500">Không có tin đang bán</div>}
-              {activeListings.map(l => <ListingCard key={l.id} listing={l} />)}
+              {activeListings.map(l => <ListingCard key={l.id} listing={l} onView={handleViewDetail}/>)}
             </div>
           </TabsContent>
 
@@ -77,7 +84,7 @@ const ListingsSection = () => {
           <TabsContent value="pending">
             <div className="space-y-4">
               {pendingListings.length === 0 && <div className="text-gray-500">Không có tin chờ duyệt</div>}
-              {pendingListings.map(l => <PendingListingCard key={l.id} listing={l} />)}
+              {pendingListings.map(l => <PendingListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
             </div>
           </TabsContent>
 
@@ -85,7 +92,7 @@ const ListingsSection = () => {
           <TabsContent value="sold">
             <div className="space-y-4">
               {soldListings.length === 0 && <div className="text-gray-500">Không có tin đã bán</div>}
-              {soldListings.map(l => <SoldListingCard key={l.id} listing={l} />)}
+              {soldListings.map(l => <SoldListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
             </div>
           </TabsContent>
 
@@ -93,7 +100,7 @@ const ListingsSection = () => {
           <TabsContent value="expired">
             <div className="space-y-4">
               {expiredListings.length === 0 && <div className="text-gray-500">Không có tin tin ẩn</div>}
-              {expiredListings.map(l => <ExpiredListingCard key={l.id} listing={l} />)}
+              {expiredListings.map(l => <ExpiredListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
             </div>
           </TabsContent>
 
@@ -101,7 +108,7 @@ const ListingsSection = () => {
           <TabsContent value="rejected">
             <div className="space-y-4">
               {rejectedListings.length === 0 && <div className="text-gray-500">Không có tin đăng bị từ chối</div>}
-              {rejectedListings.map(l => <RejectedListingCard key={l.id} listing={l} />)}
+              {rejectedListings.map(l => <RejectedListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
             </div>
           </TabsContent>
 
@@ -109,7 +116,7 @@ const ListingsSection = () => {
           <TabsContent value="canceled">
             <div className="space-y-4">
               {canceledListings.length === 0 && <div className="text-gray-500">Không có tin đã huỷ</div>}
-              {canceledListings.map(l => <CanceledListingCard key={l.id} listing={l} />)}
+              {canceledListings.map(l => <CanceledListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
             </div>
           </TabsContent>
         </Tabs>

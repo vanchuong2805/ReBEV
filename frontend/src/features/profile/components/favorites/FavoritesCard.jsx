@@ -1,9 +1,11 @@
 // components/favorites/FavoriteCard.jsx
 import { Button } from '@/components/ui/button'
-import Frame, { formatVND } from '../listings/ListingCardFrame'
+import Frame, { formatVND } from '../CardFrame'
+import { useNavigate } from "react-router-dom"
 
 export default function FavoriteCard({ listing, onView, onRemove }) {
   const { title, category_name, thumbnail_url, price, current_status, created_at } = listing || {}
+  const navigate = useNavigate()
 
   return (
     <Frame
@@ -18,15 +20,14 @@ export default function FavoriteCard({ listing, onView, onRemove }) {
       badgeText={current_status || 'Đang bán'}
       note="Tin bạn đã quan tâm"
       actions={[
-        <Button
-          key="view"
-          size="lg"
+        <Button size="lg"
           variant="outline"
           className="h-10 w-full"
-          onClick={() => onView?.(listing)}
-        >
-          Xem chi tiết
-        </Button>,
+          onClick={() =>
+            navigate(`/marketplace/listing/${listing.post_id}`, {
+              state: { from: `/profile/favorites` }
+            })
+          }>Chi tiết</Button>,
         <Button
           key="remove"
           size="lg"

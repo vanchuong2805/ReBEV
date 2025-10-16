@@ -7,10 +7,10 @@
 export const favorite_post = [
   { user_id: 1, post_id: 103 }, // VinFast Feliz
   { user_id: 1, post_id: 304 }, // VinFast Vento
-  { user_id: 2, post_id: 101 }, // Klara S
-  { user_id: 2, post_id: 203 }, // Pin LFP 48V 15Ah
-  { user_id: 3, post_id: 202 }, // Pin CATL
-  { user_id: 4, post_id: 301 }  // YADEA G5
+  { user_id: 1, post_id: 101 }, // Klara S
+  { user_id: 1, post_id: 203 }, // Pin LFP 48V 15Ah
+  { user_id: 1, post_id: 202 }, // Pin CATL
+  { user_id: 1, post_id: 301 }  // YADEA G5
 ]
 
 // ✅ import danh sách bài đăng từ MockListings (để hiển thị chi tiết)

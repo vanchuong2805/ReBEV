@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Car } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 import PendingSaleCard from '@/features/profile/components/sales/PendingSaleCard'
 import ProcessingSaleCard from '@/features/profile/components/sales/ProcessingSaleCard'
@@ -22,6 +23,11 @@ const SalesSection = () => {
   const canceled   = all.filter(x => getStatus(x) === 'Đã huỷ')
 
   const total = all.length
+  const navigate = useNavigate()
+  const handleView = (sale) => {
+     console.log('Đi đến:', sale.id)
+    navigate(`/profile/sale/${sale.id}`)
+  }
 
   return (
     <Card>
@@ -53,38 +59,38 @@ const SalesSection = () => {
             {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có đơn bán</div>}
             {all.map(o => {
               const s = getStatus(o)
-              if (s === 'Chờ xác nhận')    return <PendingSaleCard    key={o.id} sale={o} />
-              if (s === 'Đang xử lý')      return <ProcessingSaleCard key={o.id} sale={o} />
-              if (s === 'Đang vận chuyển') return <ShippingSaleCard   key={o.id} sale={o} />
-              if (s === 'Hoàn tất')        return <SuccessSaleCard    key={o.id} sale={o} />
-              if (s === 'Đã huỷ')          return <CanceledSaleCard   key={o.id} sale={o} />
+              if (s === 'Chờ xác nhận')    return <PendingSaleCard    key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đang xử lý')      return <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đang vận chuyển') return <ShippingSaleCard   key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Hoàn tất')        return <SuccessSaleCard    key={o.id} sale={o} onView={() => handleView(o)} />
+              if (s === 'Đã huỷ')          return <CanceledSaleCard   key={o.id} sale={o} onView={() => handleView(o)} />
               return null
             })}
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
             {pending.length === 0 && <div className="text-gray-500">Không có đơn chờ xác nhận</div>}
-            {pending.map(o => <PendingSaleCard key={o.id} sale={o} />)}
+            {pending.map(o => <PendingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
           </TabsContent>
 
           <TabsContent value="processing" className="space-y-4">
             {processing.length === 0 && <div className="text-gray-500">Không có đơn đang xử lý</div>}
-            {processing.map(o => <ProcessingSaleCard key={o.id} sale={o} />)}
+            {processing.map(o => <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
           </TabsContent>
 
           <TabsContent value="shipping" className="space-y-4">
             {shipping.length === 0 && <div className="text-gray-500">Không có đơn đang vận chuyển</div>}
-            {shipping.map(o => <ShippingSaleCard key={o.id} sale={o} />)}
+            {shipping.map(o => <ShippingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
           </TabsContent>
 
           <TabsContent value="success" className="space-y-4">
             {success.length === 0 && <div className="text-gray-500">Không có đơn hoàn tất</div>}
-            {success.map(o => <SuccessSaleCard key={o.id} sale={o} />)}
+            {success.map(o => <SuccessSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
           </TabsContent>
 
           <TabsContent value="canceled" className="space-y-4">
             {canceled.length === 0 && <div className="text-gray-500">Không có đơn đã huỷ</div>}
-            {canceled.map(o => <CanceledSaleCard key={o.id} sale={o} />)}
+            {canceled.map(o => <CanceledSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
           </TabsContent>
         </Tabs>
       </CardContent>

@@ -58,13 +58,16 @@ export default function ListingCardFrame({
             <span className="text-2xl font-bold text-gray-800">{formatVND(price)}</span>
 
             {/* nhóm nút: luôn căn phải, dù 2 hay 3 nút */}
-            <div className="flex justify-end gap-2 shrink-0 ml-auto">
-              {(actions || []).slice(0, 3).map((btn, i) => (
-                <div key={i} className="min-w-[110px]">
-                  {btn || <span />}
+            <div className="flex justify-end gap-2 ml-auto w-full max-w-[360px]">
+              {/* Luôn tạo 3 slot cố định, từ phải sang trái */}
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="w-[120px] flex justify-end">
+                  {actions?.[i] || <span className="invisible">placeholder</span>}
                 </div>
-              ))}
+              )).reverse()}
             </div>
+
+
 
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import Frame from './ListingCardFrame'
+import Frame from '../CardFrame'
 
 export default function CanceledListingCard({ listing, onView, onRepublish }) {
   return (
@@ -10,9 +10,10 @@ export default function CanceledListingCard({ listing, onView, onRepublish }) {
       badgeText="Tin huỷ"
       note="Bài đăng đã bị huỷ và không còn hiển thị trên sàn."
       actions={[
-        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onView?.(listing)}>
-          Xem chi tiết
-        </Button>,
+        <Button size="lg"
+          variant="outline"
+          className="h-10 w-full"
+          onClick={() => onView?.(listing)}>Chi tiết</Button>,
         <Button size="lg" className="h-10 w-full" onClick={() => onRepublish?.(listing)}>
           Đăng lại
         </Button>,
