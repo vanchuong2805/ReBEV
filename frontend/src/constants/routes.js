@@ -1,3 +1,5 @@
+
+
 export const ROUTES = {
   HOME: "/",
   PROFILE: "/profile",
@@ -13,3 +15,4 @@ export const ROUTES = {
   },
   NOT_FOUND: "*",
 };
+

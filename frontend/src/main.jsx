@@ -4,6 +4,7 @@ import "./assets/index.css";
 import client from "../client.js";
 import { ApolloProvider } from "@apollo/client/react";
 import AppRoutes from "./app/AppRoutes.jsx";
+import "./assets/index.css"
 import { BrowserRouter } from "react-router";
 import AuthOverlay from "@/features/auth/AuthOverlay.jsx";
 import { AuthDialogProvider } from "@/contexts/AuthDialogContext";
@@ -25,3 +26,4 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </React.StrictMode>
 );
+

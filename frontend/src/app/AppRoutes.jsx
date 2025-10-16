@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
+
 import { ROUTES } from "../constants/routes.js";
 import Home from "@/features/home/pages/Home";
 import ProfilePage from "@/features/profile/pages/ProfilePage.jsx";

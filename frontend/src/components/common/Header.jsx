@@ -1,130 +1,539 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import axios from "axios"
+import { useAuthDialog } from "@/contexts/AuthDialogContext"
 import {
-  Search, Bell, ShoppingCart, User, Menu, X, ChevronDown,
-  Battery, Car, PlugZap, ShieldCheck,
-  Scale, Heart, Headset
+  Search,
+  ShoppingCart,
+  Menu,
+  ChevronRight,
+  Battery,
+  Zap,
+  MapPin,
+  Factory,
+  Calendar,
+  Globe,
+  Gauge,
+  Power,
+  Clock,
+  Route,
+  ChevronDown,
 } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
+import { Link } from "react-router"
 
+// ========== GHN CONFIG ==========
+const GHN_API = import.meta.env.VITE_GHN_API
+const TOKEN = import.meta.env.VITE_GHN_TOKEN
 
-const CATEGORIES = [
-  { icon: <Car size={18} />, label: "Xe điện đã qua sử dụng", href: "/cars" },
-  { icon: <Battery size={18} />, label: "Pin EV đã qua sử dụng", href: "/batteries" },
-  { icon: <PlugZap size={18} />, label: "Sạc & Phụ kiện", href: "/accessories" },
-  { icon: <ShieldCheck size={18} />, label: "Kiểm định / Bảo hành", href: "/inspection" },
-  { icon: <Scale size={18} />, label: "So sánh", href: "/compare" },
-  { icon: <Heart size={18} />, label: "Yêu thích", href: "/favorites" },
-  { icon: <Headset size={18} />, label: "Hỗ trợ / Khiếu nại", href: "/support" },
-]
-
+// ===== Header Component =====
 const Header = ({ user = 0 }) => {
-  const [menuOpen, setMenuOpen] = useState(false)
+  const { openLogin, openRegister } = useAuthDialog()
 
+  // ====== LOCATION STATES ======
+  const [provinces, setProvinces] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [wards, setWards] = useState([])
+
+  const [selectedProvince, setSelectedProvince] = useState("")
+  const [selectedDistrict, setSelectedDistrict] = useState("")
+  const [selectedWard, setSelectedWard] = useState("")
+
+  const [provLoading, setProvLoading] = useState(false)
+  const [districtLoading, setDistrictLoading] = useState(false)
+  const [wardLoading, setWardLoading] = useState(false)
+  const [provError, setProvError] = useState(null)
+  const [wardError, setWardError] = useState(null)
+
+  // ======= FETCH PROVINCES =======
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      setProvLoading(true)
+      try {
+        const res = await axios.get(`${GHN_API}/master-data/province`, {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        })
+        setProvinces(
+          res.data.data.filter(
+            p => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
+          )
+        )
+      } catch (err) {
+        console.error("❌ Error loading provinces:", err)
+        setProvError(err)
+      } finally {
+        setProvLoading(false)
+      }
+    }
+    fetchProvinces()
+  }, [])
+
+  // ======= FETCH DISTRICTS =======
+  const handleProvinceChange = async (e) => {
+    const id = e.target.value
+    setSelectedProvince(id)
+    setSelectedDistrict("")
+    setSelectedWard("")
+    setDistricts([])
+    setWards([])
+
+    if (!id) return
+    try {
+      setDistrictLoading(true)
+      const res = await axios.post(
+        `${GHN_API}/master-data/district`,
+        { province_id: Number(id) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        }
+      )
+      setDistricts(res.data.data)
+    } catch (err) {
+      console.error("❌ Error loading districts:", err)
+    } finally {
+      setDistrictLoading(false)
+    }
+  }
+
+  // ======= FETCH WARDS =======
+  const handleDistrictChange = async (e) => {
+    const id = e.target.value
+    setSelectedDistrict(id)
+    setSelectedWard("")
+    setWards([])
+
+    if (!id) return
+    try {
+      setWardLoading(true)
+      const res = await axios.post(
+        `${GHN_API}/master-data/ward`,
+        { district_id: Number(id) },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Token: TOKEN,
+          },
+        }
+      )
+      setWards(res.data.data)
+    } catch (err) {
+      console.error("❌ Error loading wards:", err)
+      setWardError(err)
+    } finally {
+      setWardLoading(false)
+    }
+  }
+
+  // ===== VARIATIONS (Giữ nguyên phần này) =====
+  const [groups, setGroups] = useState({})
+  const [loadingVariations, setLoadingVariations] = useState(true)
+
+  useEffect(() => {
+    const fetchVariations = async () => {
+      try {
+        const res = await axios.get("https://rebev.onrender.com/api/variationValues")
+        const roots = res.data.filter((item) => item.parent_id === null)
+
+        const grouped = roots.reduce((acc, item) => {
+          if (!acc[item.variation_id]) acc[item.variation_id] = []
+          acc[item.variation_id].push(item)
+          return acc
+        }, {})
+
+        setGroups({
+          xe: {
+            "Thương hiệu": { icon: <Factory size={14} />, data: grouped[1] },
+            "Công suất (W)": { icon: <Power size={14} />, data: grouped[3] },
+
+            "Xuất xứ": { icon: <Globe size={14} />, data: grouped[6] },
+          },
+          pin: {
+            "Loại pin": { icon: <Battery size={14} />, data: grouped[8] },
+            "Dung lượng (Ah)": { icon: <Gauge size={14} />, data: grouped[9] },
+            "Điện áp (V)": { icon: <Zap size={14} />, data: grouped[10] },
+            "Thời gian sạc": { icon: <Clock size={14} />, data: grouped[11] },
+            "Quãng đường (km)": { icon: <Route size={14} />, data: grouped[12] },
+            "Tình trạng pin (%)": { icon: <Battery size={14} />, data: grouped[14] },
+            "Hãng pin": { icon: <Factory size={14} />, data: grouped[15] },
+          },
+        })
+      } catch (err) {
+        console.error("❌ Lỗi khi tải variationValues:", err)
+      } finally {
+        setLoadingVariations(false)
+      }
+    }
+    fetchVariations()
+  }, [])
+
+  // ======== UI ========
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#007BFF]">
-      {/* Logo */}
-      <div className="container pl-0 pr-4 md:pr-6 lg:pr-8 flex h-16 items-center justify-between">
+      <div className="container px-4 mx-auto lg:px-6">
+        <div className="flex items-center justify-between gap-4 py-3">
 
-        <a className="flex items-center space-x-2" href="/">
-          <div className="flex items-center space-x-1">
-            <span className="bg-white text-[#007BFF] px-2 py-1 rounded font-bold text-lg">
-              Re
-            </span>
-            <span className="text-white font-bold text-lg">BEV</span>
-          </div>
-        </a>
+          {/* ===== Logo + Danh mục ===== */}
+          <div className="flex items-center gap-3">
+            <Link className="flex items-center gap-1.5" to="/">
+              <div className="bg-white px-3 py-1.5 rounded-lg shadow-md">
+                <span className="text-[#007BFF] font-bold text-xl">Re</span>
+              </div>
+              <span className="text-xl font-bold text-white">BEV</span>
+            </Link>
 
-        {/* Nút Danh mục */}
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            className="mr-2 px-2 text-base hover:bg-white/10 focus-visible:ring-0 text-white"
-            onClick={() => setMenuOpen(true)}
-          >
-            <Menu className="h-6 w-6" />
-            <span className="ml-2 hidden sm:inline font-medium">Danh mục</span>
-          </Button>
-        </div>
-
-        {/* Search */}
-        <div className="flex flex-1 items-center justify-center px-4">
-          <div className="relative w-full sm:w-[300px] md:w-[420px]">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Tìm xe/pin, hãng, dung lượng, năm…"
-              className="pl-8 focus-visible:ring-white bg-white"
-            />
-          </div>
-        </div>
-
-        {/* Actions */}
-        {user === 1 ? (
-          <nav className="flex items-center space-x-2">
-            <Button variant="ghost" size="sm" className="relative text-white hover:bg-white/10">
-              <Bell className="h-5 w-5" />
-              <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 text-white">3</Badge>
-            </Button>
-
+            {/* Dropdown Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 h-auto px-2 py-1 text-white hover:bg-white/10">
-                  <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-semibold text-sm">PT</div>
-                  <span className="hidden sm:inline">USER</span>
-                  <ChevronDown className="h-4 w-4" />
+                <Button
+                  variant="ghost"
+                  className="h-12 px-5 flex items-center bg-[#339CFF] text-white rounded-md hover:bg-[#68b1ff] transition-all shadow-sm"
+                >
+                  <Menu className="w-6 h-6" />
+                  <span className="hidden ml-2 font-medium lg:inline">
+                    Danh mục
+                  </span>
+                  <ChevronDown className="w-5 h-5 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Tài khoản</DropdownMenuItem>
-                <DropdownMenuItem>Tin đăng của tôi</DropdownMenuItem>
-                <DropdownMenuItem>Yêu thích</DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600">Đăng xuất</DropdownMenuItem>
+
+              <DropdownMenuContent
+                align="start"
+                alignOffset={-102}
+                sideOffset={15}
+                className="relative w-72 p-2 bg-white rounded-2xl border border-gray-100 shadow-2xl z-[9999]"
+              >
+                {/* === Xe điện cũ === */}
+                {/* === Xe điện cũ === */}
+                <HoverCard openDelay={80} closeDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                        <Zap size={18} className="text-[#007BFF]" />
+                        Xe máy điện cũ
+                      </span>
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent
+                    side="right"
+                    align="start"
+                    sideOffset={15}
+                    alignOffset={-9}
+                    className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
+                  >
+                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                      Bộ lọc xe điện
+                    </h3>
+
+                    {loadingVariations ? (
+                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                    ) : (
+                      <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
+                        {Object.entries(groups.xe).map(([name, group]) =>
+                          group.data ? (
+                            <div key={name}>
+                              <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
+                                {group.icon} {name}
+                              </p>
+                              <div className="flex flex-col gap-1">
+                                {group.data.map((item) => (
+                                  <Link
+                                    key={item.id}
+                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
+                                  >
+                                    {item.value}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
+
+                {/* === Pin EV cũ === */}
+                <HoverCard openDelay={80} closeDelay={120}>
+                  <HoverCardTrigger asChild>
+                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                        <Battery size={18} className="text-[#007BFF]" />
+                        Pin EV cũ
+                      </span>
+                      <ChevronRight size={16} className="text-gray-400" />
+                    </div>
+                  </HoverCardTrigger>
+
+                  <HoverCardContent
+                    side="right"
+                    align="start"
+                    sideOffset={15}
+                    alignOffset={-49}
+                    className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
+                  >
+                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                      Bộ lọc pin điện
+                    </h3>
+
+                    {loadingVariations ? (
+                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                    ) : (
+                      <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
+                        {Object.entries(groups.pin).map(([name, group]) =>
+                          group.data ? (
+                            <div key={name}>
+                              <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
+                                {group.icon} {name}
+                              </p>
+                              <div className="flex flex-col gap-1">
+                                {group.data.map((item) => (
+                                  <Link
+                                    key={item.id}
+                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
+                                  >
+                                    {item.value}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </HoverCardContent>
+                </HoverCard>
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
 
-            <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold">Đăng tin</Button>
-          </nav>
-        ) : (
-          <nav className="flex items-center space-x-2">
-            <Button asChild variant="outline" className="bg-white/10 text-white border-white/30 hover:bg-white/20">
-              <a href="/login">Đăng nhập</a>
-            </Button>
-            <Button asChild className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold">
-              <a href="/register">Đăng ký</a>
-            </Button>
-          </nav>
-        )}
-      </div>
+          {/* ===== Search + Location (phần này giữ nguyên, chỉ đổi lấy GHN API) ===== */}
+          <div className="flex-1 max-w-3xl mx-4">
+            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white rounded-xl shadow-md">
+              <div className="relative flex-1">
+                <Search className="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
+                <Input
+                  type="search"
+                  placeholder="Tìm xe điện, pin..."
+                  className="h-12 pl-10 pr-4 text-gray-700 border-0 rounded-md focus-visible:ring-0 placeholder:text-gray-400"
+                />
+              </div>
 
-      {/* Sidebar Danh mục */}
-      {menuOpen && (
-        <div className="fixed inset-0 z-[60]">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
-          <div className="absolute left-0 top-0 h-full w-80 bg-white shadow-xl p-4 overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-[#343A40]">Danh mục</h2>
-              <Button variant="ghost" onClick={() => setMenuOpen(false)}>
-                <X className="h-5 w-5" />
+              {/* Dropdown chọn tỉnh / quận / xã */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center h-10 gap-2 px-4 border rounded-md shadow-sm hover:bg-gray-50"
+                    disabled={provLoading}
+                  >
+                    <MapPin className="h-4 w-4 text-[#007BFF]" />
+                    <span className="font-medium text-gray-700">
+                      {selectedProvince
+                        ? provinces.find((p) => p.ProvinceID === Number(selectedProvince))?.ProvinceName
+                        : provLoading
+                          ? "Đang tải khu vực..."
+                          : "Chọn khu vực"}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  align="end"
+                  className="p-4 space-y-4 rounded-lg shadow-xl w-80"
+                >
+                  <h3 className="text-base font-semibold text-gray-800">
+                    Chọn khu vực
+                  </h3>
+
+                  {provError && (
+                    <div className="p-2 text-sm text-red-600 rounded bg-red-50">
+                      Lỗi tải tỉnh: {provError.message}
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {/* Tỉnh */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
+                        Tỉnh/Thành *
+                      </label>
+                      <select
+                        value={selectedProvince}
+                        onChange={handleProvinceChange}
+                        disabled={provLoading}
+                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                      >
+                        <option value="">
+                          {provLoading ? "Đang tải..." : "-- Chọn tỉnh --"}
+                        </option>
+                        {provinces.map((p) => (
+                          <option key={p.ProvinceID} value={p.ProvinceID}>
+                            {p.ProvinceName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Quận/Huyện */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
+                        Quận/Huyện *
+                      </label>
+                      <select
+                        value={selectedDistrict}
+                        onChange={handleDistrictChange}
+                        disabled={!selectedProvince || districtLoading}
+                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                      >
+                        <option value="">
+                          {!selectedProvince
+                            ? "Chọn tỉnh trước"
+                            : districtLoading
+                              ? "Đang tải..."
+                              : "-- Chọn quận --"}
+                        </option>
+                        {districts.map((d) => (
+                          <option key={d.DistrictID} value={d.DistrictID}>
+                            {d.DistrictName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Xã/Phường */}
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
+                        Xã/Phường *
+                      </label>
+                      <select
+                        value={selectedWard}
+                        onChange={(e) => setSelectedWard(e.target.value)}
+                        disabled={!selectedDistrict || wardLoading}
+                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                      >
+                        <option value="">
+                          {!selectedDistrict
+                            ? "Chọn quận trước"
+                            : wardLoading
+                              ? "Đang tải..."
+                              : "-- Chọn xã --"}
+                        </option>
+                        {wards.map((w) => (
+                          <option key={w.WardCode} value={w.WardCode}>
+                            {w.WardName}
+                          </option>
+                        ))}
+                      </select>
+
+                      {wardError && (
+                        <p className="mt-1 text-sm text-red-500">
+                          Không thể tải danh sách xã.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Button className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
+                    disabled={provLoading}
+                  >
+                    Áp dụng
+                  </Button>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button className="h-10 px-5 bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold rounded-lg shadow-sm">
+                Tìm kiếm
               </Button>
             </div>
-            <nav className="flex flex-col space-y-3 text-[#343A40]">
-              {CATEGORIES.map((c) => (
-                <a key={c.label} href={c.href} className="flex items-center space-x-2 hover:text-[#007BFF] transition-colors">
-                  {c.icon} <span>{c.label}</span>
-                </a>
-              ))}
-            </nav>
           </div>
+          {/* User actions */}
+          {user == 0 ? (
+            <nav className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 text-white rounded-full hover:bg-white/20"
+              >
+                <ShoppingCart className="w-5 h-5" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center h-10 gap-2 px-3 text-white transition-colors rounded-full hover:bg-white/20"
+                  >
+                    <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
+                      PT
+                    </div>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 shadow-xl">
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="/profile">Tài khoản</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="">Tin đăng của tôi</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to="/upgrade">Nâng cấp tài khoản</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    //onClick={logout}
+                    className="text-red-600 cursor-pointer py-2.5"
+                  >
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
+                Đăng tin
+              </Button>
+            </nav>
+          ) : (
+            <nav className="flex items-center gap-2">
+              <Button
+                onClick={openLogin}
+                variant="ghost"
+                className="bg-[#339CFF] text-white hover:bg-[#68b1ff] h-10 px-4 shadow-sm"
+              >
+                Đăng nhập
+              </Button>
+              <Button
+                onClick={openRegister}
+                className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold h-10 px-5 shadow-sm"
+              >
+                Đăng ký
+              </Button>
+            </nav>
+          )}
         </div>
-      )}
+      </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
