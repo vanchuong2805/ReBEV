@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import Frame from './ListingCardFrame'
+import Frame from '../CardFrame'
 
 export default function ExpiredListingCard({ listing, onView, onRenew, onUnhide, onEdit }) {
   const status = (listing?.current_status || '').trim()
@@ -15,7 +15,10 @@ export default function ExpiredListingCard({ listing, onView, onRenew, onUnhide,
       badgeText={status || 'Hết hạn'}
       note={note}
       actions={[
-        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onView?.(listing)}>Chi tiết</Button>,
+        <Button size="lg"
+          variant="outline"
+          className="h-10 w-full"
+          onClick={() => onView?.(listing)}>Chi tiết</Button>,
         <Button size="lg" className="h-10 w-full bg-red-600 hover:bg-red-700" onClick={() => (isHidden ? onUnhide?.(listing) : onRenew?.(listing))}>
           {isHidden ? 'Bỏ ẩn' : 'Gia hạn'}
         </Button>
