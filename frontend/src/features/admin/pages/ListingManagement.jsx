@@ -22,6 +22,14 @@ const ListingManagement = () => {
       prev.map((l) => (l.id === id ? { ...l, status: "rejected" } : l))
     );
 
+  const handleEdit = (id) => {
+    // Change status to pending when edit button is clicked
+    setListings((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, status: "pending" } : l))
+    );
+    console.log("Editing listing and setting status to pending:", id);
+  };
+
   const handleViewDetails = (id) => {
     // điều hướng / mở modal
     console.log("Viewing listing details:", id);
@@ -66,6 +74,7 @@ const ListingManagement = () => {
         onViewDetails={handleViewDetails}
         onApprove={handleApprove}
         onReject={handleReject}
+        onEdit={handleEdit}
       />
     </div>
   );

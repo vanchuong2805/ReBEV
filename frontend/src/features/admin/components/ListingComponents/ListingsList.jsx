@@ -6,6 +6,7 @@ export default function ListingsList({
   onViewDetails,
   onApprove,
   onReject,
+  onEdit,
 }) {
   if (!listings.length) {
     return (
@@ -26,6 +27,7 @@ export default function ListingsList({
           onViewDetails={onViewDetails}
           onApprove={onApprove}
           onReject={onReject}
+          onEdit={onEdit}
         />
       ))}
     </div>
