@@ -9,6 +9,7 @@ export default function ListingCard({
   onViewDetails,
   onApprove,
   onReject,
+  onEdit,
 }) {
   const getStatusIcon = (status) => {
     switch (status) {
@@ -160,7 +161,7 @@ export default function ListingCard({
               size="sm"
               variant="outline"
               className="border-blue-300 text-blue-600 hover:bg-blue-50"
-              onClick={() => onViewDetails(listing.id)} // hoặc mở modal edit
+              onClick={() => onEdit(listing.id)}
             >
               <Edit size={16} className="mr-1" />
               Chỉnh sửa

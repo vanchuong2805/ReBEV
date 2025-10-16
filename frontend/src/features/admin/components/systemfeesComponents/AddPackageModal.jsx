@@ -57,7 +57,7 @@ export default function AddPackageModal({
               Đặc quyền
             </label>
             <div className="space-y-2">
-              {["Ưu tiên hiển thị", "abc"].map((label) => (
+              {["Ưu tiên hiển thị", "Highlight Bài Viết"].map((label) => (
                 <label key={label} className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"

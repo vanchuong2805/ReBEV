@@ -11,6 +11,7 @@ import {
   ShoppingCart,
   X,
   Check,
+  ArrowUpDown,
 } from "lucide-react";
 import TitlePage from "../components/TitlePage";
 import FilterTransaction from "../components/FilterTransaction";
@@ -20,20 +21,26 @@ import DepositDetailModal from "../components/DepositDetailModal";
 import ComplaintsTable from "../components/ComplaintsTable";
 import ComplaintSummaryModal from "../components/ComplaintSummaryModal";
 import ComplaintDetailModal from "../components/ComplaintDetailModal";
+import SearchInput from "../components/SearchInput";
+import SortSelector from "../components/SortSelector";
 
 const TransactionManagement = () => {
-  const [activeTab, setActiveTab] = useState("completed");
+  const [activeTab, setActiveTab] = useState("orders");
   const [selectedDeposit, setSelectedDeposit] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
-  const [showComplaintDetail, setShowComplaintDetail] = useState(false);
 
   // Filter states
   const [completedFilter, setCompletedFilter] = useState("all");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
   const [depositFilter, setDepositFilter] = useState("all");
   const [complaintFilter, setComplaintFilter] = useState("all");
 
+  // Sort state
+  const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
+
   // Mock data
-  const [completedOrders, setCompletedOrders] = useState([
+  const [allOrders, setAllOrders] = useState([
     {
       id: "ORD-001",
       productName: "Xe máy điện VinFast Klara S",
@@ -43,6 +50,7 @@ const TransactionManagement = () => {
       amount: 45000000,
       completedDate: "2024-10-10",
       orderId: "ORDER-001",
+      status: "completed",
     },
     {
       id: "ORD-002",
@@ -53,6 +61,84 @@ const TransactionManagement = () => {
       amount: 8500000,
       completedDate: "2024-10-08",
       orderId: "ORDER-002",
+      status: "completed",
+    },
+    {
+      id: "ORD-003",
+      productName: "Xe máy điện Yadea",
+      category: "xe-may-dien",
+      buyerName: "Hoàng Văn K",
+      sellerName: "Lý Thị L",
+      amount: 32000000,
+      completedDate: "",
+      orderId: "ORDER-003",
+      status: "pending",
+    },
+    {
+      id: "ORD-004",
+      productName: "Pin xe máy điện 72V",
+      category: "pin-xe-may-dien",
+      buyerName: "Đỗ Thị M",
+      sellerName: "Bùi Văn N",
+      amount: 9200000,
+      completedDate: "",
+      orderId: "ORDER-004",
+      status: "cancelled",
+    },
+    {
+      id: "ORD-005",
+      productName: "Xe máy điện VinFast Feliz S",
+      category: "xe-may-dien",
+      buyerName: "Trương Văn P",
+      sellerName: "Mai Thị Q",
+      amount: 39000000,
+      completedDate: "2024-10-15", // Newest completed order
+      orderId: "ORDER-005",
+      status: "completed",
+    },
+    {
+      id: "ORD-006",
+      productName: "Pin xe máy điện Lithium 48V",
+      category: "pin-xe-may-dien",
+      buyerName: "Ngô Văn R",
+      sellerName: "Đinh Thị S",
+      amount: 6800000,
+      completedDate: "",
+      orderId: "ORDER-006",
+      status: "pending",
+    },
+    {
+      id: "ORD-007",
+      productName: "Xe máy điện Pega",
+      category: "xe-may-dien",
+      buyerName: "Lương Văn T",
+      sellerName: "Hà Thị U",
+      amount: 28000000,
+      completedDate: "",
+      orderId: "ORDER-007",
+      status: "buyer_cancelled",
+    },
+    {
+      id: "ORD-008",
+      productName: "Pin xe máy điện Bosch",
+      category: "pin-xe-may-dien",
+      buyerName: "Đặng Văn V",
+      sellerName: "Trịnh Thị X",
+      amount: 9500000,
+      completedDate: "2024-09-25", // Oldest completed order
+      orderId: "ORDER-008",
+      status: "completed",
+    },
+    {
+      id: "ORD-009",
+      productName: "Xe máy điện Dibao",
+      category: "xe-may-dien",
+      buyerName: "Tô Văn Y",
+      sellerName: "Huỳnh Thị Z",
+      amount: 22000000,
+      completedDate: "",
+      orderId: "ORDER-009",
+      status: "seller_cancelled",
     },
   ]);
 
@@ -102,7 +188,7 @@ const TransactionManagement = () => {
   ]);
 
   const tabs = [
-    { id: "completed", label: "Đơn hàng", icon: CheckCircle },
+    { id: "orders", label: "Đơn hàng", icon: CheckCircle },
     { id: "deposits", label: "Đơn đặt cọc", icon: Clock },
     { id: "complaints", label: "Đơn khiếu nại", icon: AlertTriangle },
   ];
@@ -128,6 +214,23 @@ const TransactionManagement = () => {
     { value: "rejected", label: "Từ chối" },
   ];
 
+  const orderStatusOptions = [
+    { value: "all", label: "Tất cả" },
+    { value: "pending", label: "Chờ xử lý" },
+    { value: "completed", label: "Hoàn thành" },
+    { value: "cancelled", label: "Đã hủy" },
+    { value: "buyer_cancelled", label: "Bên mua hủy" },
+    { value: "seller_cancelled", label: "Bên bán hủy" },
+  ];
+
+  const orderSortOptions = [
+    { value: "status", label: "Trạng thái (mặc định)" },
+    { value: "date", label: "Ngày hoàn thành" },
+    { value: "price", label: "Giá tiền" },
+    { value: "buyer", label: "Tên người mua" },
+    { value: "orderId", label: "Mã đơn hàng" },
+  ];
+
   const handleDepositStatusChange = (depositId, newStatus) => {
     setDepositOrders((prev) =>
       prev.map((order) => {
@@ -144,8 +247,9 @@ const TransactionManagement = () => {
               amount: order.totalAmount,
               completedDate: new Date().toISOString().split("T")[0],
               orderId: `ORDER-${Date.now()}`,
+              status: "completed",
             };
-            setCompletedOrders((prev) => [...prev, newCompletedOrder]);
+            setAllOrders((prev) => [...prev, newCompletedOrder]);
           }
 
           return updatedOrder;
@@ -169,11 +273,81 @@ const TransactionManagement = () => {
       )
     );
     setSelectedComplaint(null);
-    setShowComplaintDetail(false);
   };
 
-  const filteredCompletedOrders = completedOrders.filter(
-    (order) => completedFilter === "all" || order.category === completedFilter
+  // Sort orders by selected sort option
+  const sortOrders = (orders, sortOption) => {
+    return [...orders].sort((a, b) => {
+      switch (sortOption) {
+        case "status": {
+          // Priority order: pending -> newest completed -> oldest completed -> cancelled
+          const statusPriority = {
+            pending: 1,
+            completed: 2,
+            cancelled: 3,
+            buyer_cancelled: 3,
+            seller_cancelled: 3,
+          };
+
+          // First sort by status priority
+          if (statusPriority[a.status] !== statusPriority[b.status]) {
+            return statusPriority[a.status] - statusPriority[b.status];
+          }
+
+          // If same status and both are completed, sort by completion date (newest first)
+          if (a.status === "completed" && b.status === "completed") {
+            const dateA = a.completedDate
+              ? new Date(a.completedDate)
+              : new Date(0);
+            const dateB = b.completedDate
+              ? new Date(b.completedDate)
+              : new Date(0);
+            return dateB - dateA; // Newest first
+          }
+          return 0;
+        }
+
+        case "date": {
+          // Sort by completion date (newest first)
+          const dateA = a.completedDate
+            ? new Date(a.completedDate)
+            : new Date(0);
+          const dateB = b.completedDate
+            ? new Date(b.completedDate)
+            : new Date(0);
+          return dateB - dateA;
+        }
+
+        case "price": {
+          // Sort by amount (highest first)
+          return b.amount - a.amount;
+        }
+
+        case "buyer": {
+          // Sort by buyer name (alphabetically)
+          return a.buyerName.localeCompare(b.buyerName);
+        }
+
+        case "orderId": {
+          // Sort by order ID (alphabetically)
+          return a.orderId.localeCompare(b.orderId);
+        }
+
+        default:
+          return 0;
+      }
+    });
+  };
+
+  const filteredAllOrders = sortOrders(
+    allOrders.filter(
+      (order) =>
+        (completedFilter === "all" || order.category === completedFilter) &&
+        (orderStatusFilter === "all" || order.status === orderStatusFilter) &&
+        (orderSearchQuery === "" ||
+          order.orderId.toLowerCase().includes(orderSearchQuery.toLowerCase()))
+    ),
+    orderSortOption
   );
 
   const filteredDepositOrders = depositOrders.filter(
@@ -197,6 +371,10 @@ const TransactionManagement = () => {
         color: "bg-orange-100 text-orange-800",
         text: "Bên mua hủy",
       },
+      cancelled: {
+        color: "bg-red-100 text-red-800",
+        text: "Đã hủy",
+      },
       approved: { color: "bg-green-100 text-green-800", text: "Đồng ý" },
       rejected: { color: "bg-red-100 text-red-800", text: "Từ chối" },
     };
@@ -214,8 +392,8 @@ const TransactionManagement = () => {
     );
   };
 
-  const renderCompletedOrders = () => {
-    const completedColumns = [
+  const renderAllOrders = () => {
+    const orderColumns = [
       { header: "Mã đơn hàng", accessor: "orderId" },
       { header: "Sản phẩm", accessor: "productName" },
       { header: "Người mua", accessor: "buyerName" },
@@ -224,21 +402,61 @@ const TransactionManagement = () => {
         header: "Số tiền",
         render: (order) => `${order.amount.toLocaleString("vi-VN")} VND`,
       },
-      { header: "Ngày hoàn thành", accessor: "completedDate" },
+      {
+        header: "Ngày hoàn thành",
+        render: (order) => order.completedDate || "—",
+      },
+      {
+        header: "Trạng thái",
+        render: (order) => getStatusBadge(order.status),
+      },
     ];
+
     return (
       <div className="space-y-4">
-        {/* Filter */}
-        <FilterTransaction
-          id="completed-filter"
-          label="Lọc theo danh mục:"
-          value={completedFilter}
-          onChange={setCompletedFilter}
-          options={categoryOptions}
-        />
+        {/* Search */}
+        <div className="w-full max-w-md mb-2">
+          <SearchInput
+            value={orderSearchQuery}
+            onChange={setOrderSearchQuery}
+            placeholder="Tìm kiếm theo mã đơn hàng..."
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-4 justify-between">
+          <div className="flex flex-wrap gap-4">
+            {/* Category Filter */}
+            <FilterTransaction
+              id="completed-filter"
+              label="Lọc theo danh mục:"
+              value={completedFilter}
+              onChange={setCompletedFilter}
+              options={categoryOptions}
+            />
+
+            {/* Status Filter */}
+            <FilterTransaction
+              id="order-status-filter"
+              label="Lọc theo trạng thái:"
+              value={orderStatusFilter}
+              onChange={setOrderStatusFilter}
+              options={orderStatusOptions}
+            />
+          </div>
+
+          {/* Sort Selector */}
+          <div className="flex items-center">
+            <ArrowUpDown size={16} className="mr-2 text-gray-500" />
+            <SortSelector
+              value={orderSortOption}
+              onChange={setOrderSortOption}
+              options={orderSortOptions}
+            />
+          </div>
+        </div>
 
         {/* Orders List */}
-        <OrderTable columns={completedColumns} data={filteredCompletedOrders} />
+        <OrderTable columns={orderColumns} data={filteredAllOrders} />
       </div>
     );
   };
@@ -257,12 +475,19 @@ const TransactionManagement = () => {
       {/* Orders List */}
       <DepositOrdersTable
         orders={filteredDepositOrders}
-        onProcess={(order) => setSelectedDeposit(order)}
+        onProcess={(order) => {
+          // Trực tiếp xử lý trạng thái mà không cần hiển thị modal
+          if (order.actionType) {
+            handleDepositStatusChange(order.id, order.actionType);
+          } else {
+            setSelectedDeposit(order);
+          }
+        }}
         renderStatusBadge={(status) => getStatusBadge(status)}
       />
 
-      {/* Deposit Detail Modal */}
-      {selectedDeposit && (
+      {/* Deposit Detail Modal - chỉ hiển thị khi không có actionType */}
+      {selectedDeposit && !selectedDeposit.actionType && (
         <DepositDetailModal
           deposit={selectedDeposit}
           onClose={() => setSelectedDeposit(null)}
@@ -288,26 +513,15 @@ const TransactionManagement = () => {
         complaints={filteredComplaints}
         renderStatusBadge={(status) => getStatusBadge(status)}
         onProcess={(c) => {
-          setSelectedComplaint(c);
-          setShowComplaintDetail(false); // mở modal tóm tắt trước
+          setSelectedComplaint(c); // Chỉ cần set selectedComplaint, modal sẽ hiện
         }}
       />
 
-      {/* Complaint Summary Modal */}
-      {selectedComplaint && !showComplaintDetail && (
-        <ComplaintSummaryModal
-          complaint={selectedComplaint}
-          onClose={() => setSelectedComplaint(null)}
-          onViewDetail={() => setShowComplaintDetail(true)}
-        />
-      )}
-
       {/* Complaint Detail Modal */}
-      {selectedComplaint && showComplaintDetail && (
+      {selectedComplaint && (
         <ComplaintDetailModal
           complaint={selectedComplaint}
           onClose={() => {
-            setShowComplaintDetail(false);
             setSelectedComplaint(null);
           }}
           onChangeStatus={(id, status, desc) =>
@@ -356,7 +570,7 @@ const TransactionManagement = () => {
 
       {/* Tab Content */}
       <div>
-        {activeTab === "completed" && renderCompletedOrders()}
+        {activeTab === "orders" && renderAllOrders()}
         {activeTab === "deposits" && renderDepositOrders()}
         {activeTab === "complaints" && renderComplaints()}
       </div>
