@@ -9,17 +9,19 @@ const createCart = async (req, res) => {
         const { post_id } = req.body;
         const errors = [];
 
-
-
-        const postByUser = await postService.getByUserId(user_id);
-        const existedCartItem = await cartService.findCartItem({ user_id, post_id });
-
-        if (existedCartItem) {
-            errors.push(ERROR_MESSAGE.CART_ITEM_EXISTED);
+        const post = await postService.getById(post_id);
+        if (!post) {
+            errors.push(ERROR_MESSAGE.POST_NOT_FOUND);
         }
 
-        if (postByUser.id !== post_id) {
+        if (post.user_id === parseInt(user_id)) {
             errors.push(ERROR_MESSAGE.CREATE_CART_FAIL);
+        }
+
+        const existedCart = await cartService.findCartItem({ user_id, post_id });
+
+        if (existedCart) {
+            errors.push(ERROR_MESSAGE.CART_ITEM_EXISTED);
         }
 
         if (errors.length > 0) {
