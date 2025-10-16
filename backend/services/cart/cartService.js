@@ -7,7 +7,7 @@ const getCarts = async () => {
 }
 
 const getCartByPostId = async (postId) => {
-    const data = await cart_items.findAll({
+    const data = await cart_items.findOne({
         where: {
             post_id: postId
         }
