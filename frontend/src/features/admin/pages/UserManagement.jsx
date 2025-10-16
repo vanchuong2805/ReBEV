@@ -67,15 +67,19 @@ const UserManagement = () => {
   };
 
   const getRoleColor = (role) => {
+    // Xử lý cả giá trị số và chuỗi
     switch (role) {
-      case "premium":
-        return "bg-purple-100 text-purple-800";
+      case 2:
       case "admin":
         return "bg-blue-100 text-blue-800";
+      case 1:
       case "staff":
         return "bg-orange-100 text-orange-800";
+      case 0:
       case "user":
         return "bg-gray-100 text-gray-800";
+      case "premium":
+        return "bg-purple-100 text-purple-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -83,14 +87,18 @@ const UserManagement = () => {
 
   const getRoleText = (role) => {
     switch (role) {
-      case "premium":
-        return "Premium";
-      case "admin":
-        return "Quản trị viên";
-      case "staff":
+      case 0:
+        return "Người dùng";
+      case 1:
         return "Nhân viên";
+      case 2:
+        return "Quản trị viên";
       case "user":
         return "Người dùng";
+      case "staff":
+        return "Nhân viên";
+      case "admin":
+        return "Quản trị viên";
       default:
         return role;
     }
@@ -99,7 +107,9 @@ const UserManagement = () => {
   const handleLockUser = (userId) => {
     setUsers(
       users.map((user) =>
-        user.id === userId ? { ...user, status: "locked" } : user
+        user.id === userId
+          ? { ...user, status: "locked", is_locked: true }
+          : user
       )
     );
     console.log("Locking user:", userId);
@@ -108,14 +118,12 @@ const UserManagement = () => {
   const handleUnlockUser = (userId) => {
     setUsers(
       users.map((user) =>
-        user.id === userId ? { ...user, status: "active" } : user
+        user.id === userId
+          ? { ...user, status: "active", is_locked: false }
+          : user
       )
     );
     console.log("Unlocking user:", userId);
-  };
-
-  const handleViewDetails = (userId) => {
-    console.log("Viewing user details:", userId);
   };
 
   const handleCreateStaff = () => {
@@ -226,13 +234,25 @@ const UserManagement = () => {
   };
 
   const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || user.status === statusFilter;
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    // Xử lý trường hợp display_name không tồn tại
+    const userName = user.display_name || user.name || "";
+    
+    const matchesSearch = searchTerm === "" || 
+      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.phone && user.phone.includes(searchTerm));
+    
+    // Xử lý statusFilter dựa vào is_locked
+    const userStatus = user.is_locked === 0 ? "active" : "locked";
+    const matchesStatus = statusFilter === "all" || userStatus === statusFilter;
+    
+    // Xử lý roleFilter
+    const userRole = typeof user.role === "number" ? 
+      (user.role === 0 ? "user" : user.role === 1 ? "staff" : "admin") : 
+      user.role;
+    
+    const matchesRole = roleFilter === "all" || userRole === roleFilter;
+    
     return matchesSearch && matchesStatus && matchesRole;
   });
 
@@ -315,7 +335,6 @@ const UserManagement = () => {
             >
               <option value="all">Tất cả vai trò</option>
               <option value="user">Người dùng</option>
-              <option value="premium">Gói Lay</option>
               <option value="staff">Nhân viên</option>
               <option value="admin">Quản trị viên</option>
             </select>
@@ -338,12 +357,14 @@ const UserManagement = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-2">
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {user.name}
+                      {user.display_name || user.name || "N/A"}
                     </h3>
                     <Badge
-                      className={`${getStatusColor(user.status)} border-0`}
+                      className={`${getStatusColor(
+                        user.is_locked == 0 ? "active" : "locked"
+                      )} border-0`}
                     >
-                      {user.status}
+                      {user.is_locked == 0 ? "Hoạt động" : "Bị khóa"}
                     </Badge>
                     <Badge className={`${getRoleColor(user.role)} border-0`}>
                       {getRoleText(user.role)}
@@ -361,7 +382,7 @@ const UserManagement = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-700">{user.phone}</span>
+                      <span className="text-gray-700">{user.phone || "N/A"}</span>
                     </div>
                   </div>
 
@@ -369,19 +390,19 @@ const UserManagement = () => {
                     <div>
                       <span className="text-gray-500">Tin đăng:</span>
                       <span className="ml-1 font-medium text-blue-600">
-                        {user.totalListings}
+                        {user.totalListings || 0}
                       </span>
                     </div>
                     <div>
                       <span className="text-gray-500">Giao dịch:</span>
                       <span className="ml-1 font-medium text-green-600">
-                        {user.totalTransactions}
+                        {user.totalTransactions || 0}
                       </span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Đăng nhập cuối:</span>
+                      <span className="text-gray-500">Ngày Tạo:</span>
                       <span className="ml-1 text-gray-700">
-                        {new Date(user.lastLogin).toLocaleDateString("vi-VN")}
+                        {user.create_at ? new Date(user.create_at).toLocaleDateString("vi-VN") : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -390,16 +411,6 @@ const UserManagement = () => {
 
               {/* Actions */}
               <div className="flex flex-col space-y-2 ml-6">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-gray-300"
-                  onClick={() => handleViewDetails(user.id)}
-                >
-                  <Eye size={16} className="mr-1" />
-                  Xem chi tiết
-                </Button>
-
                 {user.role === "staff" && (
                   <>
                     <Button

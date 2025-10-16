@@ -53,12 +53,38 @@ export default function DepositOrdersTable({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {order.status === "pending" && (
-                    <button
-                      onClick={() => onProcess?.(order)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Xử lý
-                    </button>
+                    <div className="flex flex-col space-y-2">
+                      <button
+                        onClick={() =>
+                          onProcess?.({
+                            ...order,
+                            actionType: "buyer_cancelled",
+                          })
+                        }
+                        className="bg-orange-600 text-white px-3 py-1 text-sm rounded-md hover:bg-orange-700 transition-colors w-full"
+                      >
+                        Bên mua hủy
+                      </button>
+                      <button
+                        onClick={() =>
+                          onProcess?.({
+                            ...order,
+                            actionType: "seller_cancelled",
+                          })
+                        }
+                        className="bg-red-600 text-white px-3 py-1 text-sm rounded-md hover:bg-red-700 transition-colors w-full"
+                      >
+                        Bên bán hủy
+                      </button>
+                      <button
+                        onClick={() =>
+                          onProcess?.({ ...order, actionType: "completed" })
+                        }
+                        className="bg-green-600 text-white px-3 py-1 text-sm rounded-md hover:bg-green-700 transition-colors w-full"
+                      >
+                        Thành công
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>
