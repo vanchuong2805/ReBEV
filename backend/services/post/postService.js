@@ -1,5 +1,5 @@
 import models from '../../models/index.js';
-const { posts, post_detail } = models;
+const { posts } = models;
 const getAll = async () => {
     const data = await posts.findAll();
     return data;
@@ -7,7 +7,7 @@ const getAll = async () => {
 
 const getById = async (id) => {
     const data = await posts.findByPk(id, {
-        include: [{ model: post_detail, as: 'post_details' }],
+        include: ['post_details'],
     });
     return data;
 };

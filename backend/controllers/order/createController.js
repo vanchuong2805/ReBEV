@@ -11,7 +11,6 @@ const createOrder = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const {
-            customer_id,
             seller_id,
             order_type,
             from_contact_id,
@@ -21,8 +20,9 @@ const createOrder = async (req, res) => {
             total_amount,
         } = req.body;
 
+        const customer_id = req.user.id;
+
         if (
-            !customer_id ||
             !seller_id ||
             !order_type ||
             !from_contact_id ||
@@ -33,6 +33,9 @@ const createOrder = async (req, res) => {
             !total_amount
         ) {
             return res.status(400).json({ error: 'Missing required fields' });
+        }
+        if (customer_id === seller_id) {
+            return res.status(400).json({ error: 'Customer and seller cannot be the same' });
         }
         let from_contact;
         if (order_type === ORDER_TYPE.DEPOSIT) {
@@ -80,7 +83,7 @@ const createOrder = async (req, res) => {
         }));
         await orderDetailService.createOrderDetails(details, { transaction: t });
         await t.commit();
-        res.status(201).json({ message: 'Order created successfully' });
+        res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {
         console.error('Error creating order:', error);
         res.status(500).json({ error: 'Internal server error' });
