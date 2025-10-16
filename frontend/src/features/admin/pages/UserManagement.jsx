@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
   Filter,
@@ -18,7 +18,8 @@ import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Badge } from "../../../components/ui/badge";
-import { usersData } from "../data/data";
+import TitlePage from "../components/TitlePage";
+import UserStats from "../components/UserStats";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +40,18 @@ const UserManagement = () => {
     confirmPassword: "",
   });
 
-  const [users, setUsers] = useState(usersData);
+  // API User
+
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetch("https://rebev.onrender.com/api/users")
+      .then((res) => res.json())
+      .then((data) => setUsers(data))
+      .catch((err) => console.error("Lỗi:", err));
+  }, []);
+
+  //---------------------------------------------
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -226,68 +238,48 @@ const UserManagement = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Quản lý người dùng
-            </h1>
-            <p className="text-gray-600">
-              Xem thông tin người dùng và quản lý trạng thái tài khoản
-            </p>
-          </div>
-          <Button
-            onClick={handleCreateStaff}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Tạo tài khoản nhân viên
-          </Button>
-        </div>
-      </div>
-
+      <TitlePage
+        title="Quản lý người dùng"
+        description="Xem thông tin người dùng và quản lý trạng thái tài khoản"
+      />
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">
-              {users.filter((u) => u.status === "active").length}
-            </p>
-            <p className="text-sm text-gray-600">Người dùng hoạt động</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">
-              {users.filter((u) => u.status === "locked").length}
-            </p>
-            <p className="text-sm text-gray-600">Người dùng bị khóa</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-purple-600">
-              {users.filter((u) => u.role === "premium").length}
-            </p>
-            <p className="text-sm text-gray-600">Người dùng Premium</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">
-              {users.filter((u) => u.role === "staff").length}
-            </p>
-            <p className="text-sm text-gray-600">Nhân viên</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">{users.length}</p>
-            <p className="text-sm text-gray-600">Tổng người dùng</p>
-          </div>
-        </Card>
-      </div>
+        <UserStats
+          numberActiveUsers={users.filter((u) => u.status === "active").length}
+          description="Người dùng hoạt động"
+          color={"green"}
+        />
 
+        <UserStats
+          numberActiveUsers={users.filter((u) => u.status === "locked").length}
+          description="Người dùng bị khóa"
+          color={"red"}
+        />
+        <UserStats
+          numberActiveUsers={users.filter((u) => u.role === "staff").length}
+          description="Nhân viên"
+          color={"orange"}
+        />
+        <UserStats
+          numberActiveUsers={users.filter((u) => u.role === "admin").length}
+          description="Quản trị viên"
+          color={"purple"}
+        />
+        <UserStats
+          numberActiveUsers={users.length}
+          description="Tổng người dùng"
+          color={"blue"}
+        />
+      </div>
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          onClick={handleCreateStaff}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Tạo tài khoản nhân viên
+        </Button>
+      </div>
       {/* Filters */}
       <Card className="p-6 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
@@ -323,7 +315,7 @@ const UserManagement = () => {
             >
               <option value="all">Tất cả vai trò</option>
               <option value="user">Người dùng</option>
-              <option value="premium">Premium</option>
+              <option value="premium">Gói Lay</option>
               <option value="staff">Nhân viên</option>
               <option value="admin">Quản trị viên</option>
             </select>
@@ -356,11 +348,6 @@ const UserManagement = () => {
                     <Badge className={`${getRoleColor(user.role)} border-0`}>
                       {getRoleText(user.role)}
                     </Badge>
-                    {user.verified && (
-                      <Badge className="bg-blue-100 text-blue-800 border-0">
-                        Verified
-                      </Badge>
-                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -375,13 +362,6 @@ const UserManagement = () => {
                     <div className="flex items-center space-x-2">
                       <Phone className="h-4 w-4 text-gray-400" />
                       <span className="text-gray-700">{user.phone}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-700">
-                        Ngày tham gia:{" "}
-                        {new Date(user.joinDate).toLocaleDateString("vi-VN")}
-                      </span>
                     </div>
                   </div>
 
@@ -480,7 +460,7 @@ const UserManagement = () => {
 
       {/* Staff Creation Modal */}
       {showStaffForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">

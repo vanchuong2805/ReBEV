@@ -1,181 +1,117 @@
+// pages/SystemFeesManagement.jsx
 import { useState } from "react";
-import { Edit, Save, X, DollarSign } from "lucide-react";
-import { Card } from "../../../components/ui/card";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
+import { DollarSign, Package as PackageIcon } from "lucide-react";
 import { systemFeesData } from "../data/data";
+import TitlePage from "../components/TitlePage";
+import Tabs from "../components/systemfeesComponents/Tabs";
+import PlatformFeesPanel from "../components/systemfeesComponents/PlatformFeesPanel";
+import PackageCard from "../components/systemfeesComponents/PackageCard";
+import AddPackageModal from "../components/systemfeesComponents/AddPackageModal";
+import { Button } from "../../../components/ui/button";
+import { usePlatformFees } from "../../admin/hook/usePlatformFees";
+import { useUserPackages } from "../../admin/hook/useUserPackages";
 
-const SystemFeesManagement = () => {
-  const [fees, setFees] = useState(systemFeesData);
+const categoryOptions = [
+  { value: "xe-may-dien", label: "Xe máy điện" },
+  { value: "pin-xe-may-dien", label: "Pin xe máy điện" },
+];
 
-  const [editingValues, setEditingValues] = useState({});
+const tabs = [
+  { id: "platform", label: "Phí sàn", icon: DollarSign },
+  { id: "packages", label: "Gói người dùng", icon: PackageIcon },
+];
 
-  const handleEdit = (feeId) => {
-    setFees(
-      fees.map((fee) => (fee.id === feeId ? { ...fee, isEditing: true } : fee))
-    );
-    const fee = fees.find((f) => f.id === feeId);
-    setEditingValues({ ...editingValues, [feeId]: fee.value });
-  };
+export default function SystemFeesManagement() {
+  const [activeTab, setActiveTab] = useState("platform");
 
-  const handleSave = (feeId) => {
-    setFees(
-      fees.map((fee) =>
-        fee.id === feeId
-          ? {
-              ...fee,
-              isEditing: false,
-              value: editingValues[feeId] || fee.value,
-            }
-          : fee
-      )
-    );
-    // Here you would typically make an API call to save the changes
-    console.log("Saving fee changes for ID:", feeId);
-  };
+  // Platform fees
+  const {
+    platformFees,
+    selectedCategory,
+    setSelectedCategory,
+    isEditing,
+    setIsEditing,
+    handleChange,
+    save,
+  } = usePlatformFees(systemFeesData[0]);
 
-  const handleCancel = (feeId) => {
-    setFees(
-      fees.map((fee) => (fee.id === feeId ? { ...fee, isEditing: false } : fee))
-    );
-    setEditingValues({ ...editingValues, [feeId]: undefined });
-  };
-
-  const handleValueChange = (feeId, value) => {
-    setEditingValues({ ...editingValues, [feeId]: parseFloat(value) || 0 });
-  };
-
-  const getTypeText = (type) => {
-    switch (type) {
-      case "percentage":
-        return "Phần trăm";
-      case "fixed":
-        return "Cố định";
-      default:
-        return type;
-    }
-  };
+  // User packages
+  const {
+    userPackages,
+    showAddPackage,
+    setShowAddPackage,
+    newPackage,
+    setNewPackage,
+    startEdit,
+    saveEdit,
+    cancelEdit,
+    changePrice,
+    togglePrivilege,
+    add,
+  } = useUserPackages(systemFeesData[1]);
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Quản lý phí hệ thống
-        </h1>
-        <p className="text-gray-600">
-          Cấu hình và quản lý phí hệ thống và phí dịch vụ
-        </p>
-      </div>
+      <TitlePage
+        title="Quản lý phí hệ thống"
+        description="Cấu hình phí sàn và gói người dùng"
+      />
 
-      <div className="grid gap-6">
-        {fees.map((fee) => (
-          <Card key={fee.id} className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <DollarSign className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {fee.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mt-1">
-                    {fee.description}
-                  </p>
+      <Tabs tabs={tabs} activeId={activeTab} onChange={setActiveTab} />
 
-                  <div className="mt-4 flex items-center space-x-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">
-                        Tỷ lệ hiện tại:
-                      </span>
-                      {fee.isEditing ? (
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            type="number"
-                            step="0.1"
-                            min="0"
-                            value={editingValues[fee.id] || fee.value}
-                            onChange={(e) =>
-                              handleValueChange(fee.id, e.target.value)
-                            }
-                            className="w-24"
-                          />
-                          <span className="text-sm text-gray-500">
-                            {fee.type === "percentage" ? "%" : "$"}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-lg font-semibold text-blue-600">
-                          {fee.value}
-                          {fee.type === "percentage" ? "%" : "$"}
-                        </span>
-                      )}
-                    </div>
+      {activeTab === "platform" && (
+        <PlatformFeesPanel
+          platformFees={platformFees}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onChange={handleChange}
+          onSave={() => {
+            save();
+            console.log(
+              "Saving platform fees:",
+              platformFees[selectedCategory]
+            );
+          }}
+          categoryOptions={categoryOptions}
+        />
+      )}
 
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">Loại:</span>
-                      <span className="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-700">
-                        {getTypeText(fee.type)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      {activeTab === "packages" && (
+        <div className="space-y-6">
+          <div className="flex justify-end">
+            <Button
+              onClick={() => setShowAddPackage(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Thêm gói
+            </Button>
+          </div>
 
-              <div className="flex items-center space-x-2">
-                {fee.isEditing ? (
-                  <>
-                    <Button
-                      onClick={() => handleSave(fee.id)}
-                      size="sm"
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Save size={16} />
-                    </Button>
-                    <Button
-                      onClick={() => handleCancel(fee.id)}
-                      size="sm"
-                      variant="outline"
-                      className="border-gray-300"
-                    >
-                      <X size={16} />
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={() => handleEdit(fee.id)}
-                    size="sm"
-                    variant="outline"
-                    className="border-gray-300"
-                  >
-                    <Edit size={16} />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+          <div className="grid gap-6">
+            {userPackages.map((pkg) => (
+              <PackageCard
+                key={pkg.id}
+                pkg={pkg}
+                onStartEdit={startEdit}
+                onSave={saveEdit}
+                onCancel={cancelEdit}
+                onChangePrice={changePrice}
+              />
+            ))}
+          </div>
 
-      {/* Fee Summary */}
-      <Card className="p-6 mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Tóm tắt phí
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {fees.map((fee) => (
-            <div key={fee.id} className="text-center p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">{fee.name}</p>
-              <p className="text-xl font-bold text-gray-900">
-                {fee.value}
-                {fee.type === "percentage" ? "%" : "$"}
-              </p>
-            </div>
-          ))}
+          <AddPackageModal
+            open={showAddPackage}
+            onClose={() => setShowAddPackage(false)}
+            newPackage={newPackage}
+            setNewPackage={setNewPackage}
+            onTogglePrivilege={togglePrivilege}
+            onAdd={add}
+          />
         </div>
-      </Card>
+      )}
     </div>
   );
-};
-
-export default SystemFeesManagement;
+}

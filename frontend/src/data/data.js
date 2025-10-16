@@ -282,6 +282,12 @@ export const chartData = [
   { month: "Apr", revenue: 22000, transactions: 74 },
   { month: "May", revenue: 25000, transactions: 89 },
   { month: "Jun", revenue: 28000, transactions: 95 },
+  { month: "Jul", revenue: 30000, transactions: 102 },
+  { month: "Aug", revenue: 27500, transactions: 91 },
+  { month: "Sep", revenue: 24000, transactions: 83 },
+  { month: "Oct", revenue: 26500, transactions: 88 },
+  { month: "Nov", revenue: 29000, transactions: 98 },
+  { month: "Dec", revenue: 32000, transactions: 110 },
 ];
 
 // Reports and statistics data

@@ -1,86 +1,8 @@
 // Mock data for admin pages
 
 // Users data
-export const usersData = [
-  {
-    id: "USR001",
-    name: "Nguyen Van A",
-    email: "nguyenvana@email.com",
-    phone: "+84 901 234 567",
-    status: "active",
-    role: "user",
-    joinDate: "2024-01-15",
-    lastLogin: "2024-03-15 10:30:00",
-    totalListings: 5,
-    totalTransactions: 12,
-    verified: true,
-  },
-  {
-    id: "USR002",
-    name: "Tran Thi B",
-    email: "tranthib@email.com",
-    phone: "+84 902 345 678",
-    status: "locked",
-    role: "user",
-    joinDate: "2024-02-20",
-    lastLogin: "2024-03-10 15:45:00",
-    totalListings: 2,
-    totalTransactions: 3,
-    verified: false,
-  },
-  {
-    id: "USR003",
-    name: "Le Van C",
-    email: "levanc@email.com",
-    phone: "+84 903 456 789",
-    status: "active",
-    role: "premium",
-    joinDate: "2023-12-05",
-    lastLogin: "2024-03-14 20:15:00",
-    totalListings: 15,
-    totalTransactions: 28,
-    verified: true,
-  },
-  {
-    id: "USR004",
-    name: "Pham Thi D",
-    email: "phamthid@email.com",
-    phone: "+84 904 567 890",
-    status: "active",
-    role: "user",
-    joinDate: "2024-03-01",
-    lastLogin: "2024-03-13 08:30:00",
-    totalListings: 1,
-    totalTransactions: 1,
-    verified: true,
-  },
-  {
-    id: "USR006",
-    name: "Vo Thi Staff 1",
-    email: "staff1@rebev.com",
-    phone: "+84 906 789 012",
-    status: "active",
-    role: "staff",
-    joinDate: "2024-02-01",
-    lastLogin: "2024-03-15 09:00:00",
-    totalListings: 0,
-    totalTransactions: 0,
-    verified: true,
-  },
-  {
-    id: "USR007",
-    name: "Nguyen Van Staff 2",
-    email: "staff2@rebev.com",
-    phone: "+84 907 890 123",
-    status: "active",
-    role: "staff",
-    joinDate: "2024-01-20",
-    lastLogin: "2024-03-14 16:30:00",
-    totalListings: 0,
-    totalTransactions: 0,
-    verified: true,
-  },
-];
+
+export const usersData = [];
 
 // Listings data
 export const listingsData = [
@@ -213,83 +135,21 @@ export const transactionsData = [
 
 // System fees data
 export const systemFeesData = [
-  // Phí hoa hồng
   {
-    id: 1,
-    type: "commission",
-    name: "Phí hoa hồng bán xe",
-    rate: 5,
-    unit: "%",
-    description: "Phí hoa hồng cho mỗi giao dịch bán xe thành công",
-    status: "active",
+    "xe-may-dien": {
+      category: "Xe máy điện",
+      depositItem: "Xe máy điện",
+      depositFee: 5.0, // %
+      commissionFee: 3.5, // %
+    },
+    "pin-xe-may-dien": {
+      category: "Pin xe máy điện",
+      depositItem: "Pin xe máy điện",
+      depositFee: 5.0, // %
+      commissionFee: 2.0, // %
+    },
   },
-  {
-    id: 2,
-    type: "commission",
-    name: "Phí hoa hồng thuê xe",
-    rate: 3,
-    unit: "%",
-    description: "Phí hoa hồng cho mỗi giao dịch thuê xe",
-    status: "active",
-  },
-
-  // Phí bài đăng
-  {
-    id: 3,
-    type: "listing",
-    name: "Phí đăng bài thường",
-    rate: 20000,
-    unit: "VND",
-    description: "Phí đăng tin rao bán xe thường (30 ngày)",
-    status: "active",
-  },
-  {
-    id: 4,
-    type: "listing",
-    name: "Phí đăng bài VIP",
-    rate: 50000,
-    unit: "VND",
-    description: "Phí đăng tin rao bán xe VIP (45 ngày)",
-    status: "active",
-  },
-  {
-    id: 5,
-    type: "listing",
-    name: "Phí làm nổi bật",
-    rate: 30000,
-    unit: "VND",
-    description: "Phí để làm nổi bật bài đăng (7 ngày)",
-    status: "active",
-  },
-
-  // Phí gói tài khoản
-  {
-    id: 6,
-    type: "account",
-    name: "Gói Premium - Tháng",
-    rate: 99000,
-    unit: "VND",
-    description: "Gói Premium 1 tháng - Đăng không giới hạn",
-    status: "active",
-  },
-  {
-    id: 7,
-    type: "account",
-    name: "Gói Premium - Năm",
-    rate: 990000,
-    unit: "VND",
-    description: "Gói Premium 1 năm - Đăng không giới hạn + ưu đãi",
-    status: "active",
-  },
-  {
-    id: 8,
-    type: "account",
-    name: "Gói Business",
-    rate: 199000,
-    unit: "VND",
-    description: "Gói Business - Dành cho đại lý, showroom",
-    status: "active",
-  },
+  [],
 ];
 
 // Reports and statistics data

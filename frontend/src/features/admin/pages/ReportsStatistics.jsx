@@ -1,134 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarChart3, TrendingUp, Users, DollarSign } from "lucide-react";
 import { Card } from "../../../components/ui/card";
-import { statsData, chartData } from "../../../data/data";
+import { statsData } from "../../../data/data";
+import StatsCards from "../components/StatsCards";
+import TitlePage from "../components/TitlePage";
+import BarChartComponent from "../components/BarChartComponent";
+import YearSelector from "../components/YearSelector";
+import reportService from "../services/reportService";
 
 const ReportsStatistics = () => {
   const [stats] = useState(statsData);
-  const [chartInfo] = useState(chartData);
+  const [selectedYear, setSelectedYear] = useState("2025");
+  const [monthlyData, setMonthlyData] = useState([]);
+
+  // Cập nhật dữ liệu khi năm thay đổi
+  useEffect(() => {
+    const yearData = reportService.getDataByYear(selectedYear);
+    setMonthlyData(yearData);
+  }, [selectedYear]);
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Báo cáo & Thống kê
-        </h1>
-        <p className="text-gray-600">
-          Tổng quan về hiệu suất hệ thống và các chỉ số
-        </p>
-      </div>
-
+      {/* Title and Description */}
+      <TitlePage
+        title="Báo cáo & Thống kê"
+        description="Tổng quan về hiệu suất hệ thống và các chỉ số"
+      />
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                Tổng người dùng
-              </p>
-              <p className="text-3xl font-bold text-gray-900">
-                {stats.totalUsers.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Users className="h-6 w-6 text-blue-600" />
-            </div>
-          </div>
-          <div className="mt-4 flex items-center"></div>
-        </Card>
+        <StatsCards
+          title="Tổng người dùng"
+          number={stats.totalUsers.toLocaleString()}
+          icon={<Users className="h-6 w-6 text-blue-600" />}
+        />
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Tổng bài đăng</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {stats.totalListings.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <BarChart3 className="h-6 w-6 text-green-600" />
-            </div>
-          </div>
-        </Card>
+        <StatsCards
+          title="Tổng bài đăng"
+          number={stats.totalListings.toLocaleString()}
+          icon={<BarChart3 className="h-6 w-6 text-green-600" />}
+        />
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Giao dịch</p>
-              <p className="text-3xl font-bold text-gray-900">
-                {stats.totalTransactions.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-yellow-100 rounded-full">
-              <TrendingUp className="h-6 w-6 text-yellow-600" />
-            </div>
-          </div>
-        </Card>
+        <StatsCards
+          title="Giao dịch"
+          number={stats.totalTransactions.toLocaleString()}
+          icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
+        />
 
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">
-                Tổng doanh thu
-              </p>
-              <p className="text-3xl font-bold text-gray-900">
-                ${stats.totalRevenue.toLocaleString()}
-              </p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <DollarSign className="h-6 w-6 text-purple-600" />
-            </div>
-          </div>
-        </Card>
+        <StatsCards
+          title="Tổng doanh thu"
+          number={`$${stats.totalRevenue.toLocaleString()}`}
+          icon={<DollarSign className="h-6 w-6 text-purple-600" />}
+        />
       </div>
+
+      {/* Year Selector */}
+      <YearSelector
+        selectedYear={selectedYear}
+        onYearChange={setSelectedYear}
+      />
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Doanh thu theo tháng
-          </h3>
-          <div className="space-y-4">
-            {chartInfo.map((data, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">{data.month}</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${(data.revenue / 30000) * 100}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-medium">
-                    ${data.revenue.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            ))}
+        <Card className="p-4">
+          <div className="h-80">
+            <BarChartComponent
+              data={monthlyData.map((item) => item.revenue)}
+              title="Doanh thu theo tháng (VND)"
+              color="rgba(53, 162, 235, 0.8)"
+              year={selectedYear}
+            />
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Giao dịch theo tháng
-          </h3>
-          <div className="space-y-4">
-            {chartInfo.map((data, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">{data.month}</span>
-                <div className="flex items-center space-x-2">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-green-600 h-2 rounded-full"
-                      style={{ width: `${(data.transactions / 100) * 100}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-medium">
-                    {data.transactions}
-                  </span>
-                </div>
-              </div>
-            ))}
+        <Card className="p-4">
+          <div className="h-80">
+            <BarChartComponent
+              data={monthlyData.map((item) => item.transactions)}
+              title="Số lượng giao dịch theo tháng"
+              color="rgba(255, 99, 132, 0.8)"
+              year={selectedYear}
+            />
           </div>
         </Card>
       </div>
