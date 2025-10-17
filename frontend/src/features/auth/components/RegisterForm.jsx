@@ -2,73 +2,52 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
+import { registerUser } from "../service";
+import FieldError from "./FieldError";
+import { validateRegister } from "../../../services/validations";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    display_name: "",
     phone: "",
     password: "",
     confirmPassword: "",
   });
-
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    //======Nhập tên========
-    if (!formData.name.trim()) {
-      newErrors.name = "Vui lòng nhập họ tên";
-    } else if (formData.name.length < 3) {
-      newErrors.name = "Tên quá ngắn, vui lòng nhập đầy đủ họ tên";
-    }
-    //======Nhập số điện thoại========
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại";
-    } else if (
-      !/^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(
-        formData.phone
-      )
-    ) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
-    //======Nhập mật khẩu========
-    if (!formData.password) {
-      newErrors.password = "Vui lòng nhập mật khẩu";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu cần ít nhất 6 ký tự";
-    }
-    //======Xác nhận mật khẩu========
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
-    } else if (formData.confirmPassword !== formData.password) {
-      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
+    const newErrors = validateRegister(formData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length) return;
 
+    try {
+      const payload = { ...formData };
+      delete payload.confirmPassword; // BE xóa trường này
+      const response = await registerUser(payload);
+      console.log("User registered successfully:", response);
       toast.success("Đăng ký thành công!", {
         description: "Chào mừng bạn đến với ReBev",
         duration: 3000,
       });
-      setFormData({ name: "", phone: "", password: "", confirmPassword: "" });
+      setFormData({
+        display_name: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      });
       setErrors({});
+    } catch (error) {
+      console.error("Error registering user:", error);
+      toast.error(error?.message || "Đăng ký thất bại");
     }
   };
+
   const handleGoogleLogin = () => {
     alert("Đăng nhập bằng Google");
   };
@@ -82,26 +61,24 @@ const RegisterForm = () => {
         <h2 className="mb-2 text-2xl font-bold text-center text-gray-800">
           Đăng Ký Tài Khoản
         </h2>
-        {/* ==== NHẬP TÊN ==== */}
+
+        {/* TÊN */}
         <div className="relative mb-8">
           <input
             type="text"
-            id="name"
-            name="name"
-            value={formData.name}
+            id="display_name"
+            name="display_name"
+            value={formData.display_name}
             onChange={handleChange}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? "border-red-500" : "border-gray-300"
+              errors.display_name ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="Nhập tên của bạn"
           />
-          {errors.name && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm w-max">
-              {errors.name}
-            </div>
-          )}
+          <FieldError message={errors.display_name} />
         </div>
-        {/* ==== NHẬP SỐ ĐIỆN THOẠI ==== */}
+
+        {/* SĐT */}
         <div className="relative mb-8">
           <input
             type="tel"
@@ -114,13 +91,10 @@ const RegisterForm = () => {
             }`}
             placeholder="Nhập số điện thoại"
           />
-          {errors.phone && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm w-max">
-              {errors.phone}
-            </div>
-          )}
+          <FieldError message={errors.phone} />
         </div>
-        {/* ==== NHẬP MẬT KHẨU ==== */}
+
+        {/* MẬT KHẨU */}
         <div className="relative mb-8">
           <input
             type="password"
@@ -133,14 +107,10 @@ const RegisterForm = () => {
             }`}
             placeholder="Nhập mật khẩu"
           />
-          {errors.password && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm w-max">
-              {errors.password}
-            </div>
-          )}
+          <FieldError message={errors.password} />
         </div>
 
-        {/* ==== XÁC NHẬN MẬT KHẨU ==== */}
+        {/* XÁC NHẬN */}
         <div className="relative mb-4">
           <input
             type="password"
@@ -152,11 +122,7 @@ const RegisterForm = () => {
             }`}
             placeholder="Xác nhận lại mật khẩu"
           />
-          {errors.confirmPassword && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm w-max">
-              {errors.confirmPassword}
-            </div>
-          )}
+          <FieldError message={errors.confirmPassword} />
         </div>
 
         <button
@@ -166,6 +132,7 @@ const RegisterForm = () => {
           Đăng Ký
         </button>
 
+        {/* social */}
         <div className="mt-8">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -177,7 +144,6 @@ const RegisterForm = () => {
               </span>
             </div>
           </div>
-
           <div className="flex justify-center mt-6 space-x-4">
             <Button
               variant="outline"
@@ -196,4 +162,3 @@ const RegisterForm = () => {
 };
 
 export default RegisterForm;
-

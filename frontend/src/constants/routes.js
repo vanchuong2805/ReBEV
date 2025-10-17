@@ -1,9 +1,8 @@
-
-
 export const ROUTES = {
   HOME: "/",
   PROFILE: "/profile",
   MARKETPLACE: "/marketplace",
+  MARKETPLACE_CATEGORY: "/marketplace/:category",
   POSTS: "/posts",
   UPGRADE: "/upgrade",
   CART: "/cart",
@@ -15,4 +14,3 @@ export const ROUTES = {
   },
   NOT_FOUND: "*",
 };
-

@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route, Router } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
-
 import { ROUTES } from "../constants/routes.js";
 import Home from "@/features/home/pages/Home";
 import ProfilePage from "@/features/profile/pages/ProfilePage.jsx";
@@ -21,6 +20,8 @@ import TransactionsSection from "@/features/profile/components/transactions/Tran
 import SettingsPage from "@/features/profile/components/settings/SettingsPage.jsx";
 import FavoritesList from "@/features/profile/components/favorites/FavoritesList.jsx";
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
+import AdminDashboard from "@/features/admin/pages/AdminPage.jsx";
+import ListingList from "@/features/marketplace/pages/ListingList.jsx";
 
 export default function AppRoutes() {
   return (
@@ -40,15 +41,19 @@ export default function AppRoutes() {
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
           </Route>
-          {/* <Route path={ROUTES.POSTS} element={<PostPage />} /> */}
+          <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
-          {/* <Route path={ROUTES.CART} element={<CartPage />} /> */}
+          <Route path={ROUTES.CART} element={<CartPage />} />
           <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
-          <Route path="/marketplace/listing/:listingId" element={<ListingDetail />} />
+          <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
+          <Route
+            path="/marketplace/listing/:listingId"
+            element={<ListingDetail />}
+          />
         </Route>
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />
-        
+        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
       </Routes>
     </>
   );

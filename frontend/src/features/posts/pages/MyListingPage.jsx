@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import ListingForm from "../components/ListingForm.jsx";
-import Gallery from "../components/Gallery.jsx";
+//import Gallery from "../components/Gallery.jsx";
 
 export default function MyListingPage() {
   const [items, setItems] = useState([]);
@@ -28,10 +28,10 @@ export default function MyListingPage() {
         <div className="lg:col-span-4">
           <ListingForm onSubmit={handleAdd} />
         </div>
-        <div className="lg:col-span-8">
+        {/* <div className="lg:col-span-8">
           <h5 className="mb-3 text-lg font-medium">Bài đăng của tôi</h5>
           <Gallery items={items} onRemove={handleRemove} />
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react"
-import axios from "axios"
-import { useAuthDialog } from "@/contexts/AuthDialogContext"
+import React, { useState, useEffect } from "react";
+import { useCart } from "@/contexts/CartContext";
+import axios from "axios";
+import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import {
   Search,
   ShoppingCart,
@@ -17,84 +18,86 @@ import {
   Clock,
   Route,
   ChevronDown,
-} from "lucide-react"
+} from "lucide-react";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   HoverCard,
   HoverCardTrigger,
   HoverCardContent,
-} from "@/components/ui/hover-card"
-import { Link } from "react-router"
-
+} from "@/components/ui/hover-card";
+import { Link } from "react-router";
+import { useUser } from "@/contexts/UserContext";
 // ========== GHN CONFIG ==========
-const GHN_API = import.meta.env.VITE_GHN_API
-const TOKEN = import.meta.env.VITE_GHN_TOKEN
+const GHN_API = import.meta.env.VITE_GHN_API;
+const TOKEN = import.meta.env.VITE_GHN_TOKEN;
 
 // ===== Header Component =====
-const Header = ({ user = 0 }) => {
-  const { openLogin, openRegister } = useAuthDialog()
-
+const Header = () => {
+  const { openLogin, openRegister } = useAuthDialog();
+  const { user, logout } = useUser();
   // ====== LOCATION STATES ======
-  const [provinces, setProvinces] = useState([])
-  const [districts, setDistricts] = useState([])
-  const [wards, setWards] = useState([])
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
 
-  const [selectedProvince, setSelectedProvince] = useState("")
-  const [selectedDistrict, setSelectedDistrict] = useState("")
-  const [selectedWard, setSelectedWard] = useState("")
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
 
-  const [provLoading, setProvLoading] = useState(false)
-  const [districtLoading, setDistrictLoading] = useState(false)
-  const [wardLoading, setWardLoading] = useState(false)
-  const [provError, setProvError] = useState(null)
-  const [wardError, setWardError] = useState(null)
+  const [provLoading, setProvLoading] = useState(false);
+  const [districtLoading, setDistrictLoading] = useState(false);
+  const [wardLoading, setWardLoading] = useState(false);
+  const [provError, setProvError] = useState(null);
+  const [wardError, setWardError] = useState(null);
 
+  const { items } = useCart();
+  const itemCount = items.length;
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     const fetchProvinces = async () => {
-      setProvLoading(true)
+      setProvLoading(true);
       try {
         const res = await axios.get(`${GHN_API}/master-data/province`, {
           headers: {
             "Content-Type": "application/json",
             Token: TOKEN,
           },
-        })
+        });
         setProvinces(
           res.data.data.filter(
-            p => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
+            (p) => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
           )
-        )
+        );
       } catch (err) {
-        console.error("❌ Error loading provinces:", err)
-        setProvError(err)
+        console.error("❌ Error loading provinces:", err);
+        setProvError(err);
       } finally {
-        setProvLoading(false)
+        setProvLoading(false);
       }
-    }
-    fetchProvinces()
-  }, [])
+    };
+    fetchProvinces();
+  }, []);
 
   // ======= FETCH DISTRICTS =======
   const handleProvinceChange = async (e) => {
-    const id = e.target.value
-    setSelectedProvince(id)
-    setSelectedDistrict("")
-    setSelectedWard("")
-    setDistricts([])
-    setWards([])
+    const id = e.target.value;
+    setSelectedProvince(id);
+    setSelectedDistrict("");
+    setSelectedWard("");
+    setDistricts([]);
+    setWards([]);
 
-    if (!id) return
+    if (!id) return;
     try {
-      setDistrictLoading(true)
+      setDistrictLoading(true);
       const res = await axios.post(
         `${GHN_API}/master-data/district`,
         { province_id: Number(id) },
@@ -104,25 +107,25 @@ const Header = ({ user = 0 }) => {
             Token: TOKEN,
           },
         }
-      )
-      setDistricts(res.data.data)
+      );
+      setDistricts(res.data.data);
     } catch (err) {
-      console.error("❌ Error loading districts:", err)
+      console.error("❌ Error loading districts:", err);
     } finally {
-      setDistrictLoading(false)
+      setDistrictLoading(false);
     }
-  }
+  };
 
   // ======= FETCH WARDS =======
   const handleDistrictChange = async (e) => {
-    const id = e.target.value
-    setSelectedDistrict(id)
-    setSelectedWard("")
-    setWards([])
+    const id = e.target.value;
+    setSelectedDistrict(id);
+    setSelectedWard("");
+    setWards([]);
 
-    if (!id) return
+    if (!id) return;
     try {
-      setWardLoading(true)
+      setWardLoading(true);
       const res = await axios.post(
         `${GHN_API}/master-data/ward`,
         { district_id: Number(id) },
@@ -132,31 +135,33 @@ const Header = ({ user = 0 }) => {
             Token: TOKEN,
           },
         }
-      )
-      setWards(res.data.data)
+      );
+      setWards(res.data.data);
     } catch (err) {
-      console.error("❌ Error loading wards:", err)
-      setWardError(err)
+      console.error("❌ Error loading wards:", err);
+      setWardError(err);
     } finally {
-      setWardLoading(false)
+      setWardLoading(false);
     }
-  }
+  };
 
   // ===== VARIATIONS (Giữ nguyên phần này) =====
-  const [groups, setGroups] = useState({})
-  const [loadingVariations, setLoadingVariations] = useState(true)
+  const [groups, setGroups] = useState({});
+  const [loadingVariations, setLoadingVariations] = useState(true);
 
   useEffect(() => {
     const fetchVariations = async () => {
       try {
-        const res = await axios.get("https://rebev.onrender.com/api/variationValues")
-        const roots = res.data.filter((item) => item.parent_id === null)
+        const res = await axios.get(
+          "https://rebev.onrender.com/api/variationValues"
+        );
+        const roots = res.data.filter((item) => item.parent_id === null);
 
         const grouped = roots.reduce((acc, item) => {
-          if (!acc[item.variation_id]) acc[item.variation_id] = []
-          acc[item.variation_id].push(item)
-          return acc
-        }, {})
+          if (!acc[item.variation_id]) acc[item.variation_id] = [];
+          acc[item.variation_id].push(item);
+          return acc;
+        }, {});
 
         setGroups({
           xe: {
@@ -170,26 +175,31 @@ const Header = ({ user = 0 }) => {
             "Dung lượng (Ah)": { icon: <Gauge size={14} />, data: grouped[9] },
             "Điện áp (V)": { icon: <Zap size={14} />, data: grouped[10] },
             "Thời gian sạc": { icon: <Clock size={14} />, data: grouped[11] },
-            "Quãng đường (km)": { icon: <Route size={14} />, data: grouped[12] },
-            "Tình trạng pin (%)": { icon: <Battery size={14} />, data: grouped[14] },
+            "Quãng đường (km)": {
+              icon: <Route size={14} />,
+              data: grouped[12],
+            },
+            "Tình trạng pin (%)": {
+              icon: <Battery size={14} />,
+              data: grouped[14],
+            },
             "Hãng pin": { icon: <Factory size={14} />, data: grouped[15] },
           },
-        })
+        });
       } catch (err) {
-        console.error("❌ Lỗi khi tải variationValues:", err)
+        console.error("❌ Lỗi khi tải variationValues:", err);
       } finally {
-        setLoadingVariations(false)
+        setLoadingVariations(false);
       }
-    }
-    fetchVariations()
-  }, [])
+    };
+    fetchVariations();
+  }, []);
 
   // ======== UI ========
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-[#007BFF]">
       <div className="container px-4 mx-auto lg:px-6">
         <div className="flex items-center justify-between gap-4 py-3">
-
           {/* ===== Logo + Danh mục ===== */}
           <div className="flex items-center gap-3">
             <Link className="flex items-center gap-1.5" to="/">
@@ -224,10 +234,10 @@ const Header = ({ user = 0 }) => {
                 {/* === Xe điện cũ === */}
                 <HoverCard openDelay={80} closeDelay={120}>
                   <HoverCardTrigger asChild>
-                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
-                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                    <div className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50">
+                      <span className="flex items-center gap-2 font-medium text-gray-800">
                         <Zap size={18} className="text-[#007BFF]" />
-                        Xe máy điện cũ
+                        <Link to={"/marketplace/xe"}>Xe máy điện cũ</Link>
                       </span>
                       <ChevronRight size={16} className="text-gray-400" />
                     </div>
@@ -240,12 +250,12 @@ const Header = ({ user = 0 }) => {
                     alignOffset={-9}
                     className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
                   >
-                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                    <h3 className="mb-5 text-lg font-semibold text-gray-700">
                       Bộ lọc xe điện
                     </h3>
 
                     {loadingVariations ? (
-                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                      <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
                         {Object.entries(groups.xe).map(([name, group]) =>
@@ -258,7 +268,9 @@ const Header = ({ user = 0 }) => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(
+                                      item.value
+                                    )}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -276,10 +288,10 @@ const Header = ({ user = 0 }) => {
                 {/* === Pin EV cũ === */}
                 <HoverCard openDelay={80} closeDelay={120}>
                   <HoverCardTrigger asChild>
-                    <div className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 rounded-lg cursor-pointer">
-                      <span className="flex items-center gap-2 text-gray-800 font-medium">
+                    <div className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50">
+                      <span className="flex items-center gap-2 font-medium text-gray-800">
                         <Battery size={18} className="text-[#007BFF]" />
-                        Pin EV cũ
+                        <Link to={"/marketplace/pin"}>Pin EV cũ</Link>
                       </span>
                       <ChevronRight size={16} className="text-gray-400" />
                     </div>
@@ -292,12 +304,12 @@ const Header = ({ user = 0 }) => {
                     alignOffset={-49}
                     className="w-[850px] max-h-[500px] bg-white border border-gray-200 shadow-2xl rounded-xl p-6 overflow-y-auto transition-all duration-200 ease-out"
                   >
-                    <h3 className="font-semibold text-gray-700 mb-5 text-lg">
+                    <h3 className="mb-5 text-lg font-semibold text-gray-700">
                       Bộ lọc pin điện
                     </h3>
 
                     {loadingVariations ? (
-                      <p className="text-gray-400 text-sm">Đang tải...</p>
+                      <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
                         {Object.entries(groups.pin).map(([name, group]) =>
@@ -310,7 +322,9 @@ const Header = ({ user = 0 }) => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(
+                                      item.value
+                                    )}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -330,7 +344,7 @@ const Header = ({ user = 0 }) => {
 
           {/* ===== Search + Location (phần này giữ nguyên, chỉ đổi lấy GHN API) ===== */}
           <div className="flex-1 max-w-3xl mx-4">
-            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white rounded-xl shadow-md">
+            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white shadow-md rounded-xl">
               <div className="relative flex-1">
                 <Search className="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
                 <Input
@@ -351,10 +365,12 @@ const Header = ({ user = 0 }) => {
                     <MapPin className="h-4 w-4 text-[#007BFF]" />
                     <span className="font-medium text-gray-700">
                       {selectedProvince
-                        ? provinces.find((p) => p.ProvinceID === Number(selectedProvince))?.ProvinceName
+                        ? provinces.find(
+                            (p) => p.ProvinceID === Number(selectedProvince)
+                          )?.ProvinceName
                         : provLoading
-                          ? "Đang tải khu vực..."
-                          : "Chọn khu vực"}
+                        ? "Đang tải khu vực..."
+                        : "Chọn khu vực"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </Button>
@@ -412,8 +428,8 @@ const Header = ({ user = 0 }) => {
                           {!selectedProvince
                             ? "Chọn tỉnh trước"
                             : districtLoading
-                              ? "Đang tải..."
-                              : "-- Chọn quận --"}
+                            ? "Đang tải..."
+                            : "-- Chọn quận --"}
                         </option>
                         {districts.map((d) => (
                           <option key={d.DistrictID} value={d.DistrictID}>
@@ -438,8 +454,8 @@ const Header = ({ user = 0 }) => {
                           {!selectedDistrict
                             ? "Chọn quận trước"
                             : wardLoading
-                              ? "Đang tải..."
-                              : "-- Chọn xã --"}
+                            ? "Đang tải..."
+                            : "-- Chọn xã --"}
                         </option>
                         {wards.map((w) => (
                           <option key={w.WardCode} value={w.WardCode}>
@@ -456,7 +472,8 @@ const Header = ({ user = 0 }) => {
                     </div>
                   </div>
 
-                  <Button className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
+                  <Button
+                    className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
                     disabled={provLoading}
                   >
                     Áp dụng
@@ -470,14 +487,30 @@ const Header = ({ user = 0 }) => {
             </div>
           </div>
           {/* User actions */}
-          {user == 0 ? (
+          {user ? (
             <nav className="flex items-center gap-2">
               <Button
+                asChild
                 variant="ghost"
                 size="icon"
                 className="w-10 h-10 text-white rounded-full hover:bg-white/20"
               >
-                <ShoppingCart className="w-5 h-5" />
+                <Link
+                  to="/cart"
+                  className="relative inline-flex items-center justify-center w-10 h-10 text-white rounded-full hover:bg-white/20"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {itemCount > 0 && (
+                    <span
+                      aria-label={`Có ${itemCount} mặt hàng trong giỏ`}
+                      className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1.5
+                 rounded-full bg-red-600 text-white text-[10px] font-semibold
+                 flex items-center justify-center leading-none shadow"
+                    >
+                      {itemCount > 99 ? "99+" : itemCount}
+                    </span>
+                  )}
+                </Link>
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -486,7 +519,12 @@ const Header = ({ user = 0 }) => {
                     className="flex items-center h-10 gap-2 px-3 text-white transition-colors rounded-full hover:bg-white/20"
                   >
                     <div className="w-8 h-8 bg-white text-[#007BFF] rounded-full flex items-center justify-center font-bold text-sm shadow-sm">
-                      PT
+                      {
+                        user.display_name
+                          .toUpperCase()
+                          .split(" ")
+                          .slice(-1)[0][0]
+                      }
                     </div>
                     <ChevronDown className="w-4 h-4" />
                   </Button>
@@ -496,21 +534,24 @@ const Header = ({ user = 0 }) => {
                     <Link to="/profile">Tài khoản</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="">Tin đăng của tôi</Link>
+                    <Link to="/profile/posts">Tin đăng của tôi</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to="/upgrade">Nâng cấp tài khoản</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    //onClick={logout}
+                    onClick={logout}
                     className="text-red-600 cursor-pointer py-2.5"
                   >
                     Đăng xuất
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg">
-                Đăng tin
+              <Button
+                asChild
+                className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg"
+              >
+                <Link to="/posts">Đăng tin</Link>
               </Button>
             </nav>
           ) : (

@@ -1,32 +1,32 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
-
+import FieldError from "./FieldError";
+import { validateLogin } from "../../../services/validations";
+import { loginUser } from "../service";
+import { useUser } from "../../../contexts/UserContext";
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const { login } = useUser();
 
   const handlePhoneLogin = (e) => {
     e.preventDefault();
-    const newErrors = {};
-
-    // ==== validate đơn giản ====
-    if (!phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại ";
-    } else if (
-      !/^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(phone)
-    )
-      newErrors.phone = "Số điện thoại không hợp lệ";
-
-    if (!password.trim()) newErrors.password = "Vui lòng nhập mật khẩu";
-
+    const newErrors = validateLogin({ phone, password });
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      alert(`Đăng nhập thành công bằng SĐT: ${phone}`);
-      // sau này gọi API login() ở đây
-    }
+    if (Object.keys(newErrors).length) return;
+    // Call login API
+    loginUser({ phone, password })
+      .then((response) => {
+        console.log("Login successful:", response);
+        // Handle successful login (e.g., store token, redirect)
+        login(response.user, response.token);
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        // Handle login error (e.g., show error message)
+      });
   };
 
   const handleGoogleLogin = () => {
@@ -52,14 +52,10 @@ const LoginForm = () => {
               errors.phone ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.phone && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm w-max">
-              {errors.phone}
-            </div>
-          )}
+          <FieldError message={errors.phone} />
         </div>
 
-        <div className="mb-8">
+        <div className="relative mb-8">
           <input
             id="password"
             type="password"
@@ -70,11 +66,7 @@ const LoginForm = () => {
               errors.password ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.password && (
-            <div className="absolute px-2 py-1 mt-1 text-xs text-red-600 bg-white border border-red-200 rounded shadow-sm left-13 w-max">
-              {errors.password}
-            </div>
-          )}
+          <FieldError message={errors.password} />
         </div>
 
         <Button
@@ -85,6 +77,7 @@ const LoginForm = () => {
         </Button>
       </form>
 
+      {/* social */}
       <div className="mt-8">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">

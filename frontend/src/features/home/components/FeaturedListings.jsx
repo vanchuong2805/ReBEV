@@ -1,7 +1,6 @@
-// src/features/home/components/FeaturedListings.jsx
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DEMO } from "../../../data";
 
 function currency(v) {
@@ -9,19 +8,53 @@ function currency(v) {
 }
 
 export default function FeaturedListings({ items = DEMO }) {
-  const [showAll, setShowAll] = useState(false);
-  const displayItems = showAll ? items : items.slice(0, 10);
+  const location = useLocation();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+
+  //  Sản phẩm của trang hiện tại
+  const displayItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return items.slice(start, start + itemsPerPage);
+  }, [currentPage, items]);
+
+  //  Hàm chuyển trang
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  //  Tạo danh sách trang hiển thị (với "..." nếu cần)
+  const getPaginationRange = () => {
+    const delta = 2; // số trang mỗi bên
+    const range = [];
+    const left = Math.max(2, currentPage - delta);
+    const right = Math.min(totalPages - 1, currentPage + delta);
+
+    if (left > 2) range.push("...");
+    for (let i = left; i <= right; i++) range.push(i);
+    if (right < totalPages - 1) range.push("...");
+    return [1, ...range, totalPages];
+  };
+
+  const pages = getPaginationRange();
 
   return (
     <section className="container mx-auto mt-8">
       <div className="flex items-end justify-between mb-3">
         <h2 className="text-lg font-semibold">Tất cả bài đăng</h2>
       </div>
+
+      {/* Grid hiển thị sản phẩm */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {displayItems.map((it) => (
           <Link
             key={it.id}
-            to={`/listings/${it.id}`}
+            to={`/marketplace/listing/${it.id}`}
+            state={{ from: location.pathname + location.search }}
             className="transition-shadow bg-white border rounded-xl hover:shadow-custom-md"
           >
             <div className="relative">
@@ -48,21 +81,51 @@ export default function FeaturedListings({ items = DEMO }) {
               <div className="text-sm font-medium text-gray-800 line-clamp-2">
                 {it.title}
               </div>
-              <div className="mt-1 text-[#007BFF] font-semibold">
-                {currency(it.price)}
+              <div className="mt-1 font-semibold text-red-600">
+                {currency(it.price)}{" "}
               </div>
-              <div className="mt-1 text-xs text-gray-500">{it.meta}</div>
             </div>
           </Link>
         ))}
       </div>
-      {!showAll && items.length > 10 && (
-        <div className="flex justify-center mt-6">
+
+      {/* Thanh phân trang */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-8">
           <button
-            onClick={() => setShowAll(true)}
-            className="bg-[#007BFF] text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+            onClick={() => goToPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-1 text-sm text-gray-600 bg-white border rounded-md hover:bg-gray-100 disabled:opacity-40"
           >
-            Xem thêm
+            ‹
+          </button>
+
+          {pages.map((page, i) =>
+            page === "..." ? (
+              <span key={i} className="px-3 text-gray-400 select-none">
+                ...
+              </span>
+            ) : (
+              <button
+                key={page}
+                onClick={() => goToPage(page)}
+                className={`px-3 py-1 text-sm font-medium rounded-md ${
+                  page === currentPage
+                    ? "bg-[#007BFF] text-white shadow-md scale-105 transition"
+                    : "bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {page}
+              </button>
+            )
+          )}
+
+          <button
+            onClick={() => goToPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1 text-sm text-gray-600 bg-white border rounded-md hover:bg-gray-100 disabled:opacity-40"
+          >
+            ›
           </button>
         </div>
       )}
