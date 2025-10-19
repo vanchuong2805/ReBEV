@@ -43,6 +43,7 @@ export const POST_STATUS = {
     DEPOSITED: 4,
     CANCELLED: 5,
     VERIFIED: 6,
+    RESERVED: 7,
 };
 
 export const TRANSITION_STATUS = {
@@ -69,9 +70,21 @@ export const ORDER_STATUS = {
     DELIVERING: 'DELIVERING',
     DELIVERED: 'DELIVERED',
     CANCELLED: 'CANCELLED',
+    FAILED: 'FAILED',
 };
 
 export const ORDER_STATUS_TRANSITION = {
     [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PENDING],
     [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING],
+};
+
+export const TRANSACTION_STATUS = {
+    SUCCESS: 0,
+};
+
+export const TRANSACTION_TYPE = {
+    BUY: 1,
+    DEPOSIT: 2,
+    REFUND: 3,
+    PACKAGE_FEE: 4,
 };

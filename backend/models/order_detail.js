@@ -39,14 +39,8 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: false,
             },
             appointment_time: {
-                type: DataTypes.DATE,
+                type: DataTypes.STRING,
                 allowNull: false,
-                set(value) {
-                    this.setDataValue(
-                        'appointment_time',
-                        dayjs(value).format('YYYY-MM-DD HH:mm:ss')
-                    );
-                },
             },
             contract_file: {
                 type: DataTypes.STRING(1000),

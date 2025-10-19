@@ -5,9 +5,10 @@ const getAll = async () => {
     return data;
 };
 
-const getById = async (id) => {
+const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
+        ...options
     });
     return data;
 };

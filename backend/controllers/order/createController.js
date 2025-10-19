@@ -2,9 +2,10 @@ import { sequelize } from '../../models/index.js';
 import baseService from '../../services/address/baseService.js';
 import orderService from '../../services/order/orderService.js';
 import orderStatusService from '../../services/order/orderStatusService.js';
-import { ORDER_STATUS, ORDER_TYPE } from '../../config/constants.js';
+import { ORDER_STATUS, ORDER_TYPE, POST_STATUS } from '../../config/constants.js';
 import orderDetailService from '../../services/order/orderDetailService.js';
 import userContactService from '../../services/user/userContactService.js';
+import postService from '../../services/post/postService.js';
 import dayjs from 'dayjs';
 
 const createOrder = async (req, res) => {
@@ -68,6 +69,33 @@ const createOrder = async (req, res) => {
             },
             { transaction: t }
         );
+        for (const item of order_details) {
+            const post = await postService.getById(item.post_id, {
+                lock: t.LOCK.UPDATE,
+                transaction: t,
+            });
+            if (!post || post.user_id !== seller_id || post.is_deleted || post.is_hidden) {
+                await t.rollback();
+                return res.status(404).json({ error: `Post with ID ${item.post_id} not found` });
+            }
+
+            if (post.status !== POST_STATUS.APPROVED) {
+                await t.rollback();
+                return res.status(400).json({
+                    error: `Post with ID ${item.post_id} is not approved or bought by order`,
+                });
+            }
+
+            await postService.updateStatus(item.post_id, POST_STATUS.RESERVED, { transaction: t });
+            await orderDetailService.createOrderDetail(
+                {
+                    ...item,
+                    order_id: newOrder.id,
+                    appointment_time: dayjs(item.appointment_time).format('YYYY-MM-DD HH:mm:ss'),
+                },
+                { transaction: t }
+            );
+        }
         await orderStatusService.createOrderStatus(
             {
                 order_id: newOrder.id,
@@ -75,13 +103,6 @@ const createOrder = async (req, res) => {
             },
             { transaction: t }
         );
-
-        const details = order_details.map((detail) => ({
-            ...detail,
-            order_id: newOrder.id,
-            appointment_time: dayjs(detail.appointment_time).format('YYYY-MM-DD HH:mm:ss'),
-        }));
-        await orderDetailService.createOrderDetails(details, { transaction: t });
         await t.commit();
         res.status(201).json({ message: 'Order created successfully', order: newOrder });
     } catch (error) {

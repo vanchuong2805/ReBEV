@@ -13,5 +13,4 @@ userRouter.post('/register', registerUser);
 userRouter.post('/login/phone', loginUserByPhone);
 userRouter.post('/login/google', loginUserByGoogle);
 
-
 export default userRouter;
