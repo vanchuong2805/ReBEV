@@ -1,4 +1,3 @@
-
 export const ERROR_MESSAGE = {
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
@@ -41,6 +40,7 @@ export const SUCCESS_MESSAGE = {
     DELETE_CART_SUCCESS: 'Deleting cart item successful',
     CREATE_FAVORITE_SUCCESS: 'Creating favorite post successful',
     DELETE_FAVORITE_SUCCESS: 'Deleting favorite post successful',
+    UPDATE_USER_SUCCESS: 'Updating user successful',
 }
 
 export const POST_STATUS = {
