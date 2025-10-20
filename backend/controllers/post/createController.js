@@ -6,7 +6,6 @@ const createPost = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const {
-            user_id,
             category_id,
             title,
             description,
@@ -16,8 +15,8 @@ const createPost = async (req, res) => {
             mediaFiles,
             details,
         } = req.body;
+        const user_id = req.user.id;
         if (
-            !user_id ||
             !category_id ||
             !title ||
             price === undefined ||

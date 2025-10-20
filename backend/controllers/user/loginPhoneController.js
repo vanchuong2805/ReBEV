@@ -2,6 +2,8 @@ import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
 import userService from '../../services/user/userService.js'
 import bcrypt from 'bcrypt';
+import jwtService from '../../services/auth/jwtService.js';
+
 
 const loginUserByPhone = async (req, res) => {
     try {
@@ -33,10 +35,33 @@ const loginUserByPhone = async (req, res) => {
             return res.status(401).json(ERROR_MESSAGE.PHONE_PASSWORD_INCORRECT);
         }
 
+        if (accountUser.is_locked) {
+            return res.status(403).json(ERROR_MESSAGE.ACCOUNT_LOCKED);
+        }
+
+        //Create access token and refresh token
+        //Create payload
+        const payload = {
+            id: accountUser.id,
+            display_name: accountUser.display_name,
+            role: accountUser.role,
+            avatar: accountUser.avatar,
+            package_id: accountUser.package_id,
+            package_start: accountUser.package_start,
+        }
+
+        const accessToken = jwtService.createAccessToken(payload);
+        const refreshToken = await jwtService.createRefreshToken({ userId: accountUser.id });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: true
+        });
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.LOGIN_SUCCESS,
             user: accountUser,
+            accessToken,
         });
 
     } catch (error) {

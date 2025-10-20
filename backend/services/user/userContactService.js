@@ -1,6 +1,6 @@
 import models from '../../models/index.js';
 const { contacts } = models;
-const { user } = models;
+const { users } = models;
 
 const getUserContacts = async (options) => {
     const data = await contacts.findAll({
@@ -27,7 +27,7 @@ const getUserContactsByUserId = async (userId) => {
 };
 
 const getUserById = async (id) => {
-    const data = await user.findByPk(id);
+    const data = await users.findByPk(id);
     return data;
 }
 
