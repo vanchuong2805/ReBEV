@@ -6,6 +6,15 @@ const getAll = async () => {
     return data;
 }
 
+const getByPostId = async (postId) => {
+    const data = await favorite_posts.findOne({
+        where: {
+            post_id: postId
+        }
+    });
+    return data;
+}
+
 const getByUserId = async (userId) => {
     const data = await favorite_posts.findAll({
         where: {
@@ -53,6 +62,7 @@ const deleteFavoritePost = async ({
 export default {
     getAll,
     getByUserId,
+    getByPostId,
     findFavoritePost,
     createFavoritePost,
     deleteFavoritePost

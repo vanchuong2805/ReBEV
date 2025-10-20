@@ -7,7 +7,7 @@ const getCarts = async () => {
 }
 
 const getCartByPostId = async (postId) => {
-    const data = await cart_items.findAll({
+    const data = await cart_items.findOne({
         where: {
             post_id: postId
         }
@@ -48,13 +48,9 @@ const createCart = async ({
     return data;
 }
 
-const deleteCart = async ({
-    post_id,
-}) => {
+const deleteCart = async (key) => {
     const data = await cart_items.destroy({
-        where: {
-            post_id: post_id
-        }
+        where: key
     });
     return data;
 }

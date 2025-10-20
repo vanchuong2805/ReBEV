@@ -1,4 +1,3 @@
-
 export const ERROR_MESSAGE = {
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
@@ -23,6 +22,12 @@ export const ERROR_MESSAGE = {
     CART_ITEM_NOT_FOUND: 'Cart item not found.',
     DELETE_CART_FAIL: 'Deleting cart item failed.',
     ACCOUNT_LOCKED: 'Your account has been locked. Please contact the administrator.',
+    CREATE_FAVORITE_FAIL: 'Creating favorite post failed.',
+    FAVORITE_POST_EXISTED: 'This post is already in your favorite list.',
+    FAVORITE_POST_NOT_FOUND: 'Favorite post not found.',
+    DELETE_FAVORITE_FAIL: 'Deleting favorite post failed.',
+    POST_NOT_FOUND: 'Post not found.',
+    FAVORITE_NOT_FOUND: 'Favorite not found.',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -33,6 +38,9 @@ export const SUCCESS_MESSAGE = {
     DELETE_CONTACT_SUCCESS: 'Deleting contact successful',
     CREATE_CART_SUCCESS: 'Creating cart successful',
     DELETE_CART_SUCCESS: 'Deleting cart item successful',
+    CREATE_FAVORITE_SUCCESS: 'Creating favorite post successful',
+    DELETE_FAVORITE_SUCCESS: 'Deleting favorite post successful',
+    UPDATE_USER_SUCCESS: 'Updating user successful',
 }
 
 export const POST_STATUS = {

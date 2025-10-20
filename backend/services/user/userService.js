@@ -38,6 +38,7 @@ const getUserByPhone = async (phoneUser) => {
     return data;
 };
 
+
 const createUser = async ({ display_name, email, phone, password }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.create({
@@ -49,11 +50,27 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const updateUser = async (id, { display_name, email, phone, password }) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const data = await users.update({
+        display_name,
+        email,
+        phone,
+        password: hashedPassword,
+    }, {
+        where: {
+            id
+        }
+    });
+    return data;
+}
+
 export default {
     getUsers,
     getUser,
     getUsersByRole,
     getUserByEmail,
     getUserByPhone,
-    createUser
+    createUser,
+    updateUser
 };
