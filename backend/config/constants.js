@@ -1,4 +1,3 @@
-
 export const ERROR_MESSAGE = {
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
@@ -23,7 +22,7 @@ export const ERROR_MESSAGE = {
     CART_ITEM_NOT_FOUND: 'Cart item not found.',
     DELETE_CART_FAIL: 'Deleting cart item failed.',
     ACCOUNT_LOCKED: 'Your account has been locked. Please contact the administrator.',
-}
+};
 
 export const SUCCESS_MESSAGE = {
     REGISTER_SUCCESS: 'Register successful',
@@ -33,7 +32,7 @@ export const SUCCESS_MESSAGE = {
     DELETE_CONTACT_SUCCESS: 'Deleting contact successful',
     CREATE_CART_SUCCESS: 'Creating cart successful',
     DELETE_CART_SUCCESS: 'Deleting cart item successful',
-}
+};
 
 export const POST_STATUS = {
     PENDING: 0,
@@ -66,16 +65,20 @@ export const ORDER_TYPE = {
 
 export const ORDER_STATUS = {
     PENDING: 'PENDING',
+    PAID: 'PAID',
     CONFIRMED: 'CONFIRMED',
     DELIVERING: 'DELIVERING',
     DELIVERED: 'DELIVERED',
     CANCELLED: 'CANCELLED',
-    FAILED: 'FAILED',
+    FAIL_PAY: 'FAIL_PAY',
 };
 
 export const ORDER_STATUS_TRANSITION = {
-    [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PENDING],
-    [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING],
+    [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PAID],
+    [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING, ORDER_STATUS.PAID],
+    [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.CONFIRMED],
+    [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.DELIVERING],
+    [ORDER_STATUS.PAID]: [ORDER_STATUS.PENDING],
 };
 
 export const TRANSACTION_STATUS = {
@@ -87,4 +90,6 @@ export const TRANSACTION_TYPE = {
     DEPOSIT: 2,
     REFUND: 3,
     PACKAGE_FEE: 4,
+    RELEASE: 5,
+    CASH_OUT: 6,
 };

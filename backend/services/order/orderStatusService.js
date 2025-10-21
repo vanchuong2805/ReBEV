@@ -10,13 +10,12 @@ const getAll = async () => {
 const getCurrentStatus = async (orderId) => {
     const status = await order_status.findOne({
         where: { order_id: orderId },
-        limit: 1,
         order: [['create_at', 'DESC']],
     });
     return status;
 };
 
-const createOrderStatus = async (data, options) => {
+const createOrderStatus = async (data, options = {}) => {
     const status = await order_status.create(data, options);
     return status;
 }

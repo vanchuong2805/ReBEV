@@ -6,10 +6,15 @@ const getAll = async () => {
     return data;
 };
 
+const getByOrderId = async (orderId) => {
+    const data = await order_detail.findAll({ where: { order_id: orderId } });
+    return data;
+};
+
 const createOrderDetails = async (data, options) => {
     const orderDetails = await order_detail.bulkCreate(data, options);
     return orderDetails;
-}
+};
 
 const createOrderDetail = async (data, options) => {
     const orderDetail = await order_detail.create(data, options);
@@ -19,5 +24,6 @@ const createOrderDetail = async (data, options) => {
 export default {
     getAll,
     createOrderDetails,
-    createOrderDetail
+    createOrderDetail,
+    getByOrderId,
 };
