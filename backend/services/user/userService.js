@@ -1,3 +1,4 @@
+import { Sequelize } from 'sequelize';
 import models from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
@@ -50,6 +51,13 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const deposit = async (userId, amount, options) => {
+    const user = await users.findByPk(userId);
+    if (!user) throw new Error('User not found');
+    user.balance += amount;
+    await user.save({ ...options });
+    return user;
+};
 const updateUser = async (id, { display_name, email, phone, password }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.update({
@@ -57,9 +65,22 @@ const updateUser = async (id, { display_name, email, phone, password }) => {
         email,
         phone,
         password: hashedPassword,
+        update_at: Sequelize.literal('GETDATE()')
     }, {
         where: {
             id
+        }
+    });
+    return data;
+};
+
+const updatePackage = async (user_id, { package_id }) => {
+    const data = await users.update({
+        package_id,
+        package_start: Sequelize.literal('GETDATE()')
+    }, {
+        where: {
+            id: user_id
         }
     });
     return data;
@@ -72,5 +93,6 @@ export default {
     getUserByEmail,
     getUserByPhone,
     createUser,
+    deposit,
     updateUser
 };

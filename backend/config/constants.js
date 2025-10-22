@@ -28,6 +28,8 @@ export const ERROR_MESSAGE = {
     DELETE_FAVORITE_FAIL: 'Deleting favorite post failed.',
     POST_NOT_FOUND: 'Post not found.',
     FAVORITE_NOT_FOUND: 'Favorite not found.',
+    UPDATE_USER_FAIL: 'Updating user failed.',
+    PACKAGE_NOT_FOUND: 'Package not found.',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -51,6 +53,7 @@ export const POST_STATUS = {
     DEPOSITED: 4,
     CANCELLED: 5,
     VERIFIED: 6,
+    RESERVED: 7,
 };
 
 export const TRANSITION_STATUS = {
@@ -73,13 +76,31 @@ export const ORDER_TYPE = {
 
 export const ORDER_STATUS = {
     PENDING: 'PENDING',
+    PAID: 'PAID',
     CONFIRMED: 'CONFIRMED',
     DELIVERING: 'DELIVERING',
     DELIVERED: 'DELIVERED',
     CANCELLED: 'CANCELLED',
+    FAIL_PAY: 'FAIL_PAY',
 };
 
 export const ORDER_STATUS_TRANSITION = {
-    [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PENDING],
-    [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING],
+    [ORDER_STATUS.CONFIRMED]: [ORDER_STATUS.PAID],
+    [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING, ORDER_STATUS.PAID],
+    [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.CONFIRMED],
+    [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.DELIVERING],
+    [ORDER_STATUS.PAID]: [ORDER_STATUS.PENDING],
+};
+
+export const TRANSACTION_STATUS = {
+    SUCCESS: 0,
+};
+
+export const TRANSACTION_TYPE = {
+    BUY: 1,
+    DEPOSIT: 2,
+    REFUND: 3,
+    PACKAGE_FEE: 4,
+    RELEASE: 5,
+    CASH_OUT: 6,
 };

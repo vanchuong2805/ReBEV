@@ -5,9 +5,10 @@ const getAll = async () => {
     return data;
 };
 
-const getById = async (id) => {
+const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
+        ...options
     });
     return data;
 };
@@ -42,6 +43,7 @@ const updateStatus = async (postId, status, options = {}) => {
 const changeVisibility = async (postId, isHidden, options = {}) => {
     return await posts.update({ is_hidden: isHidden }, { where: { id: postId }, ...options });
 };
+
 
 export default {
     getAll,
