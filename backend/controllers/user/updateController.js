@@ -25,18 +25,21 @@ const updateUser = async (req, res) => {
             return error.push(ERROR_MESSAGE.USER_NOT_FOUND);
         }
 
-        if (!display_name) {
-            error.push(ERROR_MESSAGE.DISPLAY_NAME_BLANK);
+        const data = {};
+
+        if (display_name) {
+            data.display_name = display_name;
         }
 
-        if (!password) {
-            error.push(ERROR_MESSAGE.PASSWORD_BLANK);
+        if (password) {
+            data.password = password;
         }
+
+
 
         const newUser = await userService.updateUser(id, {
-            display_name,
-            password,
             avatar,
+            ...data,
             update_at: new Date()
         });
         res.status(200).json({
