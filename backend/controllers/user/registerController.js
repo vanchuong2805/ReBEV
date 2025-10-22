@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
                 errors: errors
             });
         }
-
+        
         const newUser = await userService.createUser({ display_name, phone, password });
 
         res.status(200).json({
