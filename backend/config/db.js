@@ -9,6 +9,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
         options: {
             encrypt: true,
             trustServerCertificate: true,
+            useUTC: false,
         },
     },
     logging: true,
@@ -16,6 +17,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
         timestamps: false,
         freezeTableName: true,
     },
+    timezone: '+07:00',
 });
 
 export default sequelize;

@@ -9,6 +9,7 @@ import orderRouter from './orderRoutes.js';
 import cartRouter from './cartRoutes.js';
 import contactRouter from './contactRoutes.js';
 import authRouter from './authRoutes.js';
+import transactionRouter from './transactionRoutes.js';
 import favoritePostRouter from './favoritePostRoutes.js';
 import packageRoute from './packageRoutes.js';
 const router = express.Router();
@@ -23,6 +24,7 @@ router.use('/orders', orderRouter);
 router.use('/carts', cartRouter);
 router.use('/contacts', contactRouter);
 router.use('/auth', authRouter);
+router.use('/transactions', transactionRouter);
 router.use('/favorites', favoritePostRouter);
 router.use('/packages', packageRoute);
 
