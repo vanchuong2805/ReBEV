@@ -37,6 +37,7 @@ const updateUser = async (req, res) => {
             display_name,
             password,
             avatar,
+            update_at: new Date()
         });
         res.status(200).json({
             message: SUCCESS_MESSAGE.UPDATE_USER_SUCCESS,

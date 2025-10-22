@@ -1,3 +1,4 @@
+import { Sequelize } from 'sequelize';
 import models from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
@@ -57,9 +58,22 @@ const updateUser = async (id, { display_name, email, phone, password }) => {
         email,
         phone,
         password: hashedPassword,
+        update_at: Sequelize.literal('GETDATE()')
     }, {
         where: {
             id
+        }
+    });
+    return data;
+};
+
+const updatePackage = async (user_id, { package_id }) => {
+    const data = await users.update({
+        package_id,
+        package_start: Sequelize.literal('GETDATE()')
+    }, {
+        where: {
+            id: user_id
         }
     });
     return data;
@@ -72,5 +86,6 @@ export default {
     getUserByEmail,
     getUserByPhone,
     createUser,
-    updateUser
+    updateUser,
+    updatePackage
 };
