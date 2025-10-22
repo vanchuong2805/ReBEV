@@ -49,11 +49,20 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const deposit = async (userId, amount, options) => {
+    const user = await users.findByPk(userId);
+    if (!user) throw new Error('User not found');
+    user.balance += amount;
+    await user.save({ ...options });
+    return user;
+};
+
 export default {
     getUsers,
     getUser,
     getUsersByRole,
     getUserByEmail,
     getUserByPhone,
-    createUser
+    createUser,
+    deposit,
 };

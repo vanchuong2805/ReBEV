@@ -20,8 +20,8 @@ const createOrderStatus = async (data, options = {}) => {
     return status;
 }
 
-const updateOrderStatus = async (data) => {
-    const result = await order_status.create(data);
+const updateOrderStatus = async (data, options = {}) => {
+    const result = await order_status.create(data, options);
     return result;
 }
 

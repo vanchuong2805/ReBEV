@@ -48,7 +48,7 @@ function initModels(sequelize) {
   users.belongsToMany(posts, { as: 'post_id_posts_favorite_posts', through: favorite_posts, foreignKey: "user_id", otherKey: "post_id" });
   posts.belongsTo(bases, { as: "base", foreignKey: "base_id"});
   bases.hasMany(posts, { as: "posts", foreignKey: "base_id"});
-  post_detail.belongsTo(categories, { as: "variation", foreignKey: "variation_id"});
+  post_detail.belongsTo(variations, { as: "variations", foreignKey: "variation_id"});
   categories.hasMany(post_detail, { as: "post_details", foreignKey: "variation_id"});
   posts.belongsTo(categories, { as: "category", foreignKey: "category_id"});
   categories.hasMany(posts, { as: "posts", foreignKey: "category_id"});
