@@ -14,6 +14,6 @@ router.post('/', authMiddleware, authorize(ROLE.MEMBER), createPost);
 router.get('/', getPosts);
 router.get('/:id', getPost);
 router.patch('/:id/visibility', authMiddleware, visibilityController);
-router.patch('/:id/delete', authMiddleware,deleteController);
-router.patch('/:id/status',authMiddleware, authorize([ROLE.ADMIN, ROLE.STAFF]), changeStatusController);
+router.patch('/:id/delete', authMiddleware, deleteController);
+router.patch('/:id/status', authMiddleware, authorize([ROLE.ADMIN, ROLE.STAFF]), changeStatusController);
 export default router;
