@@ -28,6 +28,8 @@ export const ERROR_MESSAGE = {
     DELETE_FAVORITE_FAIL: 'Deleting favorite post failed.',
     POST_NOT_FOUND: 'Post not found.',
     FAVORITE_NOT_FOUND: 'Favorite not found.',
+    UPDATE_USER_FAIL: 'Updating user failed.',
+    PACKAGE_NOT_FOUND: 'Package not found.',
 }
 
 export const SUCCESS_MESSAGE = {
