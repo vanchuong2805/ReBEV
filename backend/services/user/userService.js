@@ -50,6 +50,13 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const deposit = async (userId, amount, options) => {
+    const user = await users.findByPk(userId);
+    if (!user) throw new Error('User not found');
+    user.balance += amount;
+    await user.save({ ...options });
+    return user;
+};
 const updateUser = async (id, { display_name, email, phone, password }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.update({
@@ -72,5 +79,6 @@ export default {
     getUserByEmail,
     getUserByPhone,
     createUser,
+    deposit,
     updateUser
 };
