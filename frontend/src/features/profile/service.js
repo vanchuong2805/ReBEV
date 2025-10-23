@@ -1,0 +1,84 @@
+import axios from "axios"
+
+const GHN_API = import.meta.env.VITE_GHN_API
+const TOKEN = import.meta.env.VITE_GHN_TOKEN
+
+const headers = {
+  "Content-Type": "application/json",
+  Token: TOKEN,
+}
+
+const API_BASE_URL = "https://rebev.up.railway.app/api";
+
+export const fetchProvinces = async () => {
+  const res = await axios.get(`${GHN_API}/master-data/province`, { headers })
+  return res.data.data.filter(
+    (p) => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
+  )
+}
+
+export const fetchDistricts = async (province_id) => {
+  if (!province_id) return []
+  const res = await axios.post(
+    `${GHN_API}/master-data/district`,
+    { province_id: Number(province_id) },
+    { headers }
+  )
+  return res.data.data
+}
+
+export const fetchWards = async (district_id) => {
+  if (!district_id) return []
+  const res = await axios.post(
+    `${GHN_API}/master-data/ward`,
+    { district_id: Number(district_id) },
+    { headers }
+  )
+  return res.data.data
+}
+
+export const getContactByUserId = async (id) => {
+  const res = await axios.get(`${API_BASE_URL}/contacts/${id}`)
+  return res.data
+}
+export const createContact = async (contactData) => {
+  const res = await axios.post(`${API_BASE_URL}/contacts/contact-details`, contactData, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+  return res.data
+}
+export const deleteContact = async (id) => {
+  const res = await axios.patch(`${API_BASE_URL}/contacts/${id}/delete`)
+  return res.data
+}
+export const updateContact = async (id, data) => {
+  const res = await axios.put(
+    `${API_BASE_URL}/contacts/update/contact-details`,
+    { id, ...data },
+    { headers: { "Content-Type": "application/json" } }
+  )
+  return res.data
+}
+export const updateProfile = async (id, data) => {
+  const token = localStorage.getItem("token")
+  const res = await axios.put(
+    `${API_BASE_URL}/users/${id}/update`,
+    { ...data },
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  console.log(data)
+  return res.data
+}
+export const changePassword = async (id, oldPassword, newPassword) => {
+  const token = localStorage.getItem("token")
+  const res = await axios.put(
+    `${API_BASE_URL}/users/${id}/update-password`,
+    { oldPassword, newPassword },
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  console.log(res)
+  return res
+}
+
