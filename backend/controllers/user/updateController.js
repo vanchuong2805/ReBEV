@@ -14,29 +14,20 @@ const updateUser = async (req, res) => {
 
         const {
             display_name,
-            password,
             avatar
         } = req.body;
         const error = [];
 
-        const user = await userService.getUser(id);
+        const data = {};
 
-        if (!user) {
-            return error.push(ERROR_MESSAGE.USER_NOT_FOUND);
-        }
-
-        if (!display_name) {
-            error.push(ERROR_MESSAGE.DISPLAY_NAME_BLANK);
-        }
-
-        if (!password) {
-            error.push(ERROR_MESSAGE.PASSWORD_BLANK);
+        if (display_name) {
+            data.display_name = display_name;
         }
 
         const newUser = await userService.updateUser(id, {
-            display_name,
-            password,
             avatar,
+            ...data,
+            update_at: new Date()
         });
         res.status(200).json({
             message: SUCCESS_MESSAGE.UPDATE_USER_SUCCESS,

@@ -6,6 +6,8 @@ import getAll from '../controllers/user/getAllController.js';
 import getUser from '../controllers/user/getUserController.js';
 import updateUser from '../controllers/user/updateController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
+import registerPackage from '../controllers/user/registerPackageController.js';
+import updatePassword from '../controllers/user/updatePasswordController.js';
 
 const userRouter = express.Router();
 
@@ -15,5 +17,7 @@ userRouter.post('/register', registerUser);
 userRouter.post('/login/phone', loginUserByPhone);
 userRouter.post('/login/google', loginUserByGoogle);
 userRouter.put('/:id/update', authMiddleware, updateUser);
+userRouter.post('/:user_id/register-package/:package_id', authMiddleware, registerPackage);
+userRouter.put('/:id/update-password', authMiddleware, updatePassword);
 
 export default userRouter;
