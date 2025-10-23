@@ -14,28 +14,15 @@ const updateUser = async (req, res) => {
 
         const {
             display_name,
-            password,
             avatar
         } = req.body;
         const error = [];
-
-        const user = await userService.getUser(id);
-
-        if (!user) {
-            return error.push(ERROR_MESSAGE.USER_NOT_FOUND);
-        }
 
         const data = {};
 
         if (display_name) {
             data.display_name = display_name;
         }
-
-        if (password) {
-            data.password = password;
-        }
-
-
 
         const newUser = await userService.updateUser(id, {
             avatar,

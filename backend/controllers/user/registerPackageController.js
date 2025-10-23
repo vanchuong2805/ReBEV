@@ -6,6 +6,12 @@ import packageService from "../../services/package/packageService.js";
 const registerPackage = async (req, res) => {
     try {
         const { user_id, package_id } = req.params;
+        const userId = req.user.id;
+
+        if (parseInt(user_id) !== userId) {
+            return res.status(403).json({ error: "Forbidden" });
+        }
+
         const errors = [];
         const user = await userService.getUser(user_id);
         const packages = await packageService.getPackage(package_id);
