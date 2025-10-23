@@ -10,6 +10,13 @@ import authorize from '../middlewares/authorize.js';
 import { ROLE } from '../config/constants.js';
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Posts
+ *   description: API quản lý bài đăng
+ */
+
 router.post('/', authMiddleware, authorize(ROLE.MEMBER), createPost);
 router.get('/', getPosts);
 router.get('/:id', getPost);
