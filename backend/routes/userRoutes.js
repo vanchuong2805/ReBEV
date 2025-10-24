@@ -21,8 +21,8 @@ const userRouter = express.Router();
  *   description: API quản lý người dùng
  */
 
-userRouter.get('/', authMiddleware, authorize([1, 2]), getAll);
-userRouter.get('/:id', authMiddleware, authorize([1, 2]), getUser);
+userRouter.get('/', getAll);
+userRouter.get('/:id', getUser);
 userRouter.post('/register', registerUser);
 userRouter.post('/login/phone', loginUserByPhone);
 userRouter.post('/login/google', loginUserByGoogle);
