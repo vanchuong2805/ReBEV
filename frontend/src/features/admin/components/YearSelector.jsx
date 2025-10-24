@@ -1,8 +1,8 @@
 import React from "react";
 
 const YearSelector = ({ selectedYear, onYearChange }) => {
-  // Tạo danh sách năm từ 2020 đến 2030
-  const years = Array.from({ length: 11 }, (_, i) => 2020 + i);
+  // Tạo danh sách năm từ 2025 đến 2035
+  const years = Array.from({ length: 11 }, (_, i) => 2025 + i);
 
   return (
     <div className="flex items-center justify-end mb-4">

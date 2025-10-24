@@ -2,7 +2,6 @@
 
 // Users data
 
-export const usersData = [];
 
 // Listings data
 export const listingsData = [

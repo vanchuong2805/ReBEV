@@ -13,11 +13,11 @@ export default function ListingCard({
 }) {
   const getStatusIcon = (status) => {
     switch (status) {
-      case "approved":
+      case 1:
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "pending":
+      case 0:
         return <Clock className="h-4 w-4 text-yellow-500" />;
-      case "rejected":
+      case 2:
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
@@ -26,11 +26,11 @@ export default function ListingCard({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "approved":
+      case 1:
         return "bg-green-100 text-green-800";
-      case "pending":
+      case 0:
         return "bg-yellow-100 text-yellow-800";
-      case "rejected":
+      case 2:
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -39,11 +39,11 @@ export default function ListingCard({
 
   const getStatusText = (status) => {
     switch (status) {
-      case "approved":
+      case 1:
         return "Đã duyệt";
-      case "pending":
+      case 0:
         return "Chờ duyệt";
-      case "rejected":
+      case 2:
         return "Từ chối";
       default:
         return status;
@@ -54,9 +54,7 @@ export default function ListingCard({
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Image */}
         <div className="w-full lg:w-48 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-          <span className="text-gray-500 text-sm">
-            {listing.images.length} ảnh
-          </span>
+          <span className="text-gray-500 text-sm"> ảnh</span>
         </div>
 
         {/* Details */}
@@ -67,26 +65,14 @@ export default function ListingCard({
                 <h3 className="text-lg font-semibold text-gray-900">
                   {listing.title}
                 </h3>
-
-                {listing.reportCount > 0 && (
-                  <Badge className="bg-orange-100 text-orange-800 border-0">
-                    <Flag className="h-3 w-3 mr-1" />
-                    {listing.reportCount} Báo cáo
-                  </Badge>
-                )}
               </div>
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>{listing.id}</span>
+                <span>ID: {listing.id}</span>
                 <span>•</span>
-                <span>{listing.category}</span>
+                <span>Category: {listing.category_id}</span>
                 <span>•</span>
-                <div className="flex items-center">
-                  <MapPin className="h-3 w-3 mr-1" />
-                  {listing.location}
-                </div>
-                <span>•</span>
-                <span>{listing.views} lượt xem</span>
+                <div className="flex items-center">Đã xác nhận chưa</div>
               </div>
             </div>
 
@@ -101,8 +87,8 @@ export default function ListingCard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div>
               <p className="text-sm text-gray-500">Người bán</p>
-              <p className="font-medium">{listing.userName}</p>
-              <p className="text-xs text-gray-400">{listing.userId}</p>
+              <p className="font-medium">{listing.user_id} Ten Nguoi Ban</p>
+              <p className="text-xs text-gray-400">{listing.user_id}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Giá</p>
@@ -120,7 +106,7 @@ export default function ListingCard({
           </div>
 
           <p className="text-xs text-gray-400">
-            Tạo: {new Date(listing.createdAt).toLocaleString("vi-VN")}
+            Tạo: {new Date(listing.create_at).toLocaleString("vi-VN")}
           </p>
         </div>
 
@@ -136,7 +122,7 @@ export default function ListingCard({
             Xem
           </Button>
 
-          {listing.status === "pending" && (
+          {listing.status == 0 && (
             <>
               <Button
                 size="sm"
@@ -156,7 +142,7 @@ export default function ListingCard({
             </>
           )}
 
-          {listing.status === "approved" && (
+          {listing.status == 1 && (
             <Button
               size="sm"
               variant="outline"
