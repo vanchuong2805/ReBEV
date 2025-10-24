@@ -3,6 +3,34 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
 import userService from '../../services/user/userService.js'
 
 
+/** 
+ * @swagger
+ * /api/users/register:
+ *   post:
+ *     summary: Đăng ký người dùng mới
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               display_name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Đăng ký thành công
+ *       400:
+ *         description: Thông tin đăng ký không hợp lệ
+ *       409:
+ *         description: Số điện thoại đã tồn tại
+ */
+
 const registerUser = async (req, res) => {
     try {
         const { display_name, password, phone } = req.body;
@@ -29,12 +57,14 @@ const registerUser = async (req, res) => {
                 errors: errors
             });
         }
-        
+
         const newUser = await userService.createUser({ display_name, phone, password });
+
+        const { password: pwd, ...userWithoutPassword } = newUser.dataValues;
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.REGISTER_SUCCESS,
-            user: newUser,
+            user: userWithoutPassword,
         });
     } catch (error) {
         console.error(ERROR_MESSAGE.REGISTER_FAIL, error);
