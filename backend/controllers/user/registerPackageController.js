@@ -3,6 +3,34 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import userService from "../../services/user/userService.js";
 import packageService from "../../services/package/packageService.js";
 
+/** 
+ * @swagger
+ * /api/users/{user_id}/register-package/{package_id}:
+ *   post:
+ *     summary: Đăng ký gói dịch vụ cho người dùng
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         description: ID của người dùng
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: package_id
+ *         required: true
+ *         description: ID của gói dịch vụ
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Đăng ký gói dịch vụ thành công
+ *       404:
+ *         description: Không tìm thấy người dùng hoặc gói dịch vụ
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ */
+
 const registerPackage = async (req, res) => {
     try {
         const { user_id, package_id } = req.params;

@@ -2,6 +2,26 @@ import cartService from '../../services/cart/cartService.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
 import { ERROR_MESSAGE } from '../../config/constants.js';
 
+/** 
+ * @swagger
+ * /api/carts/delete/{post_id}:
+ *   delete:
+ *     summary: Delete a cart item
+ *     tags: [Carts]
+ *     parameters:
+ *       - in: path
+ *         name: post_id
+ *         required: true
+ *         description: The ID of the post to remove from the cart
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cart item deleted successfully
+ *       404:
+ *         description: Cart item not found
+ */
+
 const deleteCart = async (req, res) => {
     try {
         const user_id = req.user.id;

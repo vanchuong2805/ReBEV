@@ -58,7 +58,23 @@ const registerUser = async (req, res) => {
             });
         }
 
-        const newUser = await userService.createUser({ display_name, phone, password });
+        const currentUser = req.user;
+
+        let finalRole = 0; // Default role: regular user
+
+        if (currentUser && currentUser.role === 2) {
+            finalRole = role; // Admin can create another staff
+        } else {
+            finalRole = 0;
+        }
+
+
+        const newUser = await userService.createUser({
+            display_name,
+            phone,
+            password,
+            role: finalRole
+        });
 
         const { password: pwd, ...userWithoutPassword } = newUser.dataValues;
 
