@@ -7,5 +7,6 @@ import AppRoutes from "./app/AppRoutes";
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AppRoutes />
+    
   </BrowserRouter>
 );

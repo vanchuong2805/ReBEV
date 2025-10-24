@@ -1,7 +1,7 @@
 import {
   BarChart3,
   DollarSign,
-  ShoppingCart,
+  CreditCard,
   FileText,
   Users,
   ChevronLeft,
@@ -12,70 +12,62 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
   const menuItems = [
     {
       id: "reports",
-      label: "Báo cáo & Thống kê",
+      label: "Reports & Statistics",
       icon: BarChart3,
     },
     {
       id: "fees",
-      label: "Quản lý phí hệ thống",
+      label: "System Fees",
       icon: DollarSign,
     },
     {
       id: "transactions",
-      label: "Quản lý giao dịch",
-      icon: ShoppingCart,
+      label: "Transaction Management",
+      icon: CreditCard,
     },
     {
       id: "listings",
-      label: "Quản lý bài đăng",
+      label: "Listing Management",
       icon: FileText,
     },
     {
       id: "users",
-      label: "Quản lý người dùng",
+      label: "User Management",
       icon: Users,
     },
   ];
 
   return (
     <div
-      className={`bg-slate-800 text-white transition-all duration-300 ${
+      className={`bg-gray-900 text-white transition-all duration-300 ${
         isCollapsed ? "w-16" : "w-64"
       } min-h-screen`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-slate-700">
-        <div className="flex items-center justify-between">
-          {!isCollapsed && (
-            <h1 className="text-xl font-bold text-cyan-400">Admin Panel</h1>
-          )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-slate-700 transition-colors text-slate-300"
-          >
-            {isCollapsed ? (
-              <ChevronRight size={20} />
-            ) : (
-              <ChevronLeft size={20} />
-            )}
-          </button>
-        </div>
+      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
+        {!isCollapsed && (
+          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+        )}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
       </div>
 
       {/* Menu Items */}
       <nav className="mt-6">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
-
           return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center px-4 py-3 text-left transition-colors ${
-                isActive
-                  ? "bg-cyan-600 text-white border-r-4 border-cyan-400"
-                  : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                activeTab === item.id
+                  ? "bg-blue-600 text-white border-r-4 border-blue-400"
+                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
               }`}
               title={isCollapsed ? item.label : ""}
             >
