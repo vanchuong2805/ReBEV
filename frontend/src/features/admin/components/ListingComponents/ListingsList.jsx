@@ -17,7 +17,6 @@ export default function ListingsList({
       </Card>
     );
   }
-
   return (
     <div className="space-y-6">
       {listings.map((listing) => (

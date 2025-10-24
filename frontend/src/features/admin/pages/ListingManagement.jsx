@@ -1,31 +1,33 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import TitlePage from "../components/TitlePage";
-import { listingsData } from "../data";
-import StatsCards from "../components/ListingComponents/StatsCards";
-import ListingFiltersBar from "../components/ListingComponents/ListingFiltersBar";
 import ListingsList from "../components/ListingComponents/ListingsList";
+import StatsCard from "../components/StatsCard";
+import FilterBar from "../components/FilterBar";
+import { fetchPost } from "../service";
 
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [listings, setListings] = useState(listingsData);
-
+  const [listings, setListings] = useState([]);
+  useEffect(() => {
+    fetchPost().then((data) => setListings(data));
+  }, []);
   // Handlers
   const handleApprove = (id) =>
     setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "approved" } : l))
+      prev.map((l) => (l.id === id ? { ...l, status: 1 } : l))
     );
 
   const handleReject = (id) =>
     setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "rejected" } : l))
+      prev.map((l) => (l.id === id ? { ...l, status: 2 } : l))
     );
 
   const handleEdit = (id) => {
     // Change status to pending when edit button is clicked
     setListings((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, status: "pending" } : l))
+      prev.map((l) => (l.id === id ? { ...l, status: 0 } : l))
     );
     console.log("Editing listing and setting status to pending:", id);
   };
@@ -40,13 +42,11 @@ const ListingManagement = () => {
     const query = searchTerm.toLowerCase();
     return listings.filter((listing) => {
       const matchesSearch =
-        listing.id.toLowerCase().includes(query) ||
-        listing.title.toLowerCase().includes(query) ||
-        listing.userName.toLowerCase().includes(query);
+        listing.id == query || listing.title.toLowerCase().includes(query);
       const matchesStatus =
-        statusFilter === "all" || listing.status === statusFilter;
+        statusFilter === "all" || listing.status == statusFilter;
       const matchesCategory =
-        categoryFilter === "all" || listing.category === categoryFilter;
+        categoryFilter === "all" || listing.category == categoryFilter;
       return matchesSearch && matchesStatus && matchesCategory;
     });
   }, [listings, searchTerm, statusFilter, categoryFilter]);
@@ -57,18 +57,58 @@ const ListingManagement = () => {
         title="Quản lý tin đăng"
         description="Xem xét, phê duyệt và quản lý tin đăng của người dùng"
       />
-
-      <StatsCards listings={listings} />
-
-      <ListingFiltersBar
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+        <StatsCard
+          number={listings.filter((l) => l.status === "pending").length}
+          description="Chờ duyệt"
+          color={"yellow"}
+        />
+        <StatsCard
+          number={listings.filter((l) => l.status === "approved").length}
+          description="Đã duyệt"
+          color={"green"}
+        />
+        <StatsCard
+          number={listings.filter((l) => l.status === "rejected").length}
+          description="Từ chối"
+          color={"red"}
+        />
+        <StatsCard
+          number={listings.length}
+          description="Tổng số tin"
+          color={"blue"}
+        />
+      </div>
+      <FilterBar
         searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        categoryFilter={categoryFilter}
-        setCategoryFilter={setCategoryFilter}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="Tìm kiếm theo ID tin đăng, tiêu đề hoặc tên người dùng..."
+        selects={[
+          {
+            key: "status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { value: "all", label: "Tất cả trạng thái" },
+              { value: "pending", label: "Chờ duyệt" },
+              { value: "approved", label: "Đã duyệt" },
+              { value: "rejected", label: "Từ chối" },
+            ],
+          },
+          {
+            key: "category",
+            value: categoryFilter,
+            onChange: setCategoryFilter,
+            options: [
+              { value: "all", label: "Tất cả danh mục" },
+              { value: "Motorcycle", label: "Xe máy điện" },
+              { value: "Pin", label: "Pin xe máy điện" },
+              { value: "Car", label: "Ô tô điện" },
+            ],
+          },
+        ]}
       />
-
+      ;
       <ListingsList
         listings={filteredListings}
         onViewDetails={handleViewDetails}

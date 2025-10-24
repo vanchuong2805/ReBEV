@@ -1,6 +1,5 @@
 // Export all data for easy importing
 export {
-  usersData,
   listingsData,
   transactionsData,
   systemFeesData,

@@ -9,25 +9,25 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     // Check if user is logged in on app start
-    const token = localStorage.getItem("token");
+    const accessToken = localStorage.getItem("accessToken");
     const userData = localStorage.getItem("user");
 
-    if (token && userData) {
+    if (accessToken && userData) {
       setUser(JSON.parse(userData));
       setIsAuthenticated(true);
     }
     setLoading(false);
   }, []);
 
-  const login = (userData, token) => {
-    localStorage.setItem("token", token);
+  const login = (userData, accessToken) => {
+    localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     setUser(null);
     setIsAuthenticated(false);

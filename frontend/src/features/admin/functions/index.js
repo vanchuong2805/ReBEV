@@ -1,4 +1,4 @@
-export { default as Sidebar } from "./Sidebar";
+export { default as Sidebar } from "../components/Sidebar";
 export { default as ReportsStatistics } from "../pages/ReportsStatistics";
 export { default as SystemFeesManagement } from "../pages/SystemFeesManagement";
 export { default as TransactionManagement } from "../pages/TransactionManagement";
