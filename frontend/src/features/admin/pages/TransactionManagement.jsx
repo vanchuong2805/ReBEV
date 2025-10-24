@@ -1,29 +1,14 @@
 import { useState } from "react";
-import {
-  CheckCircle,
-  Clock,
-  AlertTriangle,
-  Eye,
-  FileText,
-  Calendar,
-  User,
-  Package,
-  ShoppingCart,
-  X,
-  Check,
-  ArrowUpDown,
-} from "lucide-react";
+import { CheckCircle, Clock, AlertTriangle, ArrowUpDown } from "lucide-react";
 import TitlePage from "../components/TitlePage";
-import FilterTransaction from "../components/FilterTransaction";
-import OrderTable from "../components/OrderTable";
-import DepositOrdersTable from "../components/DepositOrdersTable";
-import DepositDetailModal from "../components/DepositDetailModal";
-import ComplaintsTable from "../components/ComplaintsTable";
-import ComplaintSummaryModal from "../components/ComplaintSummaryModal";
-import ComplaintDetailModal from "../components/ComplaintDetailModal";
+import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
+import OrderTable from "../components/TransactionComponents/OrderTable";
+import DepositOrdersTable from "../components/TransactionComponents/DepositOrdersTable";
+import DepositDetailModal from "../components/TransactionComponents/DepositDetailModal";
+import ComplaintsTable from "../components/TransactionComponents/ComplaintsTable";
+import ComplaintDetailModal from "../components/TransactionComponents/ComplaintDetailModal";
 import SearchInput from "../components/SearchInput";
 import SortSelector from "../components/SortSelector";
-
 const TransactionManagement = () => {
   const [activeTab, setActiveTab] = useState("orders");
   const [selectedDeposit, setSelectedDeposit] = useState(null);
@@ -192,7 +177,24 @@ const TransactionManagement = () => {
     { id: "deposits", label: "Đơn đặt cọc", icon: Clock },
     { id: "complaints", label: "Đơn khiếu nại", icon: AlertTriangle },
   ];
-
+  const orderColumns = [
+    { header: "Mã đơn hàng", accessor: "orderId" },
+    { header: "Sản phẩm", accessor: "productName" },
+    { header: "Người mua", accessor: "buyerName" },
+    { header: "Người bán", accessor: "sellerName" },
+    {
+      header: "Số tiền",
+      render: (order) => `${order.amount.toLocaleString("vi-VN")} VND`,
+    },
+    {
+      header: "Ngày hoàn thành",
+      render: (order) => order.completedDate || "—",
+    },
+    {
+      header: "Trạng thái",
+      render: (order) => getStatusBadge(order.status),
+    },
+  ];
   const categoryOptions = [
     { value: "all", label: "Tất cả" },
     { value: "xe-may-dien", label: "Xe máy điện" },
@@ -393,25 +395,6 @@ const TransactionManagement = () => {
   };
 
   const renderAllOrders = () => {
-    const orderColumns = [
-      { header: "Mã đơn hàng", accessor: "orderId" },
-      { header: "Sản phẩm", accessor: "productName" },
-      { header: "Người mua", accessor: "buyerName" },
-      { header: "Người bán", accessor: "sellerName" },
-      {
-        header: "Số tiền",
-        render: (order) => `${order.amount.toLocaleString("vi-VN")} VND`,
-      },
-      {
-        header: "Ngày hoàn thành",
-        render: (order) => order.completedDate || "—",
-      },
-      {
-        header: "Trạng thái",
-        render: (order) => getStatusBadge(order.status),
-      },
-    ];
-
     return (
       <div className="space-y-4">
         {/* Search */}

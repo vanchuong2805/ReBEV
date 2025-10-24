@@ -6,6 +6,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
 } from "lucide-react";
 
 const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {

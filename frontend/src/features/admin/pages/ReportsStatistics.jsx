@@ -4,21 +4,31 @@ import { Card } from "../../../components/ui/card";
 import { statsData } from "../../../data/data";
 import StatsCards from "../components/StatsCards";
 import TitlePage from "../components/TitlePage";
-import BarChartComponent from "../components/BarChartComponent";
+import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
-import reportService from "../services/reportService";
-
+import reportService from "../functions/reportService";
+import { fetchPost, fetchUsers } from "../service";
 const ReportsStatistics = () => {
   const [stats] = useState(statsData);
   const [selectedYear, setSelectedYear] = useState("2025");
   const [monthlyData, setMonthlyData] = useState([]);
 
   // Cập nhật dữ liệu khi năm thay đổi
+  const [listings, setListings] = useState([]);
+  useEffect(() => {
+    fetchPost().then((data) => setListings(data));
+  }, []);
+  const number_Listing = listings.filter(
+    (listing) => listing.status === 1
+  ).length;
   useEffect(() => {
     const yearData = reportService.getDataByYear(selectedYear);
     setMonthlyData(yearData);
   }, [selectedYear]);
-
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    fetchUsers().then((data) => setUsers(data));
+  }, []);
   return (
     <div className="p-6">
       {/* Title and Description */}
@@ -30,13 +40,13 @@ const ReportsStatistics = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCards
           title="Tổng người dùng"
-          number={stats.totalUsers.toLocaleString()}
+          number={users.filter((user) => user.role == 0).length}
           icon={<Users className="h-6 w-6 text-blue-600" />}
         />
 
         <StatsCards
           title="Tổng bài đăng"
-          number={stats.totalListings.toLocaleString()}
+          number={number_Listing.toLocaleString()}
           icon={<BarChart3 className="h-6 w-6 text-green-600" />}
         />
 

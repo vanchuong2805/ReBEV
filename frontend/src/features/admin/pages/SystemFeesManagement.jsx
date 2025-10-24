@@ -10,6 +10,7 @@ import AddPackageModal from "../components/systemfeesComponents/AddPackageModal"
 import { Button } from "../../../components/ui/button";
 import { usePlatformFees } from "../../admin/hook/usePlatformFees";
 import { useUserPackages } from "../../admin/hook/useUserPackages";
+import { useFullPackage } from "../service";
 
 const categoryOptions = [
   { value: "xe-may-dien", label: "Xe máy điện" },
@@ -23,7 +24,6 @@ const tabs = [
 
 export default function SystemFeesManagement() {
   const [activeTab, setActiveTab] = useState("platform");
-
   // Platform fees
   const {
     platformFees,
@@ -37,7 +37,6 @@ export default function SystemFeesManagement() {
 
   // User packages
   const {
-    userPackages,
     showAddPackage,
     setShowAddPackage,
     newPackage,
@@ -50,6 +49,7 @@ export default function SystemFeesManagement() {
     add,
   } = useUserPackages(systemFeesData[1]);
 
+  const packageList = useFullPackage([]);
   return (
     <div className="p-6">
       <TitlePage
@@ -90,7 +90,7 @@ export default function SystemFeesManagement() {
           </div>
 
           <div className="grid gap-6">
-            {userPackages.map((pkg) => (
+            {packageList.map((pkg) => (
               <PackageCard
                 key={pkg.id}
                 pkg={pkg}

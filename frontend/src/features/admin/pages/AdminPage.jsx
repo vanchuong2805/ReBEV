@@ -22,6 +22,7 @@ const AdminPage = () => {
         return <ListingManagement />;
       case "users":
         return <UserManagement />;
+
       default:
         return <ReportsStatistics />;
     }
