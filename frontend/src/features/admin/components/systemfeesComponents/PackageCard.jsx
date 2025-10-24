@@ -3,7 +3,7 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { Edit, Save, X } from "lucide-react";
-import { formatVND } from "../../service";
+import { formatVND } from "../../functions/function";
 
 export default function PackageCard({
   pkg,
@@ -26,11 +26,17 @@ export default function PackageCard({
           <div className="mb-4">
             <p className="text-sm font-medium text-gray-700 mb-2">Đặc quyền:</p>
             <ul className="list-disc list-inside space-y-1">
-              {pkg.privileges.map((p, i) => (
-                <li key={i} className="text-sm text-gray-600">
-                  {p}
+              {pkg.highlight && (
+                <li className="text-sm text-gray-600">Highlight Bài Viết</li>
+              )}
+              {pkg.top && (
+                <li className="text-sm text-gray-600">Ưu Tiên Hiển Thị</li>
+              )}
+              {pkg.duration && (
+                <li className="text-sm text-gray-600">
+                  Thời gian sử dụng: {pkg.duration} Ngày
                 </li>
-              ))}
+              )}
             </ul>
           </div>
 
