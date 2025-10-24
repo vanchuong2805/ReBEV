@@ -1,5 +1,25 @@
 import cartService from "../../services/cart/cartService.js";
 
+/** 
+ * @swagger
+ * /api/carts/{user_id}:
+ *   get:
+ *     summary: Get cart items by user ID
+ *     tags: [Carts]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved cart items
+ *       404:
+ *         description: Cart not found
+ */
+
 const getCart = async (req, res) => {
     try {
         const { user_id } = req.params;

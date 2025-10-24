@@ -51,6 +51,7 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+
 const deposit = async (userId, amount, options) => {
     const user = await users.findByPk(userId);
     if (!user) throw new Error('User not found');
@@ -107,6 +108,34 @@ const updatePackage = async (user_id, { package_id }) => {
     return data;
 }
 
+const lockAccount = async (user_id) => {
+    const data = await users.update({
+        is_locked: 1
+    }, {
+        where: {
+            id: user_id
+        }
+    });
+    return data;
+}
+
+const unLockAccount = async (user_id) => {
+    const data = await users.update({
+        is_locked: 0
+    }, {
+        where: {
+            id: user_id
+        }
+    });
+    return data;
+}
+
+const is_locked = async (user_id) => {
+    const user = await users.findByPk(user_id);
+    if (!user) throw new Error('User not found');
+    return user.is_locked;
+}
+
 export default {
     getUsers,
     getUser,
@@ -118,5 +147,8 @@ export default {
     updateUser,
     updatePassword,
     checkPassword,
-    updatePackage
+    updatePackage,
+    lockAccount,
+    unLockAccount,
+    is_locked
 };
