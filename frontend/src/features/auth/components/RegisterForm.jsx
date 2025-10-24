@@ -1,105 +1,85 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { FcGoogle } from "react-icons/fc";
+import { registerUser } from "../service";
+import FieldError from "./FieldError";
+import { validateRegister } from "../../../services/validations";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    display_name: "",
     phone: "",
     password: "",
     confirmPassword: "",
   });
-
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Tên là bắt buộc";
-    } else if (formData.name.length < 3) {
-      newErrors.name = "Tên phải có ít nhất 3 ký tự";
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Số điện thoại là bắt buộc";
-    } else if (!/^[0-9]{10}$/.test(formData.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Mật khẩu là bắt buộc";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Xác nhận mật khẩu là bắt buộc";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Mật khẩu không khớp";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Form submitted:", formData);
-      // Handle registration logic here
+    const newErrors = validateRegister(formData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length) return;
+
+    try {
+      const payload = { ...formData };
+      delete payload.confirmPassword; // BE xóa trường này
+      const response = await registerUser(payload);
+      console.log("User registered successfully:", response);
+      toast.success("Đăng ký thành công!", {
+        description: "Chào mừng bạn đến với ReBev",
+        duration: 3000,
+      });
+      setFormData({
+        display_name: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setErrors({});
+    } catch (error) {
+      console.error("Error registering user:", error);
+      toast.error(error?.message || "Đăng ký thất bại");
     }
+  };
+
+  const handleGoogleLogin = () => {
+    alert("Đăng nhập bằng Google");
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-100">
+    <div>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md p-8 bg-white rounded-lg shadow-md"
+        className="w-full max-w-md p-8 bg-transparent rounded-none shadow-none"
       >
-        <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
+        <h2 className="mb-2 text-2xl font-bold text-center text-gray-800">
           Đăng Ký Tài Khoản
         </h2>
 
-        <div className="mb-4">
-          <label
-            htmlFor="name"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Tên *
-          </label>
+        {/* TÊN */}
+        <div className="relative mb-8">
           <input
             type="text"
-            id="name"
-            name="name"
-            value={formData.name}
+            id="display_name"
+            name="display_name"
+            value={formData.display_name}
             onChange={handleChange}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.name ? "border-red-500" : "border-gray-300"
+              errors.display_name ? "border-red-500" : "border-gray-300"
             }`}
             placeholder="Nhập tên của bạn"
           />
-          {errors.name && (
-            <span className="block mt-1 text-sm text-red-500">
-              {errors.name}
-            </span>
-          )}
+          <FieldError message={errors.display_name} />
         </div>
 
-        <div className="mb-4">
-          <label
-            htmlFor="phone"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Số điện thoại *
-          </label>
+        {/* SĐT */}
+        <div className="relative mb-8">
           <input
             type="tel"
             id="phone"
@@ -111,20 +91,11 @@ const RegisterForm = () => {
             }`}
             placeholder="Nhập số điện thoại"
           />
-          {errors.phone && (
-            <span className="block mt-1 text-sm text-red-500">
-              {errors.phone}
-            </span>
-          )}
+          <FieldError message={errors.phone} />
         </div>
 
-        <div className="mb-4">
-          <label
-            htmlFor="password"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Mật khẩu *
-          </label>
+        {/* MẬT KHẨU */}
+        <div className="relative mb-8">
           <input
             type="password"
             id="password"
@@ -136,55 +107,54 @@ const RegisterForm = () => {
             }`}
             placeholder="Nhập mật khẩu"
           />
-          {errors.password && (
-            <span className="block mt-1 text-sm text-red-500">
-              {errors.password}
-            </span>
-          )}
+          <FieldError message={errors.password} />
         </div>
 
-        <div className="mb-6">
-          <label
-            htmlFor="confirmPassword"
-            className="block mb-2 text-sm font-medium text-gray-700"
-          >
-            Nhập lại mật khẩu *
-          </label>
+        {/* XÁC NHẬN */}
+        <div className="relative mb-4">
           <input
             type="password"
-            id="confirmPassword"
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
               errors.confirmPassword ? "border-red-500" : "border-gray-300"
             }`}
-            placeholder="Nhập lại mật khẩu"
+            placeholder="Xác nhận lại mật khẩu"
           />
-          {errors.confirmPassword && (
-            <span className="block mt-1 text-sm text-red-500">
-              {errors.confirmPassword}
-            </span>
-          )}
+          <FieldError message={errors.confirmPassword} />
         </div>
 
         <button
           type="submit"
-          className="w-full px-4 py-2 font-medium text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+          className="w-full py-2 mt-5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
         >
           Đăng Ký
         </button>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Đã có tài khoản?{" "}
-            <Link
-              to="/login"
-              className="font-medium text-blue-500 hover:text-blue-700 hover:underline"
+        {/* social */}
+        <div className="mt-8">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 text-gray-500 bg-white">
+                Hoặc đăng nhập bằng
+              </span>
+            </div>
+          </div>
+          <div className="flex justify-center mt-6 space-x-4">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleGoogleLogin}
+              className="flex items-center justify-center px-6 py-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md"
             >
-              Đăng nhập ngay
-            </Link>
-          </p>
+              <FcGoogle className="w-4 h-4 mr-2" />
+              Google
+            </Button>
+          </div>
         </div>
       </form>
     </div>
