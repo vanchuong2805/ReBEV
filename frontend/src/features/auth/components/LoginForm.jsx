@@ -5,6 +5,7 @@ import FieldError from "./FieldError";
 import { validateLogin } from "../../../services/validations";
 import { loginUser } from "../service";
 import { useUser } from "../../../contexts/UserContext";
+import { toast } from "sonner";
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -21,11 +22,13 @@ const LoginForm = () => {
       .then((response) => {
         console.log("Login successful:", response);
         // Handle successful login (e.g., store token, redirect)
-        login(response.user, response.token);
+        login(response.user, response.accessToken);
+        toast.success("Đăng nhập thành công!");
       })
       .catch((error) => {
         console.error("Login failed:", error);
         // Handle login error (e.g., show error message)
+        toast.error("Đăng nhập thất bại!");
       });
   };
 

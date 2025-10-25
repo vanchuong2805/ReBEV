@@ -44,7 +44,7 @@ const RegisterForm = () => {
       setErrors({});
     } catch (error) {
       console.error("Error registering user:", error);
-      toast.error(error?.message || "Đăng ký thất bại");
+      toast.error("Số điện thoại đã được sử dụng!");
     }
   };
 

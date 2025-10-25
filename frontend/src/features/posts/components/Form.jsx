@@ -1,9 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import TiptapEditor from "@/components/common/TiptapEditor";
 import { MyInput } from "./MyInput";
-import { getVariationValues, basesService } from "@/features/posts/service";
+import {
+  getVariationValues,
+  basesService,
+  getContactsByUserId,
+} from "@/features/posts/service";
 import { useVariationGraph } from "@/hooks/posts/useVariations";
 import { usePostForm } from "@/hooks/posts/usePostForm";
+import { toast } from "sonner";
 
 const MAX_IMAGES = 8;
 const MAX_VIDEOS = 1;
@@ -31,6 +36,12 @@ export default function Form({
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
   const [coverImageIndex, setCoverImageIndex] = useState(0);
+
+  // contacts
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.id;
+  const [contacts, setContacts] = useState([]);
+  const [sellerContactId, setSellerContactId] = useState("");
 
   // variations
   const [rows, setRows] = useState([]);
@@ -67,7 +78,7 @@ export default function Form({
     (async () => {
       try {
         setLoadingVars(true);
-        const data = await getVariationValues(); // nếu có API filter theo category thì gọi API đó
+        const data = await getVariationValues();
         setRows(Array.isArray(data) ? data : []);
       } catch (e) {
         setVarsError(e?.message || "Không tải được variation values");
@@ -77,6 +88,7 @@ export default function Form({
     })();
   }, [categoryId]);
 
+  //load bases
   useEffect(() => {
     if (!requireBase) return;
     (async () => {
@@ -91,6 +103,21 @@ export default function Form({
     })();
   }, [requireBase]);
 
+  // load contacts
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!userId) return;
+        const data = await getContactsByUserId(userId);
+        setContacts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Không tải được contacts:", err);
+        setContacts([]);
+      }
+    })();
+  }, [userId]);
+
+  //xóa các lựa chọn
   const clearDescendants = useCallback(
     (variationId, nextSel) => {
       const visited = new Set();
@@ -119,6 +146,10 @@ export default function Form({
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (categoryId === 2 && !sellerContactId) {
+      return toast.error("Vui lòng chọn liên hệ người bán (seller contact)");
+    }
 
     const details = Object.entries(selectedByVar)
       .filter(([, v]) => v != null && String(v).trim().length > 0)
@@ -190,6 +221,7 @@ export default function Form({
       baseId,
       details,
       coverImageIndex,
+      sellerContactId,
     });
 
     // reset text fields + thumbnail index
@@ -199,6 +231,7 @@ export default function Form({
     setSelectedByVar({});
     setBaseId("");
     setCoverImageIndex(0);
+    setSellerContactId("");
   }
 
   // chỉ render variations có tiêu đề hợp lệ (đúng category)
@@ -372,6 +405,27 @@ export default function Form({
               );
             })}
 
+            {/* --- Seller contact (CHỈ CHO CATEGORY 2) --- */}
+            {categoryId === 2 && (
+              <div className="flex flex-col gap-1 sm:col-span-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Địa chỉ người bán (*)
+                </span>
+                <MyInput
+                  options={(contacts || []).map((c) => ({
+                    id: c.id,
+                    value: c.id,
+                    label: `${c.name} — ${c.phone} — ${c.detail}, ${c.ward_name}, ${c.district_name}, ${c.province_name}`,
+                  }))}
+                  value={sellerContactId || ""}
+                  onChange={setSellerContactId}
+                  placeholder="Chọn liên hệ người bán"
+                  allowFreeText={false}
+                  className="w-full"
+                />
+              </div>
+            )}
+
             {requireBase && (
               <div className="flex flex-col gap-1 sm:col-span-2">
                 <span className="text-sm font-medium text-gray-700">
@@ -535,7 +589,6 @@ function AddRow({ onClick, label }) {
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
-          s
         >
           <path
             strokeLinecap="round"
