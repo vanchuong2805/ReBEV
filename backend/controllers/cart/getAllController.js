@@ -1,14 +1,14 @@
-import cartService from "../../services/cart/cartService.js";
+import cartService from '../../services/cart/cartService.js';
 
-const getCart = async (req, res) => {
+const getAll = async (req, res) => {
     try {
-        const { user_id } = req.params;
-        const carts = await cartService.getCartByUserId(user_id);
+        const carts = await cartService.getCarts();
         res.status(200).json(carts);
     } catch (error) {
-        console.error("Failed to get cart:", error);
-        res.status(500).json({ error: "Failed to get cart" });
+        console.error("Error fetching carts:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-}
+};
 
-export default getCart;
+export default getAll;
+

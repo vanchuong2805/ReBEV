@@ -32,7 +32,12 @@ module.exports = function (sequelize, DataTypes) {
     duration: {
       type: DataTypes.INTEGER,
       allowNull: false
-    }
+    },
+    is_deleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   }, {
     sequelize,
     tableName: 'packages',
