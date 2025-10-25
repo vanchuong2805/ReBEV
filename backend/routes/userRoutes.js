@@ -11,6 +11,7 @@ import updatePassword from '../controllers/user/updatePasswordController.js';
 import authorize from '../middlewares/authorize.js';
 import lockAccount from '../controllers/user/lockAccountController.js';
 import unLockAccount from '../controllers/user/unLockAccountController.js';
+import registerStaff from '../controllers/user/registerStaffController.js';
 
 const userRouter = express.Router();
 
@@ -24,6 +25,7 @@ const userRouter = express.Router();
 userRouter.get('/', getAll);
 userRouter.get('/:id', getUser);
 userRouter.post('/register', registerUser);
+userRouter.post('/register-staff', authMiddleware, authorize([2]), registerStaff);
 userRouter.post('/login/phone', loginUserByPhone);
 userRouter.post('/login/google', loginUserByGoogle);
 userRouter.put('/:id/update', authMiddleware, updateUser);

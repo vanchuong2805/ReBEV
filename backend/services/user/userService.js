@@ -51,6 +51,17 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const createStaff = async ({ display_name, email, phone, password, role }) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const data = await users.create({
+        display_name,
+        email,
+        phone,
+        password: hashedPassword,
+        role: role ?? 1,
+    });
+    return data;
+};
 
 const deposit = async (userId, amount, options) => {
     const user = await users.findByPk(userId);
@@ -143,6 +154,7 @@ export default {
     getUserByEmail,
     getUserByPhone,
     createUser,
+    createStaff,
     deposit,
     updateUser,
     updatePassword,
