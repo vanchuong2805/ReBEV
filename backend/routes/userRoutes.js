@@ -12,6 +12,7 @@ import authorize from '../middlewares/authorize.js';
 import lockAccount from '../controllers/user/lockAccountController.js';
 import unLockAccount from '../controllers/user/unLockAccountController.js';
 import registerStaff from '../controllers/user/registerStaffController.js';
+import logout from '../controllers/user/logoutController.js';
 
 const userRouter = express.Router();
 
@@ -33,5 +34,6 @@ userRouter.post('/:user_id/register-package/:package_id', authMiddleware, regist
 userRouter.put('/:id/update-password', authMiddleware, updatePassword);
 userRouter.patch('/:user_id/lock-account', authMiddleware, authorize([1, 2]), lockAccount);
 userRouter.patch('/:user_id/unlock-account', authMiddleware, authorize([1, 2]), unLockAccount);
+userRouter.post('/logout', authMiddleware, logout);
 
 export default userRouter;
