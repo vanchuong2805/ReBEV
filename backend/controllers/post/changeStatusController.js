@@ -12,8 +12,7 @@ const changeStatusController = async (req, res) => {
             return res.status(404).json({ message: 'Post not found.' });
         }
         const allowed = TRANSITION_STATUS[status];
-        console.log(allowed, status);
-        if (!allowed || !allowed.includes(post.status)) {
+        if (!allowed || !allowed?.includes(post.status)) {
             return res.status(400).json({ message: 'Cannot change post status.' });
         }
         await postService.updateStatus(postId, status);
