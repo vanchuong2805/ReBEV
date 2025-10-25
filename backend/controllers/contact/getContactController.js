@@ -1,5 +1,25 @@
 import userContactService from "../../services/user/userContactService.js";
 
+/** 
+ * @swagger
+ * /api/contacts/{id}:
+ *   get:
+ *     summary: Get a contact by ID
+ *     tags: [Contacts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the contact to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Contact retrieved successfully
+ *       404:
+ *         description: Contact not found
+ */
+
 const getContact = async (req, res) => {
     try {
         const contact = await userContactService.getUserContactsByUserId(req.params.id);
