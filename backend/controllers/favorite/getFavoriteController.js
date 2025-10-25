@@ -1,5 +1,25 @@
 import favoritePostService from "../../services/favorite/favoritePostService.js";
 
+/** 
+ * @swagger
+ * /api/favorites/{userId}:
+ *   get:
+ *     summary: Get favorite posts by user ID
+ *     tags: [Favorites]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Favorite posts retrieved successfully
+ *       404:
+ *         description: No favorite posts found
+ */
+
 const getFavorite = async (req, res) => {
     try {
         const userId = req.params.userId;
