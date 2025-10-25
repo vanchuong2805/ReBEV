@@ -1,5 +1,26 @@
 import orderService from '../../services/order/orderService.js';
 import { ROLE } from '../../config/constants.js';
+
+/** 
+ * @swagger
+ * /orders:
+ *  get:
+ *    summary: Get all orders
+ *    tags: [Orders]
+ *    responses:
+ *      200:
+ *        description: A list of orders
+ *        content:  
+ *         application/json:
+ *          schema:
+ *            type: array
+ *            items:
+ *              $ref: '#/components/schemas/Order'
+ *      500:
+ *        description: Internal server error
+ */
+
+
 const getOrders = async (req, res) => {
     try {
         const options = {};
