@@ -11,6 +11,8 @@ export default function EditProfileForm() {
   const [form, setForm] = useState({
     avatar: "/default-avatar.png",
     display_name: "",
+    phone:"",
+    email:"",
   })
 
   useEffect(() => {
@@ -18,6 +20,8 @@ export default function EditProfileForm() {
       setForm({
         avatar: user.avatar || "/default-avatar.png",
         display_name: user.display_name || "",
+        phone: user.phone || "",
+        email: user.email || "",
       })
     }
   }, [user])

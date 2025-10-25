@@ -62,7 +62,7 @@ export const updateContact = async (id, data) => {
   return res.data
 }
 export const updateProfile = async (id, data) => {
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem("accessToken")
   const res = await axios.put(
     `${API_BASE_URL}/users/${id}/update`,
     { ...data },
@@ -72,7 +72,7 @@ export const updateProfile = async (id, data) => {
   return res.data
 }
 export const changePassword = async (id, oldPassword, newPassword) => {
-  const token = localStorage.getItem("token")
+  const token = localStorage.getItem("accessToken")
   const res = await axios.put(
     `${API_BASE_URL}/users/${id}/update-password`,
     { oldPassword, newPassword },
@@ -80,5 +80,9 @@ export const changePassword = async (id, oldPassword, newPassword) => {
   )
   console.log(res)
   return res
+}
+export const getPost = async () => {
+  const res = await axios.get(`${API_BASE_URL}/posts`)
+  return res.data
 }
 
