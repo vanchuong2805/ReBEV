@@ -1,5 +1,27 @@
 import userService from "../../services/user/userService.js";
 
+/** 
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Lấy thông tin người dùng
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID của người dùng
+ *     responses:
+ *       200:
+ *         description: Thông tin người dùng
+ *       404:
+ *         description: Không tìm thấy người dùng
+ *       500:
+ *         description: Lỗi server
+ */
+
 const getUser = async (req, res) => {
     try {
         const user = await userService.getUser(req.params.id);

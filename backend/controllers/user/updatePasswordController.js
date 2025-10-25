@@ -2,6 +2,28 @@ import userService from "../../services/user/userService.js";
 import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
+
+/** 
+ * @swagger
+ * /api/users/{id}/update-password:
+ *   put:
+ *     summary: Cập nhật mật khẩu người dùng
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID của người dùng
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cập nhật mật khẩu thành công
+ *       404:
+ *         description: Không tìm thấy người dùng
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ */
 const updatePassword = async (req, res) => {
     try {
         const id = req.params.id;
@@ -25,6 +47,7 @@ const updatePassword = async (req, res) => {
         }
 
         await userService.updatePassword(id, { password: newPassword });
+
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.UPDATE_USER_SUCCESS,

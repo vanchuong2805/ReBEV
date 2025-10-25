@@ -30,6 +30,11 @@ export const ERROR_MESSAGE = {
     FAVORITE_NOT_FOUND: 'Favorite not found.',
     UPDATE_USER_FAIL: 'Updating user failed.',
     PACKAGE_NOT_FOUND: 'Package not found.',
+    CREATE_STAFF_FAIL: 'Create Staff account failed',
+    ACCOUNT_LOCK_FAILED: 'Locking account failed',
+    ACCOUNT_ALREADY_LOCKED: 'Account is already locked',
+    ACCOUNT_UNLOCK_FAILED: 'Unlocking account failed',
+    ACCOUNT_ALREADY_UNLOCKED: 'Account is already unlocked',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -43,6 +48,9 @@ export const SUCCESS_MESSAGE = {
     CREATE_FAVORITE_SUCCESS: 'Creating favorite post successful',
     DELETE_FAVORITE_SUCCESS: 'Deleting favorite post successful',
     UPDATE_USER_SUCCESS: 'Updating user successful',
+    ACCOUNT_LOCKED: 'Account has been locked successfully',
+    CREATE_STAFF_SUCCESS: 'Create Staff account successful',
+    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully'
 }
 
 export const POST_STATUS = {

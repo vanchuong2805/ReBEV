@@ -51,14 +51,18 @@ const registerUser = async (req, res) => {
         if (existedPhone) {
             errors.push(ERROR_MESSAGE.PHONE_EXIST);
         }
-        console.log(existedPhone);
+        
         if (errors.length > 0) {
             return res.status(400).json({
                 errors: errors
             });
         }
 
-        const newUser = await userService.createUser({ display_name, phone, password });
+        const newUser = await userService.createUser({
+            display_name,
+            phone,
+            password,
+        });
 
         const { password: pwd, ...userWithoutPassword } = newUser.dataValues;
 

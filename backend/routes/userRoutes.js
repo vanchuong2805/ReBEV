@@ -9,17 +9,31 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 import registerPackage from '../controllers/user/registerPackageController.js';
 import updatePassword from '../controllers/user/updatePasswordController.js';
 import getPosts from '../controllers/post/getByUserController.js';
+import authorize from '../middlewares/authorize.js';
+import lockAccount from '../controllers/user/lockAccountController.js';
+import unLockAccount from '../controllers/user/unLockAccountController.js';
+import registerStaff from '../controllers/user/registerStaffController.js';
 
 const userRouter = express.Router();
+
+/**
+ * @swagger
+ * tags:S
+ *   name: Users
+ *   description: API quản lý người dùng
+ */
 
 userRouter.get('/', getAll);
 userRouter.get('/:id', getUser);
 userRouter.post('/register', registerUser);
+userRouter.post('/register-staff', authMiddleware, authorize([2]), registerStaff);
 userRouter.post('/login/phone', loginUserByPhone);
 userRouter.post('/login/google', loginUserByGoogle);
 userRouter.put('/:id/update', authMiddleware, updateUser);
 userRouter.post('/:user_id/register-package/:package_id', authMiddleware, registerPackage);
 userRouter.put('/:id/update-password', authMiddleware, updatePassword);
 userRouter.get('/:id/posts', authMiddleware, getPosts);
+userRouter.patch('/:user_id/lock-account', authMiddleware, authorize([1, 2]), lockAccount);
+userRouter.patch('/:user_id/unlock-account', authMiddleware, authorize([1, 2]), unLockAccount);
 
 export default userRouter;
