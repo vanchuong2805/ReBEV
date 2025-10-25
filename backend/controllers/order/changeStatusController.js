@@ -1,18 +1,8 @@
 import orderStatusService from '../../services/order/orderStatusService.js';
 import orderService from '../../services/order/orderService.js';
 import {
-    ORDER_STATUS,
     ORDER_STATUS_TRANSITION,
-    POST_STATUS,
-    TRANSACTION_STATUS,
-    TRANSACTION_TYPE,
 } from '../../config/constants.js';
-import orderDetailService from '../../services/order/orderDetailService.js';
-import postService from '../../services/post/postService.js';
-import userService from '../../services/user/userService.js';
-import transactionService from '../../services/transaction/transactionService.js';
-import deliveryService from '../../services/delivery/deliveryService.js';
-import postDetailService from '../../services/post/postDetailService.js';
 import { sequelize } from '../../models/index.js';
 
 const changeStatus = async (req, res) => {
