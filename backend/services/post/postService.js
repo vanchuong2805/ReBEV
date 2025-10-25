@@ -1,14 +1,16 @@
 import models from '../../models/index.js';
 const { posts } = models;
 const getAll = async () => {
-    const data = await posts.findAll();
+    const data = await posts.findAll({
+        where: { is_deleted: false, is_hidden: false },
+    });
     return data;
 };
 
 const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
-        ...options
+        ...options,
     });
     return data;
 };
@@ -22,7 +24,7 @@ const getByCategoryId = async (categoryId) => {
 
 const getByUserId = async (userId) => {
     const data = await posts.findAll({
-        where: { user_id: userId },
+        where: { user_id: userId, is_deleted: false },
     });
     return data;
 };
@@ -43,7 +45,6 @@ const updateStatus = async (postId, status, options = {}) => {
 const changeVisibility = async (postId, isHidden, options = {}) => {
     return await posts.update({ is_hidden: isHidden }, { where: { id: postId }, ...options });
 };
-
 
 export default {
     getAll,
