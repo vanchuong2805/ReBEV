@@ -66,6 +66,7 @@ const options = {
                     description: 'Bài đăng (output)',
                     properties: {
                         id: { type: 'integer' },
+                        user_id: { type: 'integer' },
                         category_id: { type: 'integer' },
                         title: { type: 'string' },
                         description: { type: 'string', nullable: true },
@@ -73,18 +74,15 @@ const options = {
                         base_id: { type: ['integer', 'null'], nullable: true },
                         seller_contact_id: { type: 'integer' },
                         status: { type: 'integer', description: 'Trạng thái xử lý nội bộ' },
-                        visibility: {
-                            type: 'boolean',
-                            description: 'Hiển thị công khai hay không',
-                        },
                         mediaFiles: {
-                            type: 'array',
-                            items: { $ref: '#/components/schemas/MediaFile' },
+                            type: 'string',
                         },
                         details: {
                             type: 'array',
                             items: { $ref: '#/components/schemas/PostDetail' },
                         },
+                        is_deleted: { type: 'boolean' },
+                        is_hidden: { type: 'boolean' },
                         createdAt: { type: 'string', format: 'date-time' },
                         updatedAt: { type: 'string', format: 'date-time' },
                     },
@@ -115,7 +113,6 @@ const options = {
                         name: { type: 'string', example: 'Cơ sở Hiệp Phước - HCM' },
                         phone: { type: 'string', example: '0932113444' },
                         is_default: { type: 'boolean', example: false },
-                        is_deleted: { type: 'boolean', example: false },
                     },
                 },
                 Contact: {
