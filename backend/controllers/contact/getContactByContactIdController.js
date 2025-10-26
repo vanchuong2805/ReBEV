@@ -4,8 +4,7 @@ import userContactService from "../../services/user/userContactService.js";
  * @swagger
  * /api/contacts/contact/{contactId}:
  *   get:
- *     summary: Get a contact by contact ID
- *     tags: [Contacts]
+ *     summary: Get a contact by ID
  *     parameters:
  *       - in: path
  *         name: contactId
