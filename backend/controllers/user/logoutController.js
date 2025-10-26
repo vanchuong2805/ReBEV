@@ -1,6 +1,22 @@
 import jwtService from "../../services/auth/jwtService.js";
 
 
+/** 
+ * @swagger
+ * /api/users/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Users]
+ *     description: Logs out the user by invalidating the token
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized
+ */
+
 const logout = async (req, res) => {
     try {
         const authHeader = req.headers.authorization;

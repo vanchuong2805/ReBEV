@@ -21,6 +21,7 @@ const getUserContactsByUserId = async (userId) => {
     const data = await contacts.findAll({
         where: {
             user_id: userId,
+            is_deleted: false
         },
     });
     return data;
