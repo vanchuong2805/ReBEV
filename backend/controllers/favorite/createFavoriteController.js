@@ -3,6 +3,35 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import favoritePostService from "../../services/favorite/favoritePostService.js";
 import postService from "../../services/post/postService.js";
 
+/** 
+ * @swagger
+ * /api/favorites/{user_id}:
+ *   post:
+ *     summary: Create a favorite post
+ *     tags: [Favorites]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         description: ID of the user
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               post_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Favorite post created successfully
+ *       400:
+ *         description: Bad request
+ */
+
 const createFavoritePost = async (req, res) => {
     try {
         const { user_id } = req.params;

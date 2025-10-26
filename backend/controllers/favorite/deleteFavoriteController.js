@@ -2,6 +2,26 @@ import favoritePostService from "../../services/favorite/favoritePostService.js"
 import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
+/** 
+ * @swagger
+ * /api/favorites/delete/{post_id}:
+ *   delete:
+ *     summary: Delete a favorite post
+ *     tags: [Favorites]
+ *     parameters:
+ *       - in: path
+ *         name: post_id
+ *         required: true
+ *         description: ID of the post to delete from favorites
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Favorite post deleted successfully
+ *       400:
+ *         description: Bad request
+ */
+
 const deleteFavorite = async (req, res) => {
     try {
         const {

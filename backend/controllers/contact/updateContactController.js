@@ -2,6 +2,47 @@ import userContactService from '../../services/user/userContactService.js';
 import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
 
+/** 
+ * @swagger
+ * /api/contacts/update:
+ *   put:
+ *     summary: Update a contact
+ *     tags: [Contacts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               user_id:
+ *                 type: integer
+ *               detail:
+ *                 type: string
+ *               ward_code:
+ *                 type: string
+ *               ward_name:
+ *                 type: string
+ *               district_id:
+ *                 type: string
+ *               district_name:
+ *                 type: string
+ *               province_id:
+ *                 type: string
+ *               province_name:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contact updated successfully
+ *       400:
+ *         description: Bad request
+ */
 
 const updateContact = async (req, res) => {
     try {
