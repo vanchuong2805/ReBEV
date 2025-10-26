@@ -16,17 +16,6 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *         description: ID của người dùng
  *         schema:
  *           type: integer
- *    requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               oldPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
  *     responses:
  *       200:
  *         description: Cập nhật mật khẩu thành công
