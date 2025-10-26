@@ -7,9 +7,14 @@ import {
   ChevronLeft,
   ChevronRight,
   MessageCircle,
+  LogOut,
 } from "lucide-react";
+import { logoutAdmin } from "../service";
+import { useNavigate } from "react-router";
 
 const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       id: "reports",
@@ -88,6 +93,22 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
           );
         })}
       </nav>
+
+      {/* Logout Button */}
+      <div className="border-t border-slate-700 mt-6">
+        <button
+          onClick={() => {
+            logoutAdmin();
+            navigate("/");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+          }}
+          className="w-full flex items-center px-4 py-3 text-left transition-colors hover:bg-slate-700 hover:text-white"
+        >
+          <LogOut size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="ml-3 font-medium">Đăng xuất</span>}
+        </button>
+      </div>
     </div>
   );
 };
