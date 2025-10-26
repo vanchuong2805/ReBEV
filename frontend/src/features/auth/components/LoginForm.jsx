@@ -1,16 +1,32 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Link } from "react-router";
-
+import { FcGoogle } from "react-icons/fc";
+import FieldError from "./FieldError";
+import { validateLogin } from "../../../services/validations";
+import { loginUser } from "../service";
+import { useUser } from "../../../contexts/UserContext";
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const { login } = useUser();
 
   const handlePhoneLogin = (e) => {
     e.preventDefault();
-    alert(`Đăng nhập bằng số điện thoại: ${phone}`);
+    const newErrors = validateLogin({ phone, password });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length) return;
+    // Call login API
+    loginUser({ phone, password })
+      .then((response) => {
+        console.log("Login successful:", response);
+        // Handle successful login (e.g., store token, redirect)
+        login(response.user, response.token);
+      })
+      .catch((error) => {
+        console.error("Login failed:", error);
+        // Handle login error (e.g., show error message)
+      });
   };
 
   const handleGoogleLogin = () => {
@@ -18,44 +34,39 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="max-w-md p-8 mx-auto bg-white border border-gray-100 shadow-lg rounded-xl">
+    <div className="max-w-md p-8 mx-auto bg-transparent border-0 rounded-none shadow-none">
       <div className="mb-8 text-center">
         <h2 className="mb-2 text-2xl font-bold text-gray-800">Đăng nhập</h2>
         <p className="text-gray-600">Chào mừng bạn quay trở lại</p>
       </div>
 
-      <form onSubmit={handlePhoneLogin} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-            Số điện thoại
-          </Label>
-          <Input
+      <form onSubmit={handlePhoneLogin}>
+        <div className="relative mb-8">
+          <input
             id="phone"
             type="tel"
-            required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Nhập số điện thoại"
-            className="w-full px-4 py-3 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.phone ? "border-red-500" : "border-gray-300"
+            }`}
           />
+          <FieldError message={errors.phone} />
         </div>
 
-        <div className="space-y-2">
-          <Label
-            htmlFor="password"
-            className="text-sm font-medium text-gray-700"
-          >
-            Mật khẩu
-          </Label>
-          <Input
+        <div className="relative mb-8">
+          <input
             id="password"
             type="password"
-            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Nhập mật khẩu"
-            className="w-full px-4 py-3 transition-all duration-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.password ? "border-red-500" : "border-gray-300"
+            }`}
           />
+          <FieldError message={errors.password} />
         </div>
 
         <Button
@@ -66,6 +77,7 @@ const LoginForm = () => {
         </Button>
       </form>
 
+      {/* social */}
       <div className="mt-8">
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -85,22 +97,10 @@ const LoginForm = () => {
             onClick={handleGoogleLogin}
             className="flex items-center justify-center px-6 py-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md"
           >
-            <span className="mr-2 text-lg">🔍</span>
+            <FcGoogle className="w-4 h-4 mr-2" />
             Google
           </Button>
         </div>
-      </div>
-
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-600">
-          Chưa có tài khoản?{" "}
-          <Link
-            to="/register"
-            className="font-medium text-blue-600 transition-colors duration-200 hover:text-blue-500 hover:underline"
-          >
-            Đăng ký ngay
-          </Link>
-        </p>
       </div>
     </div>
   );

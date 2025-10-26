@@ -155,14 +155,19 @@ const createPost = async (req, res) => {
             { transaction: t }
         );
 
-        const data = details.map((detail) => ({ ...detail, post_id: newPost.id }));
-
+        const data = details.map((detail) => ({
+            ...detail,
+            post_id: newPost.id,
+            custom_value: `${detail.custom_value}`,
+        }));
         await postDetailService.createPostDetails(data, { transaction: t });
 
         await t.commit();
-        res.status(201).json({ post: newPost, details: data });
+        res.status(201).json({ post: newPost });
     } catch (error) {
-        await t.rollback();
+        if (t) {
+            await t.rollback();
+        }
         res.status(500).json({
             message: 'Failed to create post',
             error: error.message || 'Internal Server Error',

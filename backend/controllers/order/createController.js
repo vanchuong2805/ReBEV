@@ -151,12 +151,11 @@ const createOrder = async (req, res) => {
             return res.status(500).json({ error: 'Failed to create payment', order: newOrder });
         }
         res.status(201).json({
-            message: 'Order created successfully',
             order: newOrder,
             payUrl: result.payUrl,
         });
     } catch (error) {
-        res.status(500).json({ error: error.message || 'Internal server error' });
+        res.status(500).json({ message: 'Server error.' });
     }
 };
 export default createOrder;
