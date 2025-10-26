@@ -2,7 +2,6 @@ import { Sequelize } from 'sequelize';
 import models from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
-import { ROLE } from '../../config/constants.js';
 
 const getUsers = async () => {
     const data = await users.findAll();
@@ -52,13 +51,14 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
-const createStaff = async ({ display_name, email, phone }) => {
+const createStaff = async ({ display_name, email, phone, password, role }) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.create({
-        display_name: display_name || "",
+        display_name,
         email,
         phone,
-        password: '',
-        role: ROLE.STAFF,
+        password: hashedPassword,
+        role: role ?? 1,
     });
     return data;
 };

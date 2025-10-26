@@ -35,10 +35,6 @@ export const ERROR_MESSAGE = {
     ACCOUNT_ALREADY_LOCKED: 'Account is already locked',
     ACCOUNT_UNLOCK_FAILED: 'Unlocking account failed',
     ACCOUNT_ALREADY_UNLOCKED: 'Account is already unlocked',
-    GOOGLE_TOKEN_BLANK: 'Google ID token cannot be left blank',
-    GOOGLE_EMAIL_NOT_VERIFIED: 'Google email is not verified',
-    LOGIN_GOOGLE_FAIL: 'Login with Google failed',
-    EMAIL_EXISTS: 'Email already exists.',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -54,8 +50,7 @@ export const SUCCESS_MESSAGE = {
     UPDATE_USER_SUCCESS: 'Updating user successful',
     ACCOUNT_LOCKED: 'Account has been locked successfully',
     CREATE_STAFF_SUCCESS: 'Create Staff account successful',
-    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully',
-    LOGIN_GOOGLE_SUCCESS: 'Login with Google successful',
+    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully'
 }
 
 export const POST_STATUS = {
