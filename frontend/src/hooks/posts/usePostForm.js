@@ -85,7 +85,7 @@ export function usePostForm({ categoryId, requireBase, onSubmit }) {
     if (!fieldsCheck.ok) return toast.error(fieldsCheck.message);
     if (imageFiles.length === 0)
       return toast.error("Vui lòng thêm ít nhất 1 ảnh!");
-    toast.loading("Đang tải ảnh/video lên Cloudinary...");
+    toast.loading("Đang tải bài đăng");
 
     try {
       const uploads = await Promise.all([
