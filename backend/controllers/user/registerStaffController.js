@@ -2,60 +2,69 @@ import userService from "../../services/user/userService.js";
 import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
+/** 
+ * @swagger
+ * /api/users/register-staff:
+ *   post:
+ *     summary: Register a new staff member
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phone:
+ *                 type: string
+ *                 format: phone
+ *     responses:
+ *       201:
+ *         description: Staff member registered successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+
 const registerStaff = async (req, res) => {
     try {
-        const { display_name, email, phone, password } = req.body;
-        const errors = [];
-        const existedEmail = await userService.getUserByEmail(email);
-        const existedPhone = await userService.getUserByPhone(phone);
-
-        if (!display_name) {
-            errors.push(ERROR_MESSAGE.DISPLAY_NAME_BLANK);
-        }
+        const { email, phone } = req.body;
+        const error = [];
 
         if (!email) {
-            errors.push(ERROR_MESSAGE.EMAIL_BLANK);
+            error.push(ERROR_MESSAGE.EMAIL_BLANK);
         }
 
-        if (!password) {
-            errors.push(ERROR_MESSAGE.PASSWORD_BLANK);
+        if (error.length > 0) {
+            return res.status(400).json({ errors: error });
         }
 
-        if (existedEmail) {
-            errors.push(ERROR_MESSAGE.EMAIL_EXIST);
-        }
-
-        if (existedPhone) {
-            errors.push(ERROR_MESSAGE.PHONE_EXIST);
-        }
-
-        if (errors.length > 0) {
+        const existingUser = await userService.getUserByEmail(email);
+        if (existingUser) {
             return res.status(400).json({
-                message: ERROR_MESSAGE.CREATE_STAFF_FAIL,
-                errors
+                message: ERROR_MESSAGE.EMAIL_EXISTS
             });
         }
 
-        const newStaff = await userService.createStaff({
-            display_name,
-            email,
-            phone,
-            password,
-        });
+        const newUser = await userService.createStaff({ display_name: "", email, phone });
+        const { password, ...userWithoutPassword } = newUser.dataValues;
 
-        const { password: pwd, ...userWithoutPassword } = newStaff.dataValues;
-
-        res.status(200).json({
+        return res.status(201).json({
             message: SUCCESS_MESSAGE.CREATE_STAFF_SUCCESS,
-            user: userWithoutPassword,
+            user: userWithoutPassword
         });
 
     } catch (error) {
+        console.error(error);
         return res.status(500).json({
             message: ERROR_MESSAGE.CREATE_STAFF_FAIL,
             error: error.message
         });
     }
-}
+};
 
 export default registerStaff;
