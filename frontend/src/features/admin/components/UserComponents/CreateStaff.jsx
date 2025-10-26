@@ -19,30 +19,17 @@ export default function CreateStaff({
   const handleChange = (field, value) =>
     setStaffFormData((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = () => {
-    if (staffFormData.password !== staffFormData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-    if (staffFormData.password.length < 6) {
-      alert("Password must be at least 6 characters!");
-      return;
-    }
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
     onCreate({
-      name: staffFormData.name.trim(),
       email: staffFormData.email.trim(),
       phone: staffFormData.phone.trim(),
-      password: staffFormData.password,
     });
 
     // reset form và để parent đóng modal (hoặc bạn có thể tự đóng ở đây)
     setStaffFormData({
-      name: "",
       email: "",
       phone: "",
-      password: "",
-      confirmPassword: "",
     });
   };
 
