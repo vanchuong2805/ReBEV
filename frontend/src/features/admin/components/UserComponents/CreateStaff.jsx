@@ -20,7 +20,6 @@ export default function CreateStaff({
     setStaffFormData((prev) => ({ ...prev, [field]: value }));
 
   const handleSubmit = () => {
-
     if (staffFormData.password !== staffFormData.confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -64,19 +63,6 @@ export default function CreateStaff({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Họ và tên
-            </label>
-            <Input
-              type="text"
-              value={staffFormData.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Nhập họ tên nhân viên"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
             <Input
@@ -97,32 +83,6 @@ export default function CreateStaff({
               value={staffFormData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
               placeholder="Nhập số điện thoại nhân viên"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mật khẩu
-            </label>
-            <Input
-              type="password"
-              value={staffFormData.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Xác nhận mật khẩu
-            </label>
-            <Input
-              type="password"
-              value={staffFormData.confirmPassword}
-              onChange={(e) => handleChange("confirmPassword", e.target.value)}
-              placeholder="Xác nhận mật khẩu"
               required
             />
           </div>
