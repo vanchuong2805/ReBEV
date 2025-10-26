@@ -7,11 +7,14 @@ const verifyGoogleToken = async (id_token) => {
         if (!id_token) {
             throw new Error('No token provided');
         }
+
         const ticket = await client.verifyIdToken({
             idToken: id_token,
             audience: process.env.GOOGLE_CLIENT_ID,
         });
+
         const payload = ticket.getPayload();
+
         return {
             email: payload.email,
             email_verified: payload.email_verified,

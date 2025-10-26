@@ -13,7 +13,6 @@ const loginUserByGoogle = async (req, res) => {
                 error: ERROR_MESSAGE.GOOGLE_TOKEN_BLANK
             });
         }
-
         const googleUser = await verifyGoogleToken(id_token);
 
         if (!googleUser.email_verified) {
@@ -50,6 +49,7 @@ const loginUserByGoogle = async (req, res) => {
         if (user.is_locked) {
             return res.status(403).json(ERROR_MESSAGE.ACCOUNT_LOCKED);
         }
+
 
         const accessToken = jwt.sign({
             id: user.id,
