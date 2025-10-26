@@ -7,7 +7,6 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * /api/users/{user_id}/lock-account:
  *   patch:
  *     summary: Lock user account
- *     tags: [Users]
  *     description: Lock a user account by user ID
  *     parameters:
  *       - in: path
