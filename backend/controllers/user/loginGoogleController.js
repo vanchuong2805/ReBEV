@@ -39,7 +39,7 @@ const loginUserByGoogle = async (req, res) => {
         }
 
         else {
-            if (isEmpty(user.display_name)) {
+            if (!user.display_name?.trim()) {
                 user.display_name = name;
                 user.avatar = picture;
                 await user.save();
