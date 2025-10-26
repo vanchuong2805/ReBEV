@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
-import axios from "axios";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import {
   Search,
@@ -35,9 +34,13 @@ import {
 } from "@/components/ui/hover-card";
 import { Link } from "react-router";
 import { useUser } from "@/contexts/UserContext";
+import {
+  fetchDistricts,
+  fetchProvinces,
+  fetchWards,
+} from "../../features/profile/service";
+import { getVariationValues } from "@/features/posts/service";
 // ========== GHN CONFIG ==========
-const GHN_API = import.meta.env.VITE_GHN_API;
-const TOKEN = import.meta.env.VITE_GHN_TOKEN;
 
 // ===== Header Component =====
 const Header = () => {
@@ -62,28 +65,18 @@ const Header = () => {
   const itemCount = items.length;
   // ======= FETCH PROVINCES =======
   useEffect(() => {
-    const fetchProvinces = async () => {
-      setProvLoading(true);
+    (async () => {
       try {
-        const res = await axios.get(`${GHN_API}/master-data/province`, {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        });
-        setProvinces(
-          res.data.data.filter(
-            (p) => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
-          )
-        );
+        setProvLoading(true);
+        const data = await fetchProvinces();
+        setProvinces(data);
       } catch (err) {
         console.error("❌ Error loading provinces:", err);
         setProvError(err);
       } finally {
         setProvLoading(false);
       }
-    };
-    fetchProvinces();
+    })();
   }, []);
 
   // ======= FETCH DISTRICTS =======
@@ -98,17 +91,8 @@ const Header = () => {
     if (!id) return;
     try {
       setDistrictLoading(true);
-      const res = await axios.post(
-        `${GHN_API}/master-data/district`,
-        { province_id: Number(id) },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        }
-      );
-      setDistricts(res.data.data);
+      const res = await fetchDistricts(id);
+      setDistricts(res);
     } catch (err) {
       console.error("❌ Error loading districts:", err);
     } finally {
@@ -126,17 +110,8 @@ const Header = () => {
     if (!id) return;
     try {
       setWardLoading(true);
-      const res = await axios.post(
-        `${GHN_API}/master-data/ward`,
-        { district_id: Number(id) },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        }
-      );
-      setWards(res.data.data);
+      const res = await fetchWards(id);
+      setWards(res);
     } catch (err) {
       console.error("❌ Error loading wards:", err);
       setWardError(err);
@@ -145,17 +120,15 @@ const Header = () => {
     }
   };
 
-  // ===== VARIATIONS (Giữ nguyên phần này) =====
+  // ===== VARIATIONS =====
   const [groups, setGroups] = useState({});
   const [loadingVariations, setLoadingVariations] = useState(true);
 
   useEffect(() => {
     const fetchVariations = async () => {
       try {
-        const res = await axios.get(
-          "https://rebev.up.railway.app/api/variationValues"
-        );
-        const roots = res.data.filter((item) => item.parent_id === null);
+        const res = await getVariationValues();
+        const roots = res.filter((item) => item.parent_id === null);
 
         const grouped = roots.reduce((acc, item) => {
           if (!acc[item.variation_id]) acc[item.variation_id] = [];
@@ -230,7 +203,6 @@ const Header = () => {
                 sideOffset={15}
                 className="relative w-72 p-2 bg-white rounded-2xl border border-gray-100 shadow-2xl z-[9999]"
               >
-                {/* === Xe điện cũ === */}
                 {/* === Xe điện cũ === */}
                 <HoverCard openDelay={80} closeDelay={120}>
                   <HoverCardTrigger asChild>

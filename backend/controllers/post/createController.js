@@ -2,11 +2,103 @@ import postService from '../../services/post/postService.js';
 import categoryService from '../../services/post/categoryService.js';
 import { sequelize } from '../../models/index.js';
 import postDetailService from '../../services/post/postDetailService.js';
+
+/**
+ * @swagger
+ * /posts:
+ *  post:
+ *    summary: Tạo bài đăng mới
+ *    tags: [Posts]
+ *    requestBody:
+ *      required: true
+ *      content:
+ *        application/json:
+ *          schema:
+ *            type: object
+ *            properties:
+ *              title:
+ *                type: string
+ *              description:
+ *                type: string
+ *              price:
+ *                type: number
+ *              category_id:
+ *                type: integer
+ *              base_id:
+ *                type: integer
+ *              seller_contact_id:
+ *                type: integer
+ *              mediaFiles:
+ *                type: array
+ *                items:
+ *                  $ref: '#/components/schemas/MediaFile'
+ *              details:
+ *                type: array
+ *                items:
+ *                  type: object
+ *                  properties:
+ *                    variation_id:
+ *                      type: integer
+ *                    variation_value_id:
+ *                      type: integer
+ *                    custom_value:
+ *                      type: string
+ *    responses:
+ *      201:
+ *        description: Bài đăng được tạo thành công
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                post:
+ *                  $ref: '#/components/schemas/Post'
+ *      400:
+ *        description: Thông tin không hợp lệ
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "Missing required fields"
+ *      401:
+ *        description: Người dùng không được xác thực
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "Unauthorized"
+ *      404:
+ *        description: Danh mục không tồn tại
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "Category not found"
+ *      500:
+ *        description: Lỗi server
+ *        content:
+ *          application/json:
+ *            schema:
+ *              type: object
+ *              properties:
+ *                message:
+ *                  type: string
+ *                  example: "Server error"
+ */
+
 const createPost = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const {
-            user_id,
             category_id,
             title,
             description,
@@ -16,8 +108,8 @@ const createPost = async (req, res) => {
             mediaFiles,
             details,
         } = req.body;
+        const user_id = req.user.id;
         if (
-            !user_id ||
             !category_id ||
             !title ||
             price === undefined ||
@@ -63,14 +155,19 @@ const createPost = async (req, res) => {
             { transaction: t }
         );
 
-        const data = details.map(detail => ({ ...detail, post_id: newPost.id }));
-        
+        const data = details.map((detail) => ({
+            ...detail,
+            post_id: newPost.id,
+            custom_value: `${detail.custom_value}`,
+        }));
         await postDetailService.createPostDetails(data, { transaction: t });
 
         await t.commit();
-        res.status(201).json({post: newPost, details: data });
+        res.status(201).json({ post: newPost });
     } catch (error) {
-        await t.rollback();
+        if (t) {
+            await t.rollback();
+        }
         res.status(500).json({
             message: 'Failed to create post',
             error: error.message || 'Internal Server Error',

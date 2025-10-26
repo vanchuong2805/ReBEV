@@ -17,8 +17,23 @@ const createPostDetails = async (data, options) => {
     return postDetails;
 };
 
+const getWeightByPostId = async (postId) => {
+    const data = await post_detail.findOne({
+        where: { post_id: postId },
+        include: [
+            {
+                association: 'variations',
+                where: { name: 'Trọng lượng' },
+            },
+        ],
+        attributes: ['custom_value'],
+    });
+    return data;
+};
+
 export default {
     getAll,
     getByPostId,
     createPostDetails,
+    getWeightByPostId,
 };

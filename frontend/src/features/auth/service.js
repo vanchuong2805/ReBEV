@@ -1,13 +1,22 @@
 import axios from "axios";
-
-const API_BASE_URL = "https://rebev.up.railway.app/api/users";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const registerUser = async (userData) => {
-  const response = await axios.post(`${API_BASE_URL}/register`, userData);
+  const response = await axios.post(`${API_BASE_URL}/users/register`, userData);
   return response.data;
 };
 
 export const loginUser = async (credentials) => {
-  const response = await axios.post(`${API_BASE_URL}/login/phone`, credentials);
+  const response = await axios.post(
+    `${API_BASE_URL}/users/login/phone`,
+    credentials
+  );
+  return response.data;
+};
+
+export const googleLogin = async (idToken) => {
+  const response = await axios.post(`${API_BASE_URL}/users/login/google`, {
+    id_token: idToken,
+  });
   return response.data;
 };
