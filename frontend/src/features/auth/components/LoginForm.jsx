@@ -42,8 +42,7 @@ const LoginForm = () => {
       const data = await googleLogin(credential); // gọi API tới backend
 
       // nếu BE trả về user + accessToken
-      login(data.user, data.accessToken);
-
+      login(data.user, data.token);
       toast.success("Đăng nhập Google thành công!");
     } catch (error) {
       console.error("Google login failed:", error);
