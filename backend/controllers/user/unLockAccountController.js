@@ -7,6 +7,7 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * /api/users/{user_id}/unlock-account:
  *   patch:
  *     summary: Unlock user account
+ *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: user_id
