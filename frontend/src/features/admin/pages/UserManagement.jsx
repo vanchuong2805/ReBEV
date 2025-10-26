@@ -7,7 +7,8 @@ import StatsCard from "../components/StatsCard";
 import FilterBar from "../components/FilterBar";
 import UserInfo from "../components/UserComponents/UserInfo";
 import CreateStaff from "../components/UserComponents/CreateStaff";
-import { fetchUsers } from "../service";
+import { fetchUsers, lockUserAccount, unLockUserAccount } from "../service";
+import { toast } from "sonner";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,8 +27,12 @@ const UserManagement = () => {
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
-    fetchUsers().then((data) => setUsers(data));
+    fetchUsers().then(setUsers);
   }, []);
+  const refreshUsers = async () => {
+    const fresh = await fetchUsers();
+    setUsers(fresh);
+  };
   //---------------------------------------------
   const getStatusColor = (is_locked) => {
     switch (is_locked) {
@@ -67,22 +72,26 @@ const UserManagement = () => {
     }
   };
 
-  const handleLockUser = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, is_locked: true } : user
-      )
-    );
-    console.log("Locking user:", userId);
+  const handleLockUser = async (userId) => {
+    try {
+      console.log("Token hiện tại:", localStorage.getItem("token"));
+      await lockUserAccount(userId);
+      await refreshUsers();
+      toast.success(`Đã khóa tài khoản: ${userId}`);
+    } catch (err) {
+      toast.error(`Lỗi khi khóa tài khoản: ${err.message}`);
+    }
   };
 
-  const handleUnlockUser = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, is_locked: false } : user
-      )
-    );
-    console.log("Unlocking user:", userId);
+  const handleUnlockUser = async (userId) => {
+    try {
+      console.log("Token hiện tại:", localStorage.getItem("token"));
+      await unLockUserAccount(userId);
+      await refreshUsers();
+      toast.success(`Đã mở khóa tài khoản: ${userId}`);
+    } catch (err) {
+      toast.error(`Lỗi khi mở khóa tài khoản: ${err.message}`);
+    }
   };
 
   const handleCreateStaff = () => {

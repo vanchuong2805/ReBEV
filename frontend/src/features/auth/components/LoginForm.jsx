@@ -21,7 +21,7 @@ const LoginForm = () => {
       .then((response) => {
         console.log("Login successful:", response);
         // Handle successful login (e.g., store token, redirect)
-        login(response.user, response.token);
+        login(response.user, response.accessToken);
       })
       .catch((error) => {
         console.error("Login failed:", error);

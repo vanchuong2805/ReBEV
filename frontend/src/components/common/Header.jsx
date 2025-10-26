@@ -153,7 +153,7 @@ const Header = () => {
     const fetchVariations = async () => {
       try {
         const res = await axios.get(
-          "https://rebev.onrender.com/api/variationValues"
+          "https://rebev.up.railway.app/api/variationValues"
         );
         const roots = res.data.filter((item) => item.parent_id === null);
 
