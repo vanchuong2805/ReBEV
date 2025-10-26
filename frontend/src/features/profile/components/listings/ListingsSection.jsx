@@ -9,31 +9,66 @@ import PendingListingCard from './PendingListingCard'
 import SoldListingCard from './SoldListingCard'
 import ExpiredListingCard from './ExpiredListingCard'
 import RejectedListingCard from './RejectedListingCard'
-import CanceledListingCard from './CanceledListingCard' // 🔹 thêm
+import CanceledListingCard from './CanceledListingCard'
+import { useState, useEffect } from 'react'
 
 import { mockListings } from './MockListings'
 import { useSearchParams } from 'react-router-dom'
+import { getPostsByUserId, updatePostVisibility } from '../../service'
+import { useUser } from "@/contexts/UserContext"
 
 
 const ListingsSection = () => {
-  const getStatus = (l) => (l?.current_status || l?.status || '').trim()
-  const all = Array.isArray(mockListings) ? mockListings : []
+  const [listings, setListings] = useState([])
+  const { user } = useUser()
 
-  const activeListings = all.filter(l => getStatus(l) === 'Đang bán')
-  const pendingListings = all.filter(l => getStatus(l) === 'Chờ duyệt')
-  const soldListings = all.filter(l => getStatus(l) === 'Đã bán')
-  const expiredListings = all.filter(l => ['Tin ẩn', 'Hết hạn'].includes(getStatus(l)))
-  const rejectedListings = all.filter(l => getStatus(l) === 'Bị từ chối')
-  const canceledListings = all.filter(l => getStatus(l) === 'Tin huỷ') // ✅ thêm filter
+ useEffect(() => {
+  if (!user?.id) return  // ✅ nếu user null thì dừng
 
-  const total = all.length
+  const fetchListings = async () => {
+    try {
+      const data = await getPostsByUserId(user.id)
+      setListings(data)
+    } catch (error) {
+      console.error('❌ Lỗi tải tin đăng:', error)
+    }
+  }
+
+  fetchListings()
+}, [user])
+
+
+  const activeListings = listings.filter(l => Number(l?.status) === 1 && l?.is_hidden === false)
+  const pendingListings = listings.filter(l => Number(l?.status) === 0 && l?.is_hidden === false)
+  const soldListings = listings.filter(l => Number(l?.status) === 3)
+  const expiredListings = listings.filter(l => l?.is_hidden === true)
+  const rejectedListings = listings.filter(l => Number(l?.status) === 2)
+  const canceledListings = listings.filter(l => Number(l?.status) === 5)
+
+  const total = listings.length
   const navigate = useNavigate()
-   const handleViewDetail = (listing) => {
-     console.log('Đi đến:', listing.id)
+  const handleViewDetail = (listing) => {
+    console.log('Đi đến:', listing.id)
     navigate(`/marketplace/listing/${listing.id}`, {
       state: { from: `/profile/listings?type=${type}` }
     })
   }
+  const handleHideListing = async (listingId) => {
+    try {
+      await updatePostVisibility(listingId)
+      setListings((prevListings) =>
+        prevListings.map((listing) =>
+          listing.id === listingId
+            ? { ...listing, is_hidden: !listing.is_hidden } 
+            : listing
+        )
+      )
+      console.log("✅ Ẩn tin thành công:", listingId)
+    } catch (error) {
+      console.error("❌ Lỗi ẩn tin đăng:", error)
+    }
+  }
+
   const [searchParams, setSearchParams] = useSearchParams()
   const type = searchParams.get("type") || "all"
 
@@ -60,8 +95,8 @@ const ListingsSection = () => {
           {/* 🔹 Thêm 1 cột cho tab Tin huỷ (tổng 7 tab) */}
           <TabsList className="grid w-full grid-cols-7 mb-6">
             <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
-            <TabsTrigger value="active" className="text-sm">Đang bán ({activeListings.length})</TabsTrigger>
             <TabsTrigger value="pending" className="text-sm">Chờ duyệt ({pendingListings.length})</TabsTrigger>
+            <TabsTrigger value="active" className="text-sm">Đang bán ({activeListings.length})</TabsTrigger>
             <TabsTrigger value="sold" className="text-sm">Đã bán ({soldListings.length})</TabsTrigger>
             <TabsTrigger value="expired" className="text-sm">Tin ẩn ({expiredListings.length})</TabsTrigger>
             <TabsTrigger value="rejected" className="text-sm">Bị từ chối ({rejectedListings.length})</TabsTrigger>
@@ -71,27 +106,27 @@ const ListingsSection = () => {
           {/* === ALL === */}
           <TabsContent value="all" className="space-y-4">
             {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có tin đăng</div>}
-            {activeListings.map(l => <ListingCard key={`a-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
-            {pendingListings.map(l => <PendingListingCard key={`p-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
-            {soldListings.map(l => <SoldListingCard key={`s-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
-            {expiredListings.map(l => <ExpiredListingCard key={`e-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
-            {rejectedListings.map(l => <RejectedListingCard key={`r-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {pendingListings.map(l => <PendingListingCard key={`p-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
+            {activeListings.map(l => <ListingCard key={`a-${l.id}`} listing={l} onView={() => handleViewDetail(l)} onHide={() => handleHideListing(l.id)} />)}
+            {soldListings.map(l => <SoldListingCard key={`s-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
+            {expiredListings.map(l => <ExpiredListingCard key={`e-${l.id}`} listing={l} onView={() => handleViewDetail(l)} onHide={() => handleHideListing(l.id)} />)}
+            {rejectedListings.map(l => <RejectedListingCard key={`r-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
             {canceledListings.map(l => <CanceledListingCard key={`c-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
-          </TabsContent>
-
-          {/* === ACTIVE === */}
-          <TabsContent value="active">
-            <div className="space-y-4">
-              {activeListings.length === 0 && <div className="text-gray-500">Không có tin đang bán</div>}
-              {activeListings.map(l => <ListingCard key={l.id} listing={l} onView={handleViewDetail}/>)}
-            </div>
           </TabsContent>
 
           {/* === PENDING === */}
           <TabsContent value="pending">
             <div className="space-y-4">
               {pendingListings.length === 0 && <div className="text-gray-500">Không có tin chờ duyệt</div>}
-              {pendingListings.map(l => <PendingListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
+              {pendingListings.map(l => <PendingListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} />)}
+            </div>
+          </TabsContent>
+
+          {/* === ACTIVE === */}
+          <TabsContent value="active">
+            <div className="space-y-4">
+              {activeListings.length === 0 && <div className="text-gray-500">Không có tin đang bán</div>}
+              {activeListings.map(l => <ListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} onHide={() => handleHideListing(l.id)} />)}
             </div>
           </TabsContent>
 
@@ -99,7 +134,7 @@ const ListingsSection = () => {
           <TabsContent value="sold">
             <div className="space-y-4">
               {soldListings.length === 0 && <div className="text-gray-500">Không có tin đã bán</div>}
-              {soldListings.map(l => <SoldListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
+              {soldListings.map(l => <SoldListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} onHide={() => handleHideListing(l.id)} />)}
             </div>
           </TabsContent>
 
@@ -107,7 +142,7 @@ const ListingsSection = () => {
           <TabsContent value="expired">
             <div className="space-y-4">
               {expiredListings.length === 0 && <div className="text-gray-500">Không có tin tin ẩn</div>}
-              {expiredListings.map(l => <ExpiredListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
+              {expiredListings.map(l => <ExpiredListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} onHide={handleHideListing} />)}
             </div>
           </TabsContent>
 
@@ -115,7 +150,7 @@ const ListingsSection = () => {
           <TabsContent value="rejected">
             <div className="space-y-4">
               {rejectedListings.length === 0 && <div className="text-gray-500">Không có tin đăng bị từ chối</div>}
-              {rejectedListings.map(l => <RejectedListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
+              {rejectedListings.map(l => <RejectedListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} />)}
             </div>
           </TabsContent>
 
@@ -123,7 +158,7 @@ const ListingsSection = () => {
           <TabsContent value="canceled">
             <div className="space-y-4">
               {canceledListings.length === 0 && <div className="text-gray-500">Không có tin đã huỷ</div>}
-              {canceledListings.map(l => <CanceledListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)}/>)}
+              {canceledListings.map(l => <CanceledListingCard key={l.id} listing={l} onView={() => handleViewDetail(l)} />)}
             </div>
           </TabsContent>
         </Tabs>

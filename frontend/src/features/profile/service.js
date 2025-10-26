@@ -81,8 +81,28 @@ export const changePassword = async (id, oldPassword, newPassword) => {
   console.log(res)
   return res
 }
-export const getPost = async () => {
-  const res = await axios.get(`${API_BASE_URL}/posts`)
+export const getPosts = async (filters = {}) => {
+
+
+  const res = await axios.get(`${API_BASE_URL}/posts`, {
+    params: filters,
+  })
+
+  return res.data.data
+}
+export const updatePostVisibility = async (postId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.patch(`${API_BASE_URL}/posts/${postId}/visibility`, {},
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  console.log(res.data)
   return res.data
 }
+export const getPostsByUserId = async (userId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}/posts`,
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
 
+  return res.data
+}
