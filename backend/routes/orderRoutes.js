@@ -1,11 +1,18 @@
 import express from 'express';
-import createOrder from  '../controllers/order/createController.js';
+import createOrder from '../controllers/order/createController.js';
 import getOrder from '../controllers/order/getOrderController.js';
 import getOrders from '../controllers/order/getOrdersController.js';
 import changeStatus from '../controllers/order/changeStatusController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * tags:
+ *   name: Orders
+ *   description: API quản lý đơn hàng
+ */
 router.use(authMiddleware);
 router.post('/', createOrder);
 router.get('/:id', getOrder);

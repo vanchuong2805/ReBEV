@@ -2,6 +2,26 @@ import userContactService from '../../services/user/userContactService.js'
 import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
+/** 
+ * @swagger
+ * /api/contacts/delete/{id}:
+ *   delete:
+ *     summary: Delete a contact
+ *     tags: [Contacts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the contact to delete
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Contact deleted successfully
+ *       400:
+ *         description: Bad request
+ */
+
 const deleteContact = async (req, res) => {
     try {
         const {

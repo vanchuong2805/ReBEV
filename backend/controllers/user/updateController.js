@@ -2,6 +2,28 @@ import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import userService from "../../services/user/userService.js";
 
+/** 
+ * @swagger
+ * /api/users/{id}/update:
+ *   put:
+ *     summary: Cập nhật thông tin người dùng
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID của người dùng
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cập nhật thông tin người dùng thành công
+ *       404:
+ *         description: Không tìm thấy người dùng
+ *       403:
+ *         description: Người dùng không có quyền truy cập
+ */
+
 const updateUser = async (req, res) => {
     try {
         const id = req.params.id;
@@ -14,28 +36,15 @@ const updateUser = async (req, res) => {
 
         const {
             display_name,
-            password,
             avatar
         } = req.body;
         const error = [];
-
-        const user = await userService.getUser(id);
-
-        if (!user) {
-            return error.push(ERROR_MESSAGE.USER_NOT_FOUND);
-        }
 
         const data = {};
 
         if (display_name) {
             data.display_name = display_name;
         }
-
-        if (password) {
-            data.password = password;
-        }
-
-
 
         const newUser = await userService.updateUser(id, {
             avatar,

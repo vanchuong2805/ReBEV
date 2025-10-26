@@ -63,8 +63,13 @@ export function validatePostFields({ title, price }) {
 export const VN_PHONE_REGEX =
   /^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/;
 
-export function validateRegister(form) {
+export const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?`~]).{6,}$/;
+
+export function validateRegister(form = {}) {
   const errors = {};
+  const password = String(form.password ?? "");
+  const confirmPassword = String(form.confirmPassword ?? "");
   // display_name
   if (!form.display_name?.trim()) {
     errors.display_name = "Vui lòng nhập họ tên";
@@ -74,19 +79,22 @@ export function validateRegister(form) {
   // phone
   if (!form.phone?.trim()) {
     errors.phone = "Vui lòng nhập số điện thoại";
-  } else if (!VN_PHONE_REGEX.test(form.phone)) {
+  } else if (!VN_PHONE_REGEX.test(form.phone.trim())) {
     errors.phone = "Số điện thoại không hợp lệ";
   }
   // password
-  if (!form.password) {
+  if (!password || password.trim() === "") {
     errors.password = "Vui lòng nhập mật khẩu";
-  } else if (form.password.length < 6) {
+  } else if (password.length < 6) {
     errors.password = "Mật khẩu cần ít nhất 6 ký tự";
+  } else if (!PASSWORD_REGEX.test(password)) {
+    errors.password =
+      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt";
   }
   // confirmPassword
-  if (!form.confirmPassword) {
+  if (!confirmPassword || confirmPassword.trim() === "") {
     errors.confirmPassword = "Vui lòng xác nhận mật khẩu";
-  } else if (form.confirmPassword !== form.password) {
+  } else if (confirmPassword !== password) {
     errors.confirmPassword = "Mật khẩu xác nhận không khớp";
   }
 
@@ -95,12 +103,12 @@ export function validateRegister(form) {
 
 export function validateLogin({ phone, password }) {
   const errors = {};
-  if (!phone?.trim()) {
+  if (!phone || phone.trim() === "") {
     errors.phone = "Vui lòng nhập số điện thoại ";
-  } else if (!VN_PHONE_REGEX.test(phone)) {
+  } else if (!VN_PHONE_REGEX.test(phone.trim())) {
     errors.phone = "Số điện thoại không hợp lệ";
   }
-  if (!password?.trim()) {
+  if (!password || password.trim() === "") {
     errors.password = "Vui lòng nhập mật khẩu";
   }
   return errors;

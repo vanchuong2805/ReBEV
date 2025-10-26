@@ -10,8 +10,6 @@ import { createPost } from "@/features/posts/service";
 
 export function usePostForm({ categoryId, requireBase, onSubmit }) {
   const { upload } = useUpload();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const userId = user?.id;
   const [imageFiles, setImageFiles] = useState([]);
   const [videoFiles, setVideoFiles] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -81,15 +79,14 @@ export function usePostForm({ categoryId, requireBase, onSubmit }) {
     baseId,
     details,
     coverImageIndex,
+    sellerContactId,
   }) {
     const fieldsCheck = validatePostFields({ title, price });
     if (!fieldsCheck.ok) return toast.error(fieldsCheck.message);
     if (imageFiles.length === 0)
       return toast.error("Vui lòng thêm ít nhất 1 ảnh!");
+    toast.loading("Đang tải bài đăng");
 
-    toast.loading("Đang tải ảnh/video lên Cloudinary...");
-
-    //toast.error("Không tải ảnh/video lên Cloudinary");
     try {
       const uploads = await Promise.all([
         ...imageFiles.map(upload),
@@ -115,7 +112,7 @@ export function usePostForm({ categoryId, requireBase, onSubmit }) {
       const payload = {
         category_id: categoryId,
         title: title.trim(),
-        seller_contact_id: categoryId === 2 ? userId : null,
+        seller_contact_id: categoryId === 2 ? sellerContactId || null : null,
         price: Number(String(price).replaceAll(/[,_]/g, "")),
         description: String(description || "").trim(),
         base_id: requireBase ? baseId || null : null,
@@ -128,9 +125,9 @@ export function usePostForm({ categoryId, requireBase, onSubmit }) {
       onSubmit?.(data);
       handleReset();
       return data;
-    } catch (err) {
-      toast.error(err?.message || "Đăng tin thất bại");
-      throw err;
+    } catch (error) {
+      toast.error("Đăng tin thất bại. Vui lòng thử lại.");
+      console.error("Upload error:", error);
     } finally {
       toast.dismiss();
     }

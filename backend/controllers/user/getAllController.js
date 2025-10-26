@@ -1,5 +1,28 @@
 import userService from "../../services/user/userService.js";
 
+/** 
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: Lấy danh sách người dùng
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Số trang
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Số lượng người dùng mỗi trang
+ *     responses:
+ *       200:
+ *         description: Danh sách người dùng
+ *       500:
+ *         description: Lỗi server
+ */
 const getAll = async (req, res) => {
     try {
         const option = req.query;

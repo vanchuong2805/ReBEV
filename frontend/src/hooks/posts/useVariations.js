@@ -105,7 +105,7 @@ export function useVariationGraph(rows, categoryId) {
     return map;
   }, [parentVariationOf]);
 
-  // ====== 3. Thứ tự ưu tiên: theo API definitions, fallback topo ======
+  // ====== 3. Thứ tự ưu tiên: theo API definitions ======
   const orderedVariationIds = useMemo(() => {
     if (definitionIds.length > 0) return definitionIds.slice();
 

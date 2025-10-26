@@ -1,5 +1,18 @@
 import cartService from '../../services/cart/cartService.js';
 
+/** 
+ * @swagger
+ * /api/carts:
+ *   get:
+ *     summary: Get all cart items
+ *     tags: [Carts]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all cart items
+ *       500:
+ *         description: Internal server error
+ */
+
 const getAll = async (req, res) => {
     try {
         const carts = await cartService.getCarts();

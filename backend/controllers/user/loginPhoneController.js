@@ -4,6 +4,35 @@ import userService from '../../services/user/userService.js'
 import bcrypt from 'bcrypt';
 import jwtService from '../../services/auth/jwtService.js';
 
+/**
+ * @swagger
+ * /api/users/login/phone:
+ *   post:
+ *     summary: Đăng nhập bằng số điện thoại
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               phone:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Đăng nhập thành công
+ *       400:
+ *         description: Thông tin đăng nhập không hợp lệ
+ *       404:
+ *         description: Không tìm thấy người dùng
+ *       401:
+ *         description: Mật khẩu không đúng
+ *       403:
+ *         description: Tài khoản bị khóa
+ */
 
 const loginUserByPhone = async (req, res) => {
     try {
@@ -58,9 +87,11 @@ const loginUserByPhone = async (req, res) => {
             secure: true
         });
 
+        const { password: pwd, ...userWithoutPassword } = accountUser.dataValues;
+
         res.status(200).json({
             message: SUCCESS_MESSAGE.LOGIN_SUCCESS,
-            user: accountUser,
+            user: userWithoutPassword,
             accessToken,
         });
 
