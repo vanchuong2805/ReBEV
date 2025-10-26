@@ -9,17 +9,20 @@ import { AuthDialogProvider } from "@/contexts/AuthDialogContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { Toaster } from "sonner";
 import { UserProvider } from "@/contexts/UserContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
       <CartProvider>
-        <AuthDialogProvider>
-          <UserProvider>
-            <AppRoutes />
-            <AuthOverlay />
-          </UserProvider>
-        </AuthDialogProvider>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <AuthDialogProvider>
+            <UserProvider>
+              <AppRoutes />
+              <AuthOverlay />
+            </UserProvider>
+          </AuthDialogProvider>
+        </GoogleOAuthProvider>
       </CartProvider>
       <Toaster position="top-center" richColors closeButton />
     </BrowserRouter>

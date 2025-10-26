@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
-import { registerUser } from "../service";
+import { googleLogin, registerUser } from "../service";
 import FieldError from "./FieldError";
 import { validateRegister } from "../../../services/validations";
+import { GoogleLogin } from "@react-oauth/google";
+import { Eye, EyeOff } from "lucide-react";
+import { useUser } from "../../../contexts/UserContext";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +17,9 @@ const RegisterForm = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { login } = useUser();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,8 +54,19 @@ const RegisterForm = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    alert("Đăng nhập bằng Google");
+  const handleGoogleLogin = async (response) => {
+    try {
+      const { credential } = response; // Google ID Token
+      const data = await googleLogin(credential); // gọi API tới backend
+
+      // nếu BE trả về user + accessToken
+      login(data.user, data.accessToken);
+
+      toast.success("Đăng nhập Google thành công!");
+    } catch (error) {
+      console.error("Google login failed:", error);
+      toast.error("Đăng nhập Google thất bại!");
+    }
   };
 
   return (
@@ -97,7 +114,7 @@ const RegisterForm = () => {
         {/* MẬT KHẨU */}
         <div className="relative mb-8">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             id="password"
             name="password"
             value={formData.password}
@@ -107,13 +124,20 @@ const RegisterForm = () => {
             }`}
             placeholder="Nhập mật khẩu"
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 flex items-center text-gray-500 right-3 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
           <FieldError message={errors.password} />
         </div>
 
         {/* XÁC NHẬN */}
         <div className="relative mb-4">
           <input
-            type="password"
+            type={showConfirmPassword ? "text" : "password"}
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
@@ -122,6 +146,13 @@ const RegisterForm = () => {
             }`}
             placeholder="Xác nhận lại mật khẩu"
           />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((prev) => !prev)}
+            className="absolute inset-y-0 flex items-center text-gray-500 right-3 hover:text-gray-700"
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
           <FieldError message={errors.confirmPassword} />
         </div>
 
