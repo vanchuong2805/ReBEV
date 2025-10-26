@@ -176,15 +176,10 @@ const RegisterForm = () => {
             </div>
           </div>
           <div className="flex justify-center mt-6 space-x-4">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={handleGoogleLogin}
-              className="flex items-center justify-center px-6 py-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md"
-            >
-              <FcGoogle className="w-4 h-4 mr-2" />
-              Google
-            </Button>
+            <GoogleLogin
+              onSuccess={handleGoogleLogin}
+              onError={() => toast.error("Đăng nhập Google thất bại!")}
+            />
           </div>
         </div>
       </form>
