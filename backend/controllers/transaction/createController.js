@@ -5,6 +5,7 @@ import orderDetailService from '../../services/order/orderDetailService.js';
 import postService from '../../services/post/postService.js';
 
 const createOrderTransaction = async (req, res) => {
+    console.log("Receive momo request");
     try {
         const { orderId, amount, resultCode, extraData } = req.body;
 
