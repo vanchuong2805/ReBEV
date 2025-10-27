@@ -75,8 +75,10 @@ const getCartItem = async (postId) => {
             status: POST_STATUS.APPROVED,
             'post_details.variation_id': 13,
         },
-        attributes: ['id', 'user_id', 'title', 'price'],
+        attributes: ['id', 'user_id', 'title', 'price', "seller_contact_id"],
     });
+
+    console.log(data);
     return data;
 };
 
