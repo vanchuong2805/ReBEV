@@ -1,4 +1,5 @@
 export const ERROR_MESSAGE = {
+    BLANK_INFORMATION: 'Information cannot be left blank.',
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
     EMAIL_BLANK: 'Email cannot be left blank.',
@@ -39,6 +40,10 @@ export const ERROR_MESSAGE = {
     GOOGLE_EMAIL_NOT_VERIFIED: 'Google email is not verified',
     LOGIN_GOOGLE_FAIL: 'Login with Google failed',
     EMAIL_EXISTS: 'Email already exists.',
+    PHONE_EXISTS: 'Phone number already exists.',
+    CREATE_PACKAGE_FAIL: 'Creating package failed',
+    DELETE_PACKAGE_FAIL: 'Deleting package failed',
+    UPDATE_PACKAGE_FAIL: 'Updating package failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -56,6 +61,9 @@ export const SUCCESS_MESSAGE = {
     CREATE_STAFF_SUCCESS: 'Create Staff account successful',
     ACCOUNT_UNLOCKED: 'Account has been unlocked successfully',
     LOGIN_GOOGLE_SUCCESS: 'Login with Google successful',
+    CREATE_PACKAGE_SUCCESS: 'Package created successfully',
+    DELETE_PACKAGE_SUCCESS: 'Package deleted successfully',
+    UPDATE_PACKAGE_SUCCESS: 'Package updated successfully',
 }
 
 export const POST_STATUS = {
