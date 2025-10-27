@@ -94,24 +94,95 @@ export const logoutAdmin = async () => {
 
 // GET FULL PACKAGE
 
-export function useFullPackage() {
-  const [userPackagesAPI, setUserPackagesAPI] = useState([]);
-  async function getPackagesWithAxios() {
-    try {
-      const res = await axios.get("https://rebev.up.railway.app/api/packages");
-      setUserPackagesAPI(res.data); // cập nhật state
-      console.log(res.data);
-    } catch (err) {
-      console.error("Axios error:", err.response?.data ?? err.message);
-    }
+export async function getFullPackage() {
+  try {
+    const res = await axios.get("https://rebev.up.railway.app/api/packages");
+    return res.data;
+  } catch (err) {
+    console.error("Axios error:", err.response?.data ?? err.message);
   }
-
-  useEffect(() => {
-    getPackagesWithAxios();
-  }, []);
-
-  return userPackagesAPI;
 }
+
+export const createPackage = async (packageData) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  console.log("Creating package with data:", packageData);
+  console.log("Using token:", token);
+  try {
+    const res = await axios.post(
+      `${baseAPI}/packages/create`,
+      {
+        name: packageData.name,
+        description: packageData.description,
+        price: packageData.price,
+        highlight: packageData.highlight,
+        top: packageData.top,
+        duration: packageData.duration,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Package created:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error creating package:", err.response?.data || err.message);
+    throw err;
+  }
+};
+export const deletePackage = async (packageId) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  console.log("Deleting package with ID:", packageId);
+  console.log("Using token:", token);
+  try {
+    const res = await axios.patch(
+      `${baseAPI}/packages/${packageId}/delete`,
+      {}, // body rỗng (vì chỉ cần đổi trạng thái is_Lock)
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("User locked:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error deleting package:", err.response?.data || err.message);
+    throw err;
+  }
+};
+export const updatePackage = async (packages) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  console.log("Updating package with ID:", packages.id);
+  console.log("Using token:", token);
+  try {
+    const res = await axios.put(
+      `${baseAPI}/packages/${packages.id}/update`,
+      {
+        name: packages.name,
+        description: packages.description,
+        price: packages.price,
+        highlight: packages.highlight,
+        top: packages.top,
+        duration: packages.duration,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Package updated:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error updating package:", err.response?.data || err.message);
+    throw err;
+  }
+};
 
 //_________________________________________
 
@@ -150,7 +221,7 @@ export const createUser = async (userData) => {
 };
 
 export const lockUserAccount = async (userId) => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
 
   try {
     const res = await axios.patch(
@@ -171,7 +242,7 @@ export const lockUserAccount = async (userId) => {
   }
 };
 export const unLockUserAccount = async (userId) => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
 
   try {
     const res = await axios.patch(
@@ -193,7 +264,7 @@ export const unLockUserAccount = async (userId) => {
 };
 
 export const createStaffAccount = async (staff) => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   console.log("Creating staff with email:", staff.email, "phone:", staff.phone);
   console.log("Using token:", token);
   try {
@@ -226,7 +297,7 @@ export const fetchPost = async () => {
 };
 
 export const updatePostStatus = async (postId, newStatus) => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
     const res = await axios.patch(
       `${baseAPI}/posts/${postId}/status`,
@@ -242,6 +313,23 @@ export const updatePostStatus = async (postId, newStatus) => {
     console.log("Updated:", res.data);
   } catch (err) {
     console.error(err.response?.data || err.message);
+    throw err;
+  }
+};
+//-----------------------------------------
+export const getOrders = async () => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/orders`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    });
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
     throw err;
   }
 };

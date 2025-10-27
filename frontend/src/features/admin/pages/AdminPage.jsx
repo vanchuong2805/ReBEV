@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import ReportsStatistics from "./ReportsStatistics";
 import SystemFeesManagement from "./SystemFeesManagement";
 import TransactionManagement from "./TransactionManagement";
 import ListingManagement from "./ListingManagement";
 import UserManagement from "./UserManagement";
+import { getOrders } from "../service";
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState("reports");
@@ -27,7 +28,16 @@ const AdminPage = () => {
         return <ReportsStatistics />;
     }
   };
-
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        await getOrders();
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      }
+    };
+    fetchOrders();
+  }, []);
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}

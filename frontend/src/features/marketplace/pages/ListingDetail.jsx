@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react"
-import { useParams, useNavigate, useLocation } from "react-router-dom"
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   MapPin,
   Calendar,
@@ -8,7 +8,7 @@ import {
   ShoppingCart,
   CreditCard,
   MessageCircle,
-} from "lucide-react"
+} from "lucide-react";
 import {
   getPostById,
   getVariations,
@@ -17,91 +17,96 @@ import {
   getUserById,
   getContactById,
   getPosts,
-  updatePostVisibility
-  , addCarts
-} from "../service"
-import { useUser } from "@/contexts/UserContext"
+  updatePostVisibility,
+  addCarts,
+} from "../service";
+import { useUser } from "@/contexts/UserContext";
+import ChatWindow from "@/features/chat/components/ChatWindow";
 
 const ListingDetail = () => {
-  const { user } = useUser()
-  const { listingId } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const from = location.state?.from || "/profile?tab=listings"
+  const { user } = useUser();
+  const { listingId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/profile?tab=listings";
 
-  const [listing, setListing] = useState(null)
-  const [variations, setVariations] = useState([])
-  const [categories, setCategories] = useState([])
-  const [bases, setBases] = useState([])
-  const [postSeller, setPostSeller] = useState(null)
-  const [postContact, setPostContact] = useState(null)
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [otherPosts, setOtherPosts] = useState([])
-  const [similarPosts, setSimilarPosts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [pageOther, setPageOther] = useState(1)
-  const [pageSimilar, setPageSimilar] = useState(1)
-  const [limit] = useState(2)
-  const [hasMoreOther, setHasMoreOther] = useState(true)
-  const [hasMoreSimilar, setHasMoreSimilar] = useState(true)
-
+  const [listing, setListing] = useState(null);
+  const [variations, setVariations] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [bases, setBases] = useState([]);
+  const [postSeller, setPostSeller] = useState(null);
+  const [postContact, setPostContact] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [otherPosts, setOtherPosts] = useState([]);
+  const [similarPosts, setSimilarPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [pageOther, setPageOther] = useState(1);
+  const [pageSimilar, setPageSimilar] = useState(1);
+  const [limit] = useState(2);
+  const [hasMoreOther, setHasMoreOther] = useState(true);
+  const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-        const postRes = await getPostById(listingId)
-        const [varRes, cateRes, baseRes, userRes, contactRes] = await Promise.all([
-          getVariations(),
-          getCategories(),
-          getBases(),
-          getUserById(postRes.user_id),
-          postRes.seller_contact_id
-            ? getContactById(postRes.seller_contact_id)
-            : Promise.resolve(null),
-        ])
+        setLoading(true);
+        const postRes = await getPostById(listingId);
+        const [varRes, cateRes, baseRes, userRes, contactRes] =
+          await Promise.all([
+            getVariations(),
+            getCategories(),
+            getBases(),
+            getUserById(postRes.user_id),
+            postRes.seller_contact_id
+              ? getContactById(postRes.seller_contact_id)
+              : Promise.resolve(null),
+          ]);
 
-
-        let mediaParsed = []
+        let mediaParsed = [];
         try {
           mediaParsed =
             typeof postRes.media === "string"
               ? JSON.parse(postRes.media)
               : Array.isArray(postRes.media)
-                ? postRes.media
-                : []
+              ? postRes.media
+              : [];
         } catch {
-          mediaParsed = []
+          mediaParsed = [];
         }
 
-        setListing({ ...postRes, media: mediaParsed })
-        setVariations(varRes)
-        setCategories(cateRes)
-        setBases(baseRes)
-        setPostSeller(userRes)
-        setPostContact(contactRes)
+        setListing({ ...postRes, media: mediaParsed });
+        setVariations(varRes);
+        setCategories(cateRes);
+        setBases(baseRes);
+        setPostSeller(userRes);
+        setPostContact(contactRes);
         const [otherRes, similarRes] = await Promise.all([
           getPosts({ user_id: postRes.user_id, status: 1, page: 1, limit }),
-          getPosts({ category_id: postRes.category_id, status: 1, page: 1, limit }),
-        ])
-        setOtherPosts(otherRes)
-        setSimilarPosts(similarRes)
+          getPosts({
+            category_id: postRes.category_id,
+            status: 1,
+            page: 1,
+            limit,
+          }),
+        ]);
+        setOtherPosts(otherRes);
+        setSimilarPosts(similarRes);
       } catch (error) {
-        console.error(" Lỗi tải dữ liệu:", error)
+        console.error(" Lỗi tải dữ liệu:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [listingId, user])
+    fetchData();
+  }, [listingId, user]);
 
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-500">
         Đang tải dữ liệu...
       </div>
-    )
+    );
 
   if (!listing)
     return (
@@ -115,111 +120,120 @@ const ListingDetail = () => {
           <span>Quay lại danh sách</span>
         </button>
       </div>
-    )
+    );
 
   const formatPrice = (price) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price)
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
 
   const formatDate = (date) =>
     new Intl.DateTimeFormat("vi-VN", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(new Date(date))
+    }).format(new Date(date));
 
   const nextImage = () =>
-    setCurrentImageIndex((prev) => (prev + 1) % (listing.media?.length || 1))
+    setCurrentImageIndex((prev) => (prev + 1) % (listing.media?.length || 1));
   const prevImage = () =>
-    setCurrentImageIndex((prev) =>
-      (prev - 1 + (listing.media?.length || 1)) % (listing.media?.length || 1)
-    )
+    setCurrentImageIndex(
+      (prev) =>
+        (prev - 1 + (listing.media?.length || 1)) % (listing.media?.length || 1)
+    );
 
-  const handleBuyNow = () => alert(` Mua ngay: ${listing.title}`)
+  const handleBuyNow = () => alert(` Mua ngay: ${listing.title}`);
   const handleAddToCart = async (postId) => {
     if (!user) {
-      alert(" Bạn cần đăng nhập để thêm vào giỏ hàng")
-      return
+      alert(" Bạn cần đăng nhập để thêm vào giỏ hàng");
+      return;
     }
 
     try {
-      await addCarts(user.id, postId)
-      alert(`🛒 Đã thêm "${listing.title}" vào giỏ hàng thành công!`)
+      await addCarts(user.id, postId);
+      alert(`🛒 Đã thêm "${listing.title}" vào giỏ hàng thành công!`);
     } catch (error) {
-      console.error(" Lỗi khi thêm vào giỏ hàng:", error)
-      alert(" Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.")
+      console.error(" Lỗi khi thêm vào giỏ hàng:", error);
+      alert(" Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.");
     }
-  }
+  };
 
   const handleViewShop = () =>
-    navigate(`/shop/${postSeller?.id}`, { state: { from: `/marketplace/listing/${listing.id}` } })
+    navigate(`/shop/${postSeller?.id}`, {
+      state: { from: `/marketplace/listing/${listing.id}` },
+    });
 
-  const categoryInfo = categories.find((c) => c.id === listing.category_id)
-  const baseInfo = bases.find((b) => b.id === listing.base_id)
-  const seller = postSeller || { id: 1, name: "Người bán", avatar: listing.user_avatar }
-
+  const categoryInfo = categories.find((c) => c.id === listing.category_id);
+  const baseInfo = bases.find((b) => b.id === listing.base_id);
+  const seller = postSeller || {
+    id: 1,
+    name: "Người bán",
+    avatar: listing.user_avatar,
+  };
 
   const handleLoadMore = async (type) => {
     try {
       if (type === "other") {
-        const nextPage = pageOther + 1
+        const nextPage = pageOther + 1;
         const res = await getPosts({
           user_id: listing.user_id,
           status: 1,
           page: nextPage,
           limit,
-        })
-        setOtherPosts((prev) => [...prev, ...res])
-        setPageOther(nextPage)
-        setHasMoreOther(res.length >= limit)
+        });
+        setOtherPosts((prev) => [...prev, ...res]);
+        setPageOther(nextPage);
+        setHasMoreOther(res.length >= limit);
       } else {
-        const nextPage = pageSimilar + 1
+        const nextPage = pageSimilar + 1;
         const res = await getPosts({
           category_id: listing.category_id,
           status: 1,
           page: nextPage,
           limit,
-        })
-        setSimilarPosts((prev) => [...prev, ...res])
-        setPageSimilar(nextPage)
-        setHasMoreSimilar(res.length >= limit)
+        });
+        setSimilarPosts((prev) => [...prev, ...res]);
+        setPageSimilar(nextPage);
+        setHasMoreSimilar(res.length >= limit);
       }
     } catch (err) {
-      console.error(" Lỗi tải thêm bài:", err)
+      console.error(" Lỗi tải thêm bài:", err);
     }
-  }
+  };
   const handleHidePost = async (listingId) => {
     try {
-      await updatePostVisibility(listingId)
-      setListing(prev => ({
+      await updatePostVisibility(listingId);
+      setListing((prev) => ({
         ...prev,
-        is_hidden: !prev.is_hidden
-      }))
-      console.log(" Ẩn tin thành công:", listingId)
+        is_hidden: !prev.is_hidden,
+      }));
+      console.log(" Ẩn tin thành công:", listingId);
     } catch (error) {
-      console.error(" Lỗi ẩn tin đăng:", error)
+      console.error(" Lỗi ẩn tin đăng:", error);
     }
-  }
+  };
 
   function getThumbnailUrl(post) {
-    let thumbnailUrl = "/placeholder.png"
+    let thumbnailUrl = "/placeholder.png";
     try {
-      const media = post.media
+      const media = post.media;
       const parsed =
         typeof media === "string"
           ? JSON.parse(media)
           : Array.isArray(media)
-            ? media
-            : []
+          ? media
+          : [];
 
       // Ưu tiên ảnh có is_thumbnail, fallback ảnh đầu tiên
-      const thumb = parsed.find((item) => item.is_thumbnail) || parsed[0]
+      const thumb = parsed.find((item) => item.is_thumbnail) || parsed[0];
       if (thumb?.url) {
-        thumbnailUrl = thumb.url.replace(/^image\s+|^video\s+/i, "")
+        thumbnailUrl = thumb.url.replace(/^image\s+|^video\s+/i, "");
       }
     } catch (e) {
-      console.error(" Lỗi parse media:", e)
+      console.error(" Lỗi parse media:", e);
     }
-    return thumbnailUrl
+    return thumbnailUrl;
   }
 
   return (
@@ -246,7 +260,10 @@ const ListingDetail = () => {
             <div className="relative aspect-video bg-gray-200">
               {listing.media?.length > 0 && (
                 <img
-                  src={listing.media[currentImageIndex]?.url?.replace(/^image\s+|^video\s+/i, "")}
+                  src={listing.media[currentImageIndex]?.url?.replace(
+                    /^image\s+|^video\s+/i,
+                    ""
+                  )}
                   alt={listing.title}
                   className="w-full h-full object-cover"
                 />
@@ -288,7 +305,9 @@ const ListingDetail = () => {
               <h2 className="text-lg font-semibold mb-4">Thông số kỹ thuật</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-6">
                 {listing.post_details.map((detail) => {
-                  const v = variations.find((vv) => vv.id === detail.variation_id)
+                  const v = variations.find(
+                    (vv) => vv.id === detail.variation_id
+                  );
                   return (
                     <div key={detail.variation_id}>
                       <p className="text-gray-500 text-sm">{v?.name}</p>
@@ -298,19 +317,20 @@ const ListingDetail = () => {
                           : detail.variation_value_id}
                       </p>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
           )}
         </div>
 
-
         {/* ===== CỘT PHẢI ===== */}
         <div className="space-y-4">
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-20">
             {/* Tiêu đề & giá */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">{listing.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              {listing.title}
+            </h1>
             <p className="text-3xl font-bold text-red-600 mb-4">
               {formatPrice(listing.price)}
             </p>
@@ -319,8 +339,12 @@ const ListingDetail = () => {
             {Number(listing.status) === 3 ? (
               // Nếu sản phẩm đã bán
               <div className="text-center py-4 border border-gray-200 rounded-lg bg-gray-50">
-                <p className="text-lg font-semibold text-gray-700 mb-1">🔒 Sản phẩm đã bán</p>
-                <p className="text-red-600 font-bold text-xl">{formatPrice(listing.price)}</p>
+                <p className="text-lg font-semibold text-gray-700 mb-1">
+                  🔒 Sản phẩm đã bán
+                </p>
+                <p className="text-red-600 font-bold text-xl">
+                  {formatPrice(listing.price)}
+                </p>
 
                 {/* ===== PHẦN ĐÁNH GIÁ ===== */}
                 <div className="mt-5 text-left">
@@ -333,14 +357,20 @@ const ListingDetail = () => {
                       {listing.reviews.map((review, idx) => (
                         <div key={idx} className="border-b pb-3">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="font-medium text-gray-900">{review.user_name}</span>
+                            <span className="font-medium text-gray-900">
+                              {review.user_name}
+                            </span>
                             <span className="text-yellow-500 text-sm">
                               {"⭐".repeat(review.rating)}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-700">{review.comment}</p>
+                          <p className="text-sm text-gray-700">
+                            {review.comment}
+                          </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {new Date(review.created_at).toLocaleDateString("vi-VN")}
+                            {new Date(review.created_at).toLocaleDateString(
+                              "vi-VN"
+                            )}
                           </p>
                         </div>
                       ))}
@@ -354,7 +384,9 @@ const ListingDetail = () => {
                   {/* Nếu là người mua (không phải người bán) thì cho phép viết đánh giá */}
                   {user && user.id !== seller.id && (
                     <div className="mt-4">
-                      <h4 className="font-medium text-gray-800 mb-2">Viết đánh giá của bạn</h4>
+                      <h4 className="font-medium text-gray-800 mb-2">
+                        Viết đánh giá của bạn
+                      </h4>
                       <textarea
                         className="w-full border rounded-lg p-2 text-sm mb-2 focus:ring-2 focus:ring-orange-400"
                         rows={3}
@@ -415,7 +447,11 @@ const ListingDetail = () => {
                 )}
 
                 <button
-                  onClick={() => alert(` Nhắn tin với ${seller.display_name}`)}
+                  onClick={() => {
+                    navigate(
+                      `/chat?buyer=${user.id}&seller=${listing.user_id}`
+                    );
+                  }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
                 >
                   <MessageCircle className="w-5 h-5" /> Nhắn tin
@@ -443,7 +479,10 @@ const ListingDetail = () => {
             </div>
 
             {/* ===== NGƯỜI BÁN ===== */}
-            <div className="border-t pt-4 cursor-pointer" onClick={handleViewShop}>
+            <div
+              className="border-t pt-4 cursor-pointer"
+              onClick={handleViewShop}
+            >
               <div className="flex items-center gap-3 mb-2">
                 <img
                   src={seller.avatar || "/placeholder.jpg"}
@@ -484,7 +523,7 @@ const ListingDetail = () => {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {otherPosts.map((p) => {
-              const thumbnailUrl = getThumbnailUrl(p)
+              const thumbnailUrl = getThumbnailUrl(p);
               return (
                 <div
                   key={p.id}
@@ -497,11 +536,15 @@ const ListingDetail = () => {
                     className="w-full h-40 object-cover"
                   />
                   <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{p.title}</h3>
-                    <p className="text-red-600 font-semibold text-sm mt-1">{formatPrice(p.price)}</p>
+                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
+                      {p.title}
+                    </h3>
+                    <p className="text-red-600 font-semibold text-sm mt-1">
+                      {formatPrice(p.price)}
+                    </p>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
           {hasMoreOther && (
@@ -521,7 +564,7 @@ const ListingDetail = () => {
           <h2 className="text-lg font-semibold mb-4">Tin đăng tương tự</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {similarPosts.map((p) => {
-              const thumbnailUrl = getThumbnailUrl(p)
+              const thumbnailUrl = getThumbnailUrl(p);
               return (
                 <div
                   key={p.id}
@@ -534,11 +577,15 @@ const ListingDetail = () => {
                     className="w-full h-40 object-cover"
                   />
                   <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">{p.title}</h3>
-                    <p className="text-red-600 font-semibold text-sm mt-1">{formatPrice(p.price)}</p>
+                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
+                      {p.title}
+                    </h3>
+                    <p className="text-red-600 font-semibold text-sm mt-1">
+                      {formatPrice(p.price)}
+                    </p>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
           {hasMoreSimilar && (
@@ -554,7 +601,7 @@ const ListingDetail = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ListingDetail
+export default ListingDetail;
