@@ -95,16 +95,16 @@ export default function ContactAddressSection() {
   return (
     <div className="space-y-4">
       {contacts?.length === 0 ? (
-        <p className="text-gray-500 text-center py-4">
+        <p className="py-4 text-center text-gray-500">
           Bạn chưa có địa chỉ nào. Hãy thêm mới bên dưới.
         </p>
       ) : (
         contacts?.map((c) => (
-          <Card key={c.id} className="p-4 flex justify-between items-start">
+          <Card key={c.id} className="flex items-start justify-between p-4">
             <div>
               <p className="font-medium">{c.name}</p>
               <p className="text-sm text-gray-600">{c.phone}</p>
-              <p className="text-sm text-gray-700 mt-1">{c.detail}</p>
+              <p className="mt-1 text-sm text-gray-700">{c.detail}</p>
               <p className="text-sm text-gray-500">
                 {[c.ward_name, c.district_name, c.province_name]
                   .filter(Boolean)
@@ -112,13 +112,13 @@ export default function ContactAddressSection() {
               </p>
 
               {c.is_default ? (
-                <span className="inline-flex items-center mt-1 text-green-600 text-sm">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Mặc định
+                <span className="inline-flex items-center mt-1 text-sm text-green-600">
+                  <CheckCircle className="w-4 h-4 mr-1" /> Mặc định
                 </span>
               ) : (
                 <Button
                   variant="link"
-                  className="text-blue-600 text-sm p-0 mt-1"
+                  className="p-0 mt-1 text-sm text-blue-600"
                   onClick={() => setDefault(c.id)}
                 >
                   Đặt làm mặc định
@@ -132,10 +132,10 @@ export default function ContactAddressSection() {
                 size="icon"
                 onClick={() => handleEdit(c)}
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil className="w-4 h-4" />
               </Button>
               <Button variant="outline" size="icon" onClick={() => handleDelete(c.id)}>
-                <Trash2 className="h-4 w-4 text-red-500" />
+                <Trash2 className="w-4 h-4 text-red-500" />
               </Button>
             </div>
           </Card>

@@ -230,7 +230,7 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups.xe).map(([name, group]) =>
+                        {Object.entries(groups.xe ?? {}).map(([name, group]) =>
                           group.data ? (
                             <div key={name}>
                               <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
@@ -506,10 +506,8 @@ const Header = () => {
                     <Link to="/profile">Tài khoản</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to={`/shop/${user.id}`}>Trang của tôi</Link>
                     <Link to={`/chat?buyer=${user.id}`}>Tin Nhắn</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/profile/posts">Tin đăng của tôi</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to="/upgrade">Nâng cấp tài khoản</Link>

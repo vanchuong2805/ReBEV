@@ -13,15 +13,6 @@ export default function ProcessingSaleCard({ sale, onView, onSchedule, onPrintLa
         <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onView?.(sale)}>
           Chi tiết
         </Button>,
-        isShip ? (
-          <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onPrintLabel?.(sale)}>
-            In vận đơn
-          </Button>
-        ) : (
-          <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onSchedule?.(sale)}>
-            Đặt lịch hẹn
-          </Button>
-        ),
         <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onContact?.(sale)}>
           Liên hệ người mua
         </Button>,

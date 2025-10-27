@@ -22,6 +22,7 @@ import FavoritesList from "@/features/profile/components/favorites/FavoritesList
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
 import AdminDashboard from "@/features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
+import ShopPage from "@/features/shop/pages/ShopPage.jsx";
 import ChatPage from "@/features/chat/pages/ChatPage.jsx";
 
 export default function AppRoutes() {
@@ -42,15 +43,16 @@ export default function AppRoutes() {
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
           </Route>
+          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
-          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
             element={<ListingDetail />}
           />
+          <Route path={`/shop/:sellerId`} element={<ShopPage />} />
         </Route>
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />

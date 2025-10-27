@@ -1,18 +1,14 @@
-import React from "react";
 import { useCart } from "@/contexts/CartContext";
 import { Link } from "react-router-dom";
 import CartItem from "../components/CartItem";
 import CartSummary from "../components/CartSummary";
 import { ShoppingCart, Trash2 } from "lucide-react";
+import GroupCart from "../components/GroupCart";
 
 export default function Cart() {
   // Giả sử useCart đã được cập nhật để cung cấp các hàm và state mới
   const {
     items,
-    update,
-    remove,
-    selectedItems, // Mảng các item đã được chọn
-    toggleSelection, // Hàm để chọn/bỏ chọn một item
     toggleAllSelection, // Hàm để chọn/bỏ chọn tất cả
     isAllSelected, // Boolean kiểm tra tất cả đã được chọn chưa
     clearSelected, // Hàm xóa các item đã chọn
@@ -31,7 +27,7 @@ export default function Cart() {
           Hãy bắt đầu lựa chọn những sản phẩm tuyệt vời nhé!
         </p>
         <Link
-          to="/marketplace"
+          to="/"
           className="px-6 py-2 font-semibold text-white transition-colors bg-blue-600 rounded-lg shadow-md hover:bg-blue-700"
         >
           Tiếp tục mua sắm
@@ -42,7 +38,6 @@ export default function Cart() {
 
   return (
     <div className="min-h-screen pb-32 bg-gray-50">
-      {" "}
       {/* Thêm padding bottom để summary không che mất nội dung */}
       <div className="container px-4 py-8 mx-auto">
         <h1 className="mb-6 text-3xl font-bold text-gray-800">Giỏ hàng</h1>
@@ -71,20 +66,13 @@ export default function Cart() {
           {/* Danh sách sản phẩm */}
           <div>
             {items.map((item) => (
-              <CartItem
-                key={item.id}
-                item={item}
-                onQtyChange={update}
-                onRemove={remove}
-                onToggleSelection={toggleSelection}
-              />
+              <GroupCart key={crypto.randomUUID()} groupItems={item} />
             ))}
           </div>
         </div>
       </div>
       {/* Thanh Summary cố định ở dưới */}
       <CartSummary
-        selectedCount={selectedItems.length}
         total={selectedTotal}
         onSelectAll={toggleAllSelection}
         isAllSelected={isAllSelected}

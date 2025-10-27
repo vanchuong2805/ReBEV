@@ -1,6 +1,4 @@
 import React from "react";
-import Header from "@/components/common/Header";
-import Footer from "@/components/common/Footer";
 import Promotions from "../components/PromotionBanner";
 import FeaturedListings from "@/features/home/components/FeaturedListings.jsx";
 

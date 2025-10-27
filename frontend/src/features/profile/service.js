@@ -81,8 +81,74 @@ export const changePassword = async (id, oldPassword, newPassword) => {
   console.log(res)
   return res
 }
-export const getPost = async () => {
-  const res = await axios.get(`${API_BASE_URL}/posts`)
+export const getPosts = async (filters = {}) => {
+
+
+  const res = await axios.get(`${API_BASE_URL}/posts`, {
+    params: filters,
+  })
+
+  return res.data.data
+}
+export const updatePostVisibility = async (postId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.patch(`${API_BASE_URL}/posts/${postId}/visibility`, {},
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  console.log(res.data)
   return res.data
 }
+export const getPostsByUserId = async (userId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}/posts`,
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  console.log(res.data)
+  return res.data
+}
+export const getFavoritesByUserId = async (userId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/favorites/${userId}`,
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  return res.data
+}
+export async function getPostById(postId) {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/posts/${postId}`)
 
+  return res.data
+}
+export async function getCategories() {
+  const res = await axios.get(`${API_BASE_URL}/categories`)
+  console.log(res.data)
+  return res.data
+}
+export async function getOrderByCustomer() {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/orders?type=customer`, {
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
+  })
+ console.log(res.data)
+  return res.data
+}
+export async function getOrderBySeller() {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/orders?type=seller`, {
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
+  })
+ console.log(res.data)
+  return res.data
+}
+export async function changeOrderStatus(orderId, status, description) {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.post(
+    `${API_BASE_URL}/orders/${orderId}/status`,
+    { status, description }, 
+    {
+      headers: {
+        "Content-Type": "application/json", "Authorization": `Bearer ${token}`}
+  }
+  )
+  return res.data
+}

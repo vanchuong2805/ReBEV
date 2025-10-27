@@ -3,12 +3,12 @@ import TiptapEditor from "@/components/common/TiptapEditor";
 import { MyInput } from "./MyInput";
 import {
   getVariationValues,
-  basesService,
-  getContactsByUserId,
+  basesService,  
 } from "@/features/posts/service";
 import { useVariationGraph } from "@/hooks/posts/useVariations";
 import { usePostForm } from "@/hooks/posts/usePostForm";
 import { toast } from "sonner";
+import { getContactByUserId } from "@/features/profile/service";
 
 const MAX_IMAGES = 8;
 const MAX_VIDEOS = 1;
@@ -108,7 +108,7 @@ export default function Form({
     (async () => {
       try {
         if (!userId) return;
-        const data = await getContactsByUserId(userId);
+        const data = await getContactByUserId(userId);
         setContacts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Không tải được contacts:", err);
