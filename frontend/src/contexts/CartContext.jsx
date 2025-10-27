@@ -1,58 +1,80 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { DEMO } from "@/data";
+import { getCartItems } from "@/features/cart/service.js";
+import PromotionBanner from "@/features/home/components/PromotionBanner";
 
 const CartCtx = createContext();
 
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
+  const [items, setItems] = useState([]);
+
+  function getThumbnail(media) {
+    // media là chuỗi JSON: [{ url: "image https://...", is_thumbnail: true }, ...]
     try {
-      const stored = JSON.parse(localStorage.getItem("cart"));
-      if (stored && stored.length) return stored;
-      // Thêm dữ liệu demo với trạng thái 'selected' mặc định là true
-      return [
-        { ...DEMO[0], qty: 1, selected: true },
-        { ...DEMO[2], qty: 2, selected: true },
-      ];
+      const arr = JSON.parse(media);
+      const pick = arr.find((m) => m.is_thumbnail) || arr[0];
+      return pick?.url?.replace(/^(image|video)\s+/, "") || "/placeholder.webp";
     } catch {
-      return [];
+      return "/placeholder.webp";
     }
-  });
+  }
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
-
-  const add = (product, qty = 1) =>
-    setItems((prev) => {
-      const i = prev.findIndex((p) => p.id === product.id);
-      if (i > -1) {
-        const next = [...prev];
-        next[i].qty += qty;
-        return next;
+    const user = JSON.parse(localStorage.getItem("user"));
+    const fetchData = async () => {
+      if (user.id) {
+        const data = await getCartItems(user.id);
+        const cartItems = data.map((item) => ({
+          ...item,
+          items: item.items.map((it) => ({
+            ...it,
+            selected: false,
+          })),
+          selected: false,
+        }));
+        console.log(cartItems);
+        setItems(cartItems);
       }
-      // Khi thêm sản phẩm mới, mặc định là đã được chọn
-      return [...prev, { ...product, qty, selected: true }];
-    });
-
-  const remove = (id) => setItems((prev) => prev.filter((p) => p.id !== id));
-
-  const update = (id, qty) =>
-    setItems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p))
-    );
+    };
+    fetchData();
+  }, []);
 
   // --- LOGIC MỚI CHO VIỆC LỰA CHỌN SẢN PHẨM ---
 
   // Hàm để chọn hoặc bỏ chọn một sản phẩm
   const toggleSelection = (id) => {
     setItems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, selected: !p.selected } : p))
+      prev.map((p) => ({
+        ...p,
+        items: p.items.map((it) =>
+          it.post_id === id ? { ...it, selected: !it.selected } : it
+        ),
+      }))
+    );
+  };
+
+  // Hàm để chọn hoặc bỏ chọn một nhóm sản phẩm
+  const toggleGroupSelection = ({ seller_id, seller_contact_id }) => {
+    setItems((prev) =>
+      prev.map((p) =>
+        p.seller_id === seller_id && p.seller_contact_id === seller_contact_id
+          ? {
+              ...p,
+              selected: !p.selected,
+              items: p.items.map((it) => ({ ...it, selected: !p.selected })),
+            }
+          : p
+      )
     );
   };
 
   // Hàm để chọn hoặc bỏ chọn TẤT CẢ sản phẩm
   const toggleAllSelection = (isSelected) => {
-    setItems((prev) => prev.map((p) => ({ ...p, selected: isSelected })));
+    setItems((prev) =>
+      prev.map((p) => ({
+        ...p,
+        items: p.items.map((it) => ({ ...it, selected: isSelected })),
+      }))
+    );
   };
 
   // Hàm để xóa các sản phẩm ĐÃ ĐƯỢC CHỌN
@@ -61,36 +83,55 @@ export function CartProvider({ children }) {
   };
 
   // Lấy ra danh sách các sản phẩm đã được chọn
-  const selectedItems = useMemo(() => items.filter((p) => p.selected), [items]);
+  const selectedGroups = useMemo(() => {
+    const groups = items.filter((p) => p.items.some((it) => it.selected));
+    const groupItems = groups.map((p) => ({
+      ...p,
+      items: p.items.filter((it) => it.selected),
+    }));
+    return groupItems;
+  }, [items]);
 
   // Kiểm tra xem tất cả sản phẩm có đang được chọn không
   const isAllSelected = useMemo(
-    () => items.length > 0 && items.every((p) => p.selected),
+    () =>
+      items.length > 0 &&
+      items.every((p) => p.items.every((it) => it.selected)),
     [items]
   );
 
+  const isGroupSelected = ({ seller_id, seller_contact_id }) => {
+    const group = items.find(
+      (p) =>
+        p.seller_id === seller_id && p.seller_contact_id === seller_contact_id
+    );
+    return group ? group.items.every((it) => it.selected) : false;
+  };
+
   // Tính tổng tiền của các sản phẩm ĐÃ ĐƯỢC CHỌN
   const selectedTotal = useMemo(
-    () => selectedItems.reduce((s, p) => s + (p.price || 0) * p.qty, 0),
-    [selectedItems]
+    () =>
+      items.reduce(
+        (s, p) =>
+          s +
+          (p.items.reduce((ss, it) => ss + (it.selected ? it.price : 0), 0) ||
+            0),
+        0
+      ),
+    [items]
   );
 
-  const count = useMemo(() => items.reduce((s, p) => s + p.qty, 0), [items]);
-  const itemCount = useMemo(() => items.length, [items]);
   // Cung cấp các hàm và state mới ra ngoài context
   const value = {
     items,
-    add,
-    remove,
-    update,
-    count,
-    itemCount,
-    selectedItems,
+    selectedGroups,
     selectedTotal,
     isAllSelected,
+    isGroupSelected,
     toggleSelection,
     toggleAllSelection,
     clearSelected,
+    toggleGroupSelection,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

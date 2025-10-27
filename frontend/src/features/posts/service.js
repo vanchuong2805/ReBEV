@@ -58,9 +58,3 @@ export async function getVariationNameByCategoryId(categoryId) {
   );
   return res.data;
 }
-
-// === Contacts ===
-export async function getContactsByUserId(userId) {
-  const res = await axios.get(`${API_BASE_URL}/contacts/${userId}`);
-  return res.data;
-}

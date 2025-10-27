@@ -41,20 +41,18 @@ export default function AppRoutes() {
             <Route path="wallet" element={<WalletSection />} />
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
-           
           </Route>
+          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
-          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
             element={<ListingDetail />}
           />
-           <Route path={`/shop/:sellerId`} element={<ShopPage />} />
+          <Route path={`/shop/:sellerId`} element={<ShopPage />} />
         </Route>
-        
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />
         <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
