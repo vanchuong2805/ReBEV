@@ -20,30 +20,28 @@ const ListingsSection = () => {
   const [listings, setListings] = useState([])
   const { user } = useUser()
 
- useEffect(() => {
-  if (!user?.id) return  // ✅ nếu user null thì dừng
-
-  const fetchListings = async () => {
-    try {
-      const data = await getPostsByUserId(user.id)
-      setListings(data)
-    } catch (error) {
-      console.error('❌ Lỗi tải tin đăng:', error)
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        if (!user?.id) return
+        const data = await getPostsByUserId(user.id)
+        setListings(data)
+      } catch (error) {
+        console.error('❌ Lỗi tải tin đăng:', error)
+      }
     }
-  }
 
-  fetchListings()
-}, [user])
+    fetchListings()
+  }, [user])
 
-
-  const activeListings = listings.filter(l => Number(l?.status) === 1 && l?.is_hidden === false)
-  const pendingListings = listings.filter(l => Number(l?.status) === 0 && l?.is_hidden === false)
+  const activeListings = listings.filter(l => Number(l?.status) === 1 || Number(l?.status) === 7)
+  const pendingListings = listings.filter(l => Number(l?.status) === 0)
   const soldListings = listings.filter(l => Number(l?.status) === 3)
   const expiredListings = listings.filter(l => l?.is_hidden === true)
   const rejectedListings = listings.filter(l => Number(l?.status) === 2)
   const canceledListings = listings.filter(l => Number(l?.status) === 5)
 
-  const total = listings.length
+ const total = listings.length
   const navigate = useNavigate()
   const handleViewDetail = (listing) => {
     console.log('Đi đến:', listing.id)
@@ -57,7 +55,7 @@ const ListingsSection = () => {
       setListings((prevListings) =>
         prevListings.map((listing) =>
           listing.id === listingId
-            ? { ...listing, is_hidden: !listing.is_hidden } 
+            ? { ...listing, is_hidden: !listing.is_hidden }
             : listing
         )
       )
@@ -109,7 +107,7 @@ const ListingsSection = () => {
             {soldListings.map(l => <SoldListingCard key={`s-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
             {expiredListings.map(l => <ExpiredListingCard key={`e-${l.id}`} listing={l} onView={() => handleViewDetail(l)} onHide={() => handleHideListing(l.id)} />)}
             {rejectedListings.map(l => <RejectedListingCard key={`r-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
-            {canceledListings.map(l => <CanceledListingCard key={`c-${l.id}`} listing={l} onView={() => handleViewDetail(l)}/>)}
+            {canceledListings.map(l => <CanceledListingCard key={`c-${l.id}`} listing={l} onView={() => handleViewDetail(l)} />)}
           </TabsContent>
 
           {/* === PENDING === */}

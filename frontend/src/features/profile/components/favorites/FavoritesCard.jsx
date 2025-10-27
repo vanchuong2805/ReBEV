@@ -8,11 +8,12 @@ export default function FavoriteCard({ listing, onView, onRemove }) {
   const navigate = useNavigate()
   const { toggleFavorite } = useFavorite()
 
+
   return (
     <Frame
       listing={listing}
       tone="accent"
-      badgeText={listing.status || 'Đang bán'}
+      badgeText={listing.status==1 ? 'Đang bán' : 'Đã bán'}
       note="Tin bạn đã quan tâm"
       actions={[
         <Button size="lg"
