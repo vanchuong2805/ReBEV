@@ -59,3 +59,7 @@ export const addCarts = async (userId, post_id) => {
   )
   return res.data
 }
+export const getVariationValues = async () => {
+  const res = await axios.get(`${API_BASE_URL}/variation_values`)
+  return res.data
+}
