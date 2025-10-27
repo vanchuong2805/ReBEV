@@ -53,7 +53,12 @@ const registerPackage = async (req, res) => {
         if (errors.length > 0) {
             return res.status(404).json({ errors });
         }
+        if (await packageService.is_deleted(package_id)) {
+            errors.push(ERROR_MESSAGE.PACKAGE_NOT_FOUND);
+            return res.status(400).json({ errors });
+        }
         const updatedPackages = await userService.updatePackage(user_id, { package_id });
+
         res.status(200).json({
             message: SUCCESS_MESSAGE.REGISTER_SUCCESS,
             user: updatedPackages,

@@ -43,6 +43,15 @@ const registerStaff = async (req, res) => {
             return res.status(400).json({ errors: error });
         }
 
+        if (phone) {
+            const existingUser = await userService.getUserByPhone(phone);
+            if (existingUser) {
+                return res.status(400).json({
+                    message: ERROR_MESSAGE.PHONE_EXISTS
+                });
+            }
+        }
+
         const existingUser = await userService.getUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({
