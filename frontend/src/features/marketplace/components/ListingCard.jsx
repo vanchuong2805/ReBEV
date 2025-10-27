@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Heart, Calendar, MapPin } from "lucide-react";
+import { addFavorite,getFavoritesByUserId,removeFavorite } from "../service";
+import { useUser } from "@/contexts/UserContext";
+import { useState,useEffect } from "react";
+
 
 function currency(v) {
   return v.toLocaleString("vi-VN") + " ₫";
@@ -8,16 +12,12 @@ function currency(v) {
 
 export default function ListingCard({
   item,
-  isFavorite = false,
+  //isFavorite = false,
   onFavoriteToggle,
   viewMode = "list",
+  
 }) {
-  const handleFavoriteClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onFavoriteToggle?.(item.id);
-  };
-
+   const { isFavorite, toggleFavorite } = useFavorite();
   // List view - hiển thị theo dạng danh sách ngang
   if (viewMode === "list") {
     return (
@@ -63,17 +63,17 @@ export default function ListingCard({
 
             <div className="flex gap-2">
               <button
-                onClick={handleFavoriteClick}
+                onClick={() => {toggleFavorite(item.id);}}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  isFavorite
+                  isFavorite(item.id)
                     ? "bg-red-50 text-red-600 hover:bg-red-100"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 <Heart
-                  className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`}
+                  className={`w-4 h-4 ${isFavorite(item.id) ? "fill-current" : ""}`}
                 />
-                {isFavorite ? "Đã thích" : "Yêu thích"}
+                {isFavorite(item.id) ? "Đã thích" : "Yêu thích"}
               </button>
 
               <Link
@@ -103,13 +103,13 @@ export default function ListingCard({
           loading="lazy"
         />
         <button
-          onClick={handleFavoriteClick}
+          onClick={() => {toggleFavorite(item.id);}}
           aria-label="Yêu thích"
           className={`absolute right-2 top-2 rounded-full bg-white/90 p-1.5 hover:bg-white transition-colors shadow-sm ${
-            isFavorite ? "text-red-500" : "hover:text-red-500"
+            isFavorite(item.id) ? "text-red-500" : "hover:text-red-500"
           }`}
         >
-          <Heart className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
+          <Heart className={`w-5 h-5 ${isFavorite(item.id) ? "fill-current" : ""}`} />
         </button>
         {item.badge && (
           <span className="absolute px-2 py-1 text-xs font-semibold text-white bg-green-600 rounded shadow-sm left-2 top-2">

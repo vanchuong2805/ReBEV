@@ -1,10 +1,30 @@
-import { mockFavorites } from './MockFavorites'
 import FavoritesCard from './FavoritesCard'
 import { Car, Heart } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { getFavoritesByUserId } from '../../service'
+import { useUser } from '@/contexts/UserContext'
+import { useState, useEffect } from 'react'
 
 export default function FavoriteList() {
+  const { user } = useUser();
+  const [favoriteList, setFavoriteList] = useState([]);
+
+  useEffect(() => {
+  if (!user?.id) return;
+  const fetchFavorites = async () => {
+    try {
+      const res = await getFavoritesByUserId(user.id);
+      const favorites = res.favoritePosts || [];
+      setFavoriteList(favorites);
+    } catch (err) {
+      console.error("Lỗi load favorites:", err);
+      setFavoriteList([]);
+    }
+  };
+  fetchFavorites();
+}, [user]);
+
   return (
     <Card>
       <CardHeader>
@@ -24,14 +44,15 @@ export default function FavoriteList() {
 
       <CardContent>
         <div className="space-y-4">
-          {mockFavorites.length === 0 ? (
+          {favoriteList.length === 0 ? (
             <div className="text-center text-gray-500 py-10">
               Chưa có tin nào trong danh sách quan tâm
             </div>
           ) : (
-            mockFavorites.map(item => (
+            favoriteList.map(item => (
               <FavoritesCard
-                key={item.post_id}
+
+                key={item.id || item.post_id}
                 listing={item}
                 onView={(l) => console.log('Xem chi tiết:', l.title)}
                 onRemove={(l) => console.log('Bỏ quan tâm:', l.title)}

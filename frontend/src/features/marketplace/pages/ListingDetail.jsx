@@ -19,6 +19,7 @@ import {
   getPosts,
   updatePostVisibility
   , addCarts
+  , getVariationValues
 } from "../service"
 import { useUser } from "@/contexts/UserContext"
 
@@ -41,9 +42,10 @@ const ListingDetail = () => {
   const [loading, setLoading] = useState(true)
   const [pageOther, setPageOther] = useState(1)
   const [pageSimilar, setPageSimilar] = useState(1)
-  const [limit] = useState(2)
+  const [limit] = useState(5)
   const [hasMoreOther, setHasMoreOther] = useState(true)
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true)
+  const [variationValuesId, setVariationValuesId] = useState([])
 
 
   useEffect(() => {
@@ -51,7 +53,7 @@ const ListingDetail = () => {
       try {
         setLoading(true)
         const postRes = await getPostById(listingId)
-        const [varRes, cateRes, baseRes, userRes, contactRes] = await Promise.all([
+        const [varRes, cateRes, baseRes, userRes, contactRes,varValRes] = await Promise.all([
           getVariations(),
           getCategories(),
           getBases(),
@@ -59,6 +61,7 @@ const ListingDetail = () => {
           postRes.seller_contact_id
             ? getContactById(postRes.seller_contact_id)
             : Promise.resolve(null),
+          getVariationValues(),
         ])
 
 
@@ -86,6 +89,7 @@ const ListingDetail = () => {
         ])
         setOtherPosts(otherRes)
         setSimilarPosts(similarRes)
+        setVariationValuesId(varValRes)
       } catch (error) {
         console.error(" Lỗi tải dữ liệu:", error)
       } finally {
@@ -243,12 +247,12 @@ const ListingDetail = () => {
         <div className="lg:col-span-2 space-y-4">
           {/* Ảnh */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="relative aspect-video bg-gray-200">
+            <div className="relative aspect-video bg-gray-200 flex items-center justify-center">
               {listing.media?.length > 0 && (
                 <img
                   src={listing.media[currentImageIndex]?.url?.replace(/^image\s+|^video\s+/i, "")}
                   alt={listing.title}
-                  className="w-full h-full object-cover"
+                  className="h-full object-contain "
                 />
               )}
 
@@ -289,13 +293,14 @@ const ListingDetail = () => {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-6">
                 {listing.post_details.map((detail) => {
                   const v = variations.find((vv) => vv.id === detail.variation_id)
+                  const varVal = variationValuesId.find((vv) => vv.id === detail.variation_value_id)
                   return (
                     <div key={detail.variation_id}>
                       <p className="text-gray-500 text-sm">{v?.name}</p>
                       <p className="font-medium text-gray-900">
                         {detail.custom_value !== "null"
                           ? detail.custom_value
-                          : detail.variation_value_id}
+                          : varVal?.value || "N/A"}
                       </p>
                     </div>
                   )
@@ -373,7 +378,7 @@ const ListingDetail = () => {
                 </div>
               </div>
             ) : seller.id === user?.id ? (
-              // 🔹 Nếu là người đăng bài
+              //  Nếu là người đăng bài
               listing.is_hidden ? (
                 <button
                   onClick={() => {
@@ -396,13 +401,13 @@ const ListingDetail = () => {
                 </button>
               )
             ) : (
-              // 🔹 Nếu là người xem khác
+              //  Nếu là người xem khác
               <>
                 <button
                   onClick={() => handleBuyNow()}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition mb-3"
                 >
-                  <CreditCard className="w-5 h-5" /> Mua ngay
+                  <CreditCard className="w-5 h-5" /> {categoryInfo?.id === 1 ? 'Đặt cọc ngay' : 'Mua ngay'}
                 </button>
 
                 {listing.category_id !== 1 && (

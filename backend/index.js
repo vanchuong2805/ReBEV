@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import router from './routes/index.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import './cronJobs/autoTransfer.js';
 
 async function run() {
     dotenv.config();

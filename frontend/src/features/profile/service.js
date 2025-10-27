@@ -106,3 +106,16 @@ export const getPostsByUserId = async (userId) => {
 
   return res.data
 }
+export const getFavoritesByUserId = async (userId) => {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/favorites/${userId}`,
+    { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
+  )
+  return res.data
+}
+export async function getPostById(postId) {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/posts/${postId}`)
+
+  return res.data
+}

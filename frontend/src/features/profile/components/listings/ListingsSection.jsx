@@ -11,8 +11,6 @@ import ExpiredListingCard from './ExpiredListingCard'
 import RejectedListingCard from './RejectedListingCard'
 import CanceledListingCard from './CanceledListingCard'
 import { useState, useEffect } from 'react'
-
-import { mockListings } from './MockListings'
 import { useSearchParams } from 'react-router-dom'
 import { getPostsByUserId, updatePostVisibility } from '../../service'
 import { useUser } from "@/contexts/UserContext"

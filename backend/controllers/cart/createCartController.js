@@ -3,6 +3,38 @@ import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import postService from "../../services/post/postService.js";
 
+/** 
+ * @swagger
+ * /api/carts/{user_id}:
+ *   post:
+ *     summary: Create a new cart item
+ *     tags: [Carts]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               post_id:
+ *                 type: integer
+ *                 description: The ID of the post to add to the cart
+ *     responses:
+ *       200:
+ *         description: Cart item created successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Post not found
+ */
+
 const createCart = async (req, res) => {
     try {
         const { user_id } = req.params;

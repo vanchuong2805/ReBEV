@@ -30,6 +30,15 @@ export const ERROR_MESSAGE = {
     FAVORITE_NOT_FOUND: 'Favorite not found.',
     UPDATE_USER_FAIL: 'Updating user failed.',
     PACKAGE_NOT_FOUND: 'Package not found.',
+    CREATE_STAFF_FAIL: 'Create Staff account failed',
+    ACCOUNT_LOCK_FAILED: 'Locking account failed',
+    ACCOUNT_ALREADY_LOCKED: 'Account is already locked',
+    ACCOUNT_UNLOCK_FAILED: 'Unlocking account failed',
+    ACCOUNT_ALREADY_UNLOCKED: 'Account is already unlocked',
+    GOOGLE_TOKEN_BLANK: 'Google ID token cannot be left blank',
+    GOOGLE_EMAIL_NOT_VERIFIED: 'Google email is not verified',
+    LOGIN_GOOGLE_FAIL: 'Login with Google failed',
+    EMAIL_EXISTS: 'Email already exists.',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -43,6 +52,10 @@ export const SUCCESS_MESSAGE = {
     CREATE_FAVORITE_SUCCESS: 'Creating favorite post successful',
     DELETE_FAVORITE_SUCCESS: 'Deleting favorite post successful',
     UPDATE_USER_SUCCESS: 'Updating user successful',
+    ACCOUNT_LOCKED: 'Account has been locked successfully',
+    CREATE_STAFF_SUCCESS: 'Create Staff account successful',
+    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully',
+    LOGIN_GOOGLE_SUCCESS: 'Login with Google successful',
 }
 
 export const POST_STATUS = {
@@ -57,7 +70,7 @@ export const POST_STATUS = {
 };
 
 export const TRANSITION_STATUS = {
-    [POST_STATUS.APPROVED]: [POST_STATUS.PENDING],
+    [POST_STATUS.APPROVED]: [POST_STATUS.PENDING, POST_STATUS.REJECTED],
     [POST_STATUS.REJECTED]: [POST_STATUS.PENDING, POST_STATUS.APPROVED, POST_STATUS.VERIFIED],
     [POST_STATUS.CANCELLED]: [POST_STATUS.PENDING],
     [POST_STATUS.VERIFIED]: [POST_STATUS.PENDING, POST_STATUS.APPROVED],
@@ -82,6 +95,7 @@ export const ORDER_STATUS = {
     DELIVERED: 'DELIVERED',
     CANCELLED: 'CANCELLED',
     FAIL_PAY: 'FAIL_PAY',
+    COMPLETED: 'COMPLETED',
 };
 
 export const ORDER_STATUS_TRANSITION = {
@@ -90,6 +104,7 @@ export const ORDER_STATUS_TRANSITION = {
     [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.DELIVERING],
     [ORDER_STATUS.PAID]: [ORDER_STATUS.PENDING],
+    [ORDER_STATUS.COMPLETED]: [ORDER_STATUS.DELIVERED],
 };
 
 export const TRANSACTION_STATUS = {

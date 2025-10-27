@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 import models from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
+import { ROLE } from '../../config/constants.js';
 
 const getUsers = async () => {
     const data = await users.findAll();
@@ -51,6 +52,17 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
+const createStaff = async ({ display_name, email, phone }) => {
+    const data = await users.create({
+        display_name: display_name || "",
+        email,
+        phone,
+        password: '',
+        role: ROLE.STAFF,
+    });
+    return data;
+};
+
 const deposit = async (userId, amount, options) => {
     const user = await users.findByPk(userId);
     if (!user) throw new Error('User not found');
@@ -58,13 +70,12 @@ const deposit = async (userId, amount, options) => {
     await user.save({ ...options });
     return user;
 };
-const updateUser = async (id, { display_name, email, phone, password }) => {
-    const hashedPassword = await bcrypt.hash(password, 10);
+
+const updateUser = async (id, { display_name, email, phone }) => {
     const data = await users.update({
         display_name,
         email,
         phone,
-        password: hashedPassword,
         update_at: Sequelize.literal('GETDATE()')
     }, {
         where: {
@@ -73,6 +84,28 @@ const updateUser = async (id, { display_name, email, phone, password }) => {
     });
     return data;
 };
+
+const checkPassword = async (id, { password }) => {
+    const data = await users.findByPk(id)
+    if (!data) {
+        return false;
+    }
+    const isMatch = await bcrypt.compare(password, data.password);
+    return isMatch;
+}
+
+const updatePassword = async (id, { password }) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const data = await users.update({
+        password: hashedPassword,
+        update_at: Sequelize.literal('GETDATE()')
+    }, {
+        where: {
+            id
+        }
+    });
+    return data;
+}
 
 const updatePackage = async (user_id, { package_id }) => {
     const data = await users.update({
@@ -86,6 +119,34 @@ const updatePackage = async (user_id, { package_id }) => {
     return data;
 }
 
+const lockAccount = async (user_id) => {
+    const data = await users.update({
+        is_locked: 1
+    }, {
+        where: {
+            id: user_id
+        }
+    });
+    return data;
+}
+
+const unLockAccount = async (user_id) => {
+    const data = await users.update({
+        is_locked: 0
+    }, {
+        where: {
+            id: user_id
+        }
+    });
+    return data;
+}
+
+const is_locked = async (user_id) => {
+    const user = await users.findByPk(user_id);
+    if (!user) throw new Error('User not found');
+    return user.is_locked;
+}
+
 export default {
     getUsers,
     getUser,
@@ -93,6 +154,13 @@ export default {
     getUserByEmail,
     getUserByPhone,
     createUser,
+    createStaff,
     deposit,
-    updateUser
+    updateUser,
+    updatePassword,
+    checkPassword,
+    updatePackage,
+    lockAccount,
+    unLockAccount,
+    is_locked
 };
