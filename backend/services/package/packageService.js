@@ -2,12 +2,20 @@ import models from "../../models/index.js";
 const { packages } = models;
 
 const getPackages = async () => {
-    const data = await packages.findAll();
+    const data = await packages.findAll({
+        where: {
+            is_deleted: false
+        }
+    });
     return data;
 }
 
 const getPackage = async (id) => {
-    const data = await packages.findByPk(id);
+    const data = await packages.findByPk(id, {
+        where: {
+            is_deleted: false
+        }
+    });
     return data;
 }
 
