@@ -1,4 +1,3 @@
-// SettingsPage.jsx
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import EditProfileForm from "./EditProfileForm"
 import EditPasswordForm from "./EditPasswordForm"

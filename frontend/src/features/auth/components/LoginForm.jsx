@@ -3,12 +3,17 @@ import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import FieldError from "./FieldError";
 import { validateLogin } from "../../../services/validations";
-import { loginUser } from "../service";
+import { googleLogin, loginUser } from "../service";
 import { useUser } from "../../../contexts/UserContext";
+import { toast } from "sonner";
+import { GoogleLogin } from "@react-oauth/google";
+import { Eye, EyeOff } from "lucide-react";
+
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useUser();
 
   const handlePhoneLogin = (e) => {
@@ -21,16 +26,28 @@ const LoginForm = () => {
       .then((response) => {
         console.log("Login successful:", response);
         // Handle successful login (e.g., store token, redirect)
-        login(response.user, response.token);
+        login(response.user, response.accessToken);
+        toast.success("Đăng nhập thành công!");
       })
       .catch((error) => {
         console.error("Login failed:", error);
         // Handle login error (e.g., show error message)
+        toast.error("Đăng nhập thất bại!");
       });
   };
 
-  const handleGoogleLogin = () => {
-    alert("Đăng nhập bằng Google");
+  const handleGoogleLogin = async (response) => {
+    try {
+      const { credential } = response; // Google ID Token
+      const data = await googleLogin(credential); // gọi API tới backend
+
+      // nếu BE trả về user + accessToken
+      login(data.user, data.token);
+      toast.success("Đăng nhập Google thành công!");
+    } catch (error) {
+      console.error("Google login failed:", error);
+      toast.error("Đăng nhập Google thất bại!");
+    }
   };
 
   return (
@@ -58,7 +75,7 @@ const LoginForm = () => {
         <div className="relative mb-8">
           <input
             id="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Nhập mật khẩu"
@@ -66,6 +83,13 @@ const LoginForm = () => {
               errors.password ? "border-red-500" : "border-gray-300"
             }`}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute inset-y-0 flex items-center text-gray-500 right-3 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
           <FieldError message={errors.password} />
         </div>
 
@@ -91,15 +115,10 @@ const LoginForm = () => {
         </div>
 
         <div className="flex justify-center mt-6 space-x-4">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center px-6 py-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 hover:border-gray-400 hover:shadow-md"
-          >
-            <FcGoogle className="w-4 h-4 mr-2" />
-            Google
-          </Button>
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => toast.error("Đăng nhập Google thất bại!")}
+          />
         </div>
       </div>
     </div>

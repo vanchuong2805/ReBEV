@@ -1,37 +1,42 @@
 import React, { useState } from "react";
-import { toast } from "sonner";
+import { Link } from "react-router";
 import ListingForm from "../components/ListingForm.jsx";
-//import Gallery from "../components/Gallery.jsx";
 
 export default function MyListingPage() {
   const [items, setItems] = useState([]);
 
   const handleAdd = (listing) => {
-    // chặn trùng id
-    setItems((prev) => {
-      if (prev.some((x) => x.id === listing.id)) {
-        toast.error("ID bị trùng, vui lòng sửa tiêu đề để đổi ID");
-        return prev;
-      }
-      return [listing, ...prev];
-    });
-  };
-
-  const handleRemove = (id) => {
-    setItems((prev) => prev.filter((x) => x.id !== id));
-    toast.success("Đã xoá bài đăng");
+    setItems((prev) => [listing, ...prev]);
   };
 
   return (
-    <div className="container px-4 py-4 mx-auto">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="lg:col-span-4">
-          <ListingForm onSubmit={handleAdd} />
+    <div className="container px-4 py-8 mx-auto">
+      <div className="max-w-3xl mx-auto">
+        {/* 2.Nút "Back" ở đây */}
+        <div className="mb-4">
+          <Link
+            to="/"
+            className="inline-flex items-center text-sm font-medium text-gray-600 transition-colors hover:text-blue-600"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 mr-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Quay về trang chủ
+          </Link>
         </div>
-        {/* <div className="lg:col-span-8">
-          <h5 className="mb-3 text-lg font-medium">Bài đăng của tôi</h5>
-          <Gallery items={items} onRemove={handleRemove} />
-        </div> */}
+
+        <ListingForm onSubmit={handleAdd} />
       </div>
     </div>
   );
