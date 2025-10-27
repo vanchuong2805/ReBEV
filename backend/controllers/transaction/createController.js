@@ -20,6 +20,7 @@ const createOrderTransaction = async (req, res) => {
             amount,
             status: resultCode,
         };
+        console.log("Creating transaction:", transactionData);
         const transaction = await transactionService.createTransaction(transactionData);
         const orderDetails = await orderDetailService.getByOrderId(order_id);
         if (resultCode !== TRANSACTION_STATUS.SUCCESS) {
