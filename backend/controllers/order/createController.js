@@ -31,7 +31,8 @@ const createOrder = async (req, res) => {
             !order_type ||
             !from_contact_id ||
             !to_contact_id ||
-            !delivery_price ||
+            delivery_price === undefined ||
+            delivery_price < 0 ||
             !order_details ||
             order_details.length === 0 ||
             !total_amount

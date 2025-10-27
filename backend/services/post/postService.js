@@ -1,6 +1,7 @@
 import models from '../../models/index.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize } from 'sequelize';
 import { sequelize } from '../../models/index.js';
+import { POST_STATUS } from '../../config/constants.js';
 const { posts } = models;
 const getPosts = async (filters = {}) => {
     // Use query to filter user, part of title / description, variation values, category, status,...
@@ -54,13 +55,27 @@ const getPosts = async (filters = {}) => {
 
     const total = await posts.count({ where });
 
-    return {data, pagination: pageSize ?  { page: pageNum, limit: pageSize, total } : null};
+    return { data, pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null };
 };
 
 const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
         ...options,
+    });
+    return data;
+};
+
+const getCartItem = async (postId) => {
+    const data = await posts.findByPk(postId, {
+        include: ['post_details', 'category'],
+        where: {
+            is_deleted: false,
+            is_hidden: false,
+            status: POST_STATUS.APPROVED,
+            'post_details.variation_id': 13,
+        },
+        attributes: ['id', 'user_id', 'title', 'price'],
     });
     return data;
 };
@@ -105,4 +120,5 @@ export default {
     deletePost,
     updateStatus,
     changeVisibility,
+    getCartItem,
 };
