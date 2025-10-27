@@ -2,8 +2,10 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Car } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getOrderByCustomer } from '@/features/profile/service'
+import { useEffect, useState } from 'react'
+import { useUser } from '@/contexts/UserContext'
 
 import PendingPurchaseCard from '@/features/profile/components/purchases/PendingPurchaseCard'
 import ProcessingPurchaseCard from '@/features/profile/components/purchases/ProcessingPurchaseCard'
@@ -12,30 +14,56 @@ import SuccessPurchases from '@/features/profile/components/purchases/SuccessPur
 import CanceledPurchaseCard from '@/features/profile/components/purchases/CanceledPurchaseCard'
 import RefundedPurchaseCard from '@/features/profile/components/purchases/RefundedPurchaseCard'
 
-// dữ liệu giả (đảm bảo file MockPurchases.js export const mockPurchases = [...])
-import { mockPurchases } from '@/features/profile/components/purchases/MockPurchases'
-import { useSearchParams } from 'react-router-dom'
-
 const PurchasesSection = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const type = searchParams.get("type") || "all"
-
   const handleTabChange = (value) => setSearchParams({ type: value })
-  const getStatus = (o) => (o?.status_vi || o?.status || '').trim()
-  const all = Array.isArray(mockPurchases) ? mockPurchases : []
 
-  const pendingOrders    = all.filter(o => getStatus(o) === 'Chờ xác nhận')
-  const processingOrders = all.filter(o => getStatus(o) === 'Đang xử lý')
-  const shippingOrders   = all.filter(o => getStatus(o) === 'Đang vận chuyển')
-  const successOrders    = all.filter(o => getStatus(o) === 'Hoàn tất')
-  const canceledOrders   = all.filter(o => getStatus(o) === 'Đã huỷ')
-  const refundedOrders   = all.filter(o => getStatus(o) === 'Đã hoàn tiền')
-  const total = all.length
+  const [orders, setOrders] = useState([])
   const navigate = useNavigate()
-  const handleView = (purchase) => {
-     navigate(`/profile/purchases/${purchase.id}`, {
+  const { user } = useUser()
+
+  // 🧩 Hàm lấy trạng thái mới nhất của đơn hàng
+  const getStatus = (order) => order.order_statuses?.at(-1)?.status || ""
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user?.id) return
+      try {
+        const data = await getOrderByCustomer(user.id)
+        setOrders(data || [])
+      } catch (error) {
+        console.error("❌ Lỗi tải đơn hàng:", error)
+      }
+    }
+    fetchOrders()
+  }, [user])
+
+  // 🧮 Gom đơn hàng theo trạng thái
+  const pendingOrders    = orders.filter(o => getStatus(o) === 'PAID')
+  const processingOrders = orders.filter(o => getStatus(o) === 'CONFIRMED')
+  const shippingOrders   = orders.filter(o => getStatus(o) === 'DELIVERING')
+  const successOrders    = orders.filter(o => getStatus(o) === 'COMPLETED')
+  const canceledOrders   = orders.filter(o => getStatus(o) === 'CANCELLED')
+  const refundedOrders   = orders.filter(o => getStatus(o) === 'Đã hoàn tiền')
+  const total = orders.length
+
+  const handleView = (order) => {
+    navigate(`/profile/purchases/${order.id}`, {
       state: { from: `/profile/purchases?type=${type}` },
     })
+  }
+
+  // 🧾 Hàm chọn component card theo trạng thái
+  const renderPurchaseCard = (order) => {
+    const s = getStatus(order)
+    if (s === 'PAID')          return <PendingPurchaseCard key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'CONFIRMED')     return <ProcessingPurchaseCard key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'DELIVERING')    return <ShippingPurchaseCard key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'COMPLETED')     return <SuccessPurchases key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'CANCELLED')     return <CanceledPurchaseCard key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'Đã hoàn tiền')  return <RefundedPurchaseCard key={order.id} purchase={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    return null
   }
 
   return (
@@ -62,51 +90,57 @@ const PurchasesSection = () => {
             <TabsTrigger value="shipping" className="text-sm">Đang vận chuyển ({shippingOrders.length})</TabsTrigger>
             <TabsTrigger value="success" className="text-sm">Hoàn tất ({successOrders.length})</TabsTrigger>
             <TabsTrigger value="canceled" className="text-sm">Đã huỷ ({canceledOrders.length})</TabsTrigger>
-            <TabsTrigger value="refunded" className="text-sm">Đã hoàn tiền ({refundedOrders.length})</TabsTrigger> 
+            <TabsTrigger value="refunded" className="text-sm">Đã hoàn tiền ({refundedOrders.length})</TabsTrigger>
           </TabsList>
 
-          {/* All */}
+          {/* Tất cả đơn */}
           <TabsContent value="all" className="space-y-4">
-            {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có đơn mua</div>}
-            {all.map(o => {
-              const s = getStatus(o)
-              if (s === 'Chờ xác nhận')   return <PendingPurchaseCard    key={o.id} purchase={o} onView={() => handleView(o)}/>
-              if (s === 'Đang xử lý')     return <ProcessingPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)}/>
-              if (s === 'Đang vận chuyển')return <ShippingPurchaseCard   key={o.id} purchase={o} onView={() => handleView(o)}/>
-              if (s === 'Hoàn tất')       return <SuccessPurchases       key={o.id} purchase={o} onView={() => handleView(o)}/>
-              if (s === 'Đã huỷ')         return <CanceledPurchaseCard   key={o.id} purchase={o} onView={() => handleView(o)}/>
-              if (s === 'Đã hoàn tiền')   return <RefundedPurchaseCard   key={o.id} purchase={o} onView={() => handleView(o)}/>
-              return null
-            })}
+            {total === 0
+              ? <div className="text-center py-12 text-gray-500">Chưa có đơn mua</div>
+              : orders.map(renderPurchaseCard)
+            }
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
-            {pendingOrders.length === 0 && <div className="text-gray-500">Không có đơn chờ xác nhận</div>}
-            {pendingOrders.map(o => <PendingPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {pendingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn chờ xác nhận</div>
+              : pendingOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
 
           <TabsContent value="processing" className="space-y-4">
-            {processingOrders.length === 0 && <div className="text-gray-500">Không có đơn đang xử lý</div>}
-            {processingOrders.map(o => <ProcessingPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {processingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đang xử lý</div>
+              : processingOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
 
           <TabsContent value="shipping" className="space-y-4">
-            {shippingOrders.length === 0 && <div className="text-gray-500">Không có đơn đang vận chuyển</div>}
-            {shippingOrders.map(o => <ShippingPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {shippingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đang vận chuyển</div>
+              : shippingOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
 
           <TabsContent value="success" className="space-y-4">
-            {successOrders.length === 0 && <div className="text-gray-500">Không có đơn hoàn tất</div>}
-            {successOrders.map(o => <SuccessPurchases key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {successOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn hoàn tất</div>
+              : successOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
 
           <TabsContent value="canceled" className="space-y-4">
-            {canceledOrders.length === 0 && <div className="text-gray-500">Không có đơn đã huỷ</div>}
-            {canceledOrders.map(o => <CanceledPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {canceledOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đã huỷ</div>
+              : canceledOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
+
           <TabsContent value="refunded" className="space-y-4">
-            {refundedOrders.length === 0 && <div className="text-gray-500">Không có đơn đã hoàn tiền</div>}
-            {refundedOrders.map(o => <RefundedPurchaseCard key={o.id} purchase={o} onView={() => handleView(o)} />)}
+            {refundedOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đã hoàn tiền</div>
+              : refundedOrders.map(renderPurchaseCard)
+            }
           </TabsContent>
         </Tabs>
       </CardContent>
