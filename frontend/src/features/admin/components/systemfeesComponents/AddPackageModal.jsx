@@ -1,16 +1,18 @@
 // components/system-fees/AddPackageModal.jsx
+import { useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { X } from "lucide-react";
+export default function AddPackageModal({ open, onClose, handleAddPackage }) {
+  const [newPackage, setNewPackage] = useState({
+    name: "",
+    description: "",
+    top: false,
+    highlight: false,
+    duration: 0,
+    price: 0,
+  });
 
-export default function AddPackageModal({
-  open,
-  onClose,
-  newPackage,
-  setNewPackage,
-  onTogglePrivilege,
-  onAdd,
-}) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-white/20 flex items-center justify-center z-50">
@@ -56,21 +58,55 @@ export default function AddPackageModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Đặc quyền
             </label>
-            <div className="space-y-2">
-              {["Ưu tiên hiển thị", "Highlight Bài Viết"].map((label) => (
-                <label key={label} className="inline-flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4"
-                    checked={newPackage.privileges.includes(label)}
-                    onChange={() => onTogglePrivilege(label)}
-                  />
-                  <span className="text-sm text-gray-700">{label}</span>
-                </label>
-              ))}
+            <div className="space-y-4">
+              {/* Ưu tiên hiển thị */}
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={!!newPackage.top}
+                  onChange={(e) =>
+                    setNewPackage((prev) => ({
+                      ...prev,
+                      top: e.target.checked,
+                    }))
+                  }
+                />
+                <span className="text-sm text-gray-700">Ưu tiên hiển thị</span>
+              </label>
+
+              {/* Highlight Bài Viết */}
+              <label className="inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4"
+                  checked={!!newPackage.highlight}
+                  onChange={(e) =>
+                    setNewPackage((prev) => ({
+                      ...prev,
+                      highlight: e.target.checked,
+                    }))
+                  }
+                />
+                <span className="text-sm text-gray-700">
+                  Highlight Bài Viết
+                </span>
+              </label>
             </div>
           </div>
-
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Thời hạn (Ngày)
+            </label>
+            <Input
+              type="number"
+              value={newPackage.duration}
+              onChange={(e) =>
+                setNewPackage({ ...newPackage, duration: e.target.value })
+              }
+              placeholder="0"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Giá gói (VND)
@@ -87,7 +123,7 @@ export default function AddPackageModal({
 
           <div className="flex space-x-3 pt-4">
             <Button
-              onClick={onAdd}
+              onClick={() => handleAddPackage(newPackage)}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
               Thêm gói
