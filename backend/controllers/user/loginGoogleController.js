@@ -4,6 +4,30 @@ import verifyGoogleToken from '../../services/auth/googleService.js';
 import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
 
+/** 
+ * @swagger
+ * /api/users/login/google:
+ *   post:
+ *     summary: Login user with Google
+ *     description: Login user with Google account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       400:
+ *         description: Invalid request
+ *       403:
+ *         description: Account locked
+ */
+
 const loginUserByGoogle = async (req, res) => {
     try {
         const { id_token } = req.body;
