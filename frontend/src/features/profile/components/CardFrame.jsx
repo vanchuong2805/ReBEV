@@ -21,7 +21,7 @@ export default function ListingCardFrame({
   note,                          
   actions,                       
 }) {
-  const { title, media, category_name, created_at, price } = listing
+  const { title, media, category_id, created_at, price } = listing
   const styles = TONE[tone] || TONE.neutral
 
   // Parse media JSON -> lấy thumbnail URL
@@ -54,7 +54,7 @@ export default function ListingCardFrame({
               <h3 className="text-xl font-semibold mb-1 line-clamp-2">{title}</h3>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="px-2 py-0.5 rounded-full bg-white/70 text-gray-800 text-xs border">
-                  {category_name || 'Danh mục'}
+                  {category_id === 1 ? 'Xe máy' : 'Pin điện'}
                 </span>
                 {created_at && (
                   <span>• {new Date(created_at).toLocaleDateString('vi-VN')}</span>

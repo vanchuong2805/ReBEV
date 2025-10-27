@@ -2,7 +2,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Car } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useUser } from '@/contexts/UserContext'
+import { getOrderBySeller,changeOrderStatus } from '@/features/profile/service'
+
 
 import PendingSaleCard from '@/features/profile/components/sales/PendingSaleCard'
 import ProcessingSaleCard from '@/features/profile/components/sales/ProcessingSaleCard'
@@ -10,28 +14,73 @@ import ShippingSaleCard from '@/features/profile/components/sales/ShippingSaleCa
 import SuccessSaleCard from '@/features/profile/components/sales/SuccessSaleCard'
 import CanceledSaleCard from '@/features/profile/components/sales/CanceledSaleCard'
 
-import { mockSales } from '@/features/profile/components/sales/MockSales'
-import { useSearchParams } from 'react-router-dom'
-
 const SalesSection = () => {
-  const getStatus = (s) => (s?.status_vi || s?.status || '').trim()
-  const all = Array.isArray(mockSales) ? mockSales : []
-
-  const pending = all.filter(x => getStatus(x) === 'Chờ xác nhận')
-  const processing = all.filter(x => getStatus(x) === 'Đang xử lý')
-  const shipping = all.filter(x => getStatus(x) === 'Đang vận chuyển')
-  const success = all.filter(x => getStatus(x) === 'Hoàn tất')
-  const canceled = all.filter(x => getStatus(x) === 'Đã huỷ')
-
-  const total = all.length
   const [searchParams, setSearchParams] = useSearchParams()
   const type = searchParams.get("type") || "all"
   const handleTabChange = (value) => setSearchParams({ type: value })
+
+  const [orders, setOrders] = useState([])
   const navigate = useNavigate()
-  const handleView = (sale) => {
-    navigate(`/profile/sale/${sale.id}`, {
+  const { user } = useUser()
+
+  // 🧩 Lấy trạng thái mới nhất
+  const getStatus = (order) => order.order_statuses?.at(-1)?.status || ""
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user?.id) return
+      try {
+        const data = await getOrderBySeller(user.id)
+        setOrders(data || [])
+      } catch (error) {
+        console.error("❌ Lỗi tải đơn bán:", error)
+      }
+    }
+    fetchOrders()
+  }, [user])
+
+  const pendingOrders    = orders.filter(o => getStatus(o) === 'PAID')
+  const processingOrders = orders.filter(o => getStatus(o) === 'CONFIRMED')
+  const shippingOrders   = orders.filter(o => getStatus(o) === 'DELIVERING')
+  const successOrders    = orders.filter(o => getStatus(o) === 'COMPLETED')
+  const canceledOrders   = orders.filter(o => getStatus(o) === 'SELLER_CANCELLED')
+  const total = orders.length
+
+  const handleView = (order) => {
+    navigate(`/profile/sale/${order.id}`, {
       state: { from: `/profile/sales?type=${type}` },
     })
+  }
+
+  const handleAccept = async (order) => {
+  try {
+    await changeOrderStatus(order.id, "CONFIRMED", "Người bán đã xác nhận đơn hàng")
+    setOrders(prev =>
+      prev.map(o =>
+        o.id === order.id
+          ? { ...o, order_statuses: [...o.order_statuses, { status: "CONFIRMED" }] }
+          : o
+      )
+    )
+    alert(" Đã xác nhận đơn hàng thành công!")
+  } catch (error) {
+    console.error(" Lỗi khi xác nhận đơn hàng:", error)
+    alert("Xác nhận thất bại, vui lòng thử lại.")
+  }
+}
+  const renderSaleCard = (order) => {
+    const s = getStatus(order)
+    if (s === 'PAID')
+      return <PendingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} onAccept={() => handleAccept(order)} />
+    if (s === 'CONFIRMED')
+      return <ProcessingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'DELIVERING')
+      return <ShippingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'COMPLETED')
+      return <SuccessSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    if (s === 'SELLER_CANCELLED')
+      return <CanceledSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
+    return null
   }
 
   return (
@@ -53,49 +102,54 @@ const SalesSection = () => {
         <Tabs value={type} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
-            <TabsTrigger value="pending" className="text-sm">Chờ xác nhận ({pending.length})</TabsTrigger>
-            <TabsTrigger value="processing" className="text-sm">Đang xử lý ({processing.length})</TabsTrigger>
-            <TabsTrigger value="shipping" className="text-sm">Đang vận chuyển ({shipping.length})</TabsTrigger>
-            <TabsTrigger value="success" className="text-sm">Hoàn tất ({success.length})</TabsTrigger>
-            <TabsTrigger value="canceled" className="text-sm">Đã huỷ ({canceled.length})</TabsTrigger>
+            <TabsTrigger value="pending" className="text-sm">Chờ xác nhận ({pendingOrders.length})</TabsTrigger>
+            <TabsTrigger value="processing" className="text-sm">Đang xử lý ({processingOrders.length})</TabsTrigger>
+            <TabsTrigger value="shipping" className="text-sm">Đang vận chuyển ({shippingOrders.length})</TabsTrigger>
+            <TabsTrigger value="success" className="text-sm">Hoàn tất ({successOrders.length})</TabsTrigger>
+            <TabsTrigger value="canceled" className="text-sm">Đã huỷ ({canceledOrders.length})</TabsTrigger>
           </TabsList>
 
+          {/* === Tất cả === */}
           <TabsContent value="all" className="space-y-4">
-            {total === 0 && <div className="text-center py-12 text-gray-500">Chưa có đơn bán</div>}
-            {all.map(o => {
-              const s = getStatus(o)
-              if (s === 'Chờ xác nhận') return <PendingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đang xử lý') return <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đang vận chuyển') return <ShippingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Hoàn tất') return <SuccessSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              if (s === 'Đã huỷ') return <CanceledSaleCard key={o.id} sale={o} onView={() => handleView(o)} />
-              return null
-            })}
+            {total === 0
+              ? <div className="text-center py-12 text-gray-500">Chưa có đơn bán</div>
+              : orders.map(renderSaleCard)
+            }
           </TabsContent>
 
           <TabsContent value="pending" className="space-y-4">
-            {pending.length === 0 && <div className="text-gray-500">Không có đơn chờ xác nhận</div>}
-            {pending.map(o => <PendingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
+            {pendingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn chờ xác nhận</div>
+              : pendingOrders.map(renderSaleCard)
+            }
           </TabsContent>
 
           <TabsContent value="processing" className="space-y-4">
-            {processing.length === 0 && <div className="text-gray-500">Không có đơn đang xử lý</div>}
-            {processing.map(o => <ProcessingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
+            {processingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đang xử lý</div>
+              : processingOrders.map(renderSaleCard)
+            }
           </TabsContent>
 
           <TabsContent value="shipping" className="space-y-4">
-            {shipping.length === 0 && <div className="text-gray-500">Không có đơn đang vận chuyển</div>}
-            {shipping.map(o => <ShippingSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
+            {shippingOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đang vận chuyển</div>
+              : shippingOrders.map(renderSaleCard)
+            }
           </TabsContent>
 
           <TabsContent value="success" className="space-y-4">
-            {success.length === 0 && <div className="text-gray-500">Không có đơn hoàn tất</div>}
-            {success.map(o => <SuccessSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
+            {successOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn hoàn tất</div>
+              : successOrders.map(renderSaleCard)
+            }
           </TabsContent>
 
           <TabsContent value="canceled" className="space-y-4">
-            {canceled.length === 0 && <div className="text-gray-500">Không có đơn đã huỷ</div>}
-            {canceled.map(o => <CanceledSaleCard key={o.id} sale={o} onView={() => handleView(o)} />)}
+            {canceledOrders.length === 0
+              ? <div className="text-gray-500">Không có đơn đã huỷ</div>
+              : canceledOrders.map(renderSaleCard)
+            }
           </TabsContent>
         </Tabs>
       </CardContent>

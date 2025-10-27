@@ -103,7 +103,7 @@ export const getPostsByUserId = async (userId) => {
   const res = await axios.get(`${API_BASE_URL}/users/${userId}/posts`,
     { headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` } }
   )
-
+  console.log(res.data)
   return res.data
 }
 export const getFavoritesByUserId = async (userId) => {
@@ -117,5 +117,38 @@ export async function getPostById(postId) {
   const token = localStorage.getItem("accessToken")
   const res = await axios.get(`${API_BASE_URL}/posts/${postId}`)
 
+  return res.data
+}
+export async function getCategories() {
+  const res = await axios.get(`${API_BASE_URL}/categories`)
+  console.log(res.data)
+  return res.data
+}
+export async function getOrderByCustomer() {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/orders?type=customer`, {
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
+  })
+ console.log(res.data)
+  return res.data
+}
+export async function getOrderBySeller() {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/orders?type=seller`, {
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
+  })
+ console.log(res.data)
+  return res.data
+}
+export async function changeOrderStatus(orderId, status, description) {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.post(
+    `${API_BASE_URL}/orders/${orderId}/status`,
+    { status, description }, 
+    {
+      headers: {
+        "Content-Type": "application/json", "Authorization": `Bearer ${token}`}
+  }
+  )
   return res.data
 }
