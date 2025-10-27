@@ -41,7 +41,7 @@ const createPackage = async (req, res) => {
     try {
         const { name, price, description, highlight, top, duration } = req.body;
 
-        if (!name || !price || !description || !highlight || !top || !duration) {
+        if (!name || !price || !description || !duration) {
             return res.status(400).json({ error: ERROR_MESSAGE.BLANK_INFORMATION });
         }
 
