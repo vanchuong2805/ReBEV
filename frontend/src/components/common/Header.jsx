@@ -507,6 +507,7 @@ const Header = () => {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to={`/shop/${user.id}`}>Trang của tôi</Link>
+                    <Link to={`/chat?buyer=${user.id}`}>Tin Nhắn</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to="/upgrade">Nâng cấp tài khoản</Link>

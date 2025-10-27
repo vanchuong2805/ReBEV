@@ -23,6 +23,7 @@ import WalletSection from "@/features/profile/components/wallet/WalletSection.js
 import AdminDashboard from "@/features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
 import ShopPage from "@/features/shop/pages/ShopPage.jsx";
+import ChatPage from "@/features/chat/pages/ChatPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -56,6 +57,7 @@ export default function AppRoutes() {
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />
         <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
+        <Route path={"chat"} element={<ChatPage />} />
       </Routes>
     </>
   );

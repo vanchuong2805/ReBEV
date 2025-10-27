@@ -7,7 +7,13 @@ import StatsCard from "../components/StatsCard";
 import FilterBar from "../components/FilterBar";
 import UserInfo from "../components/UserComponents/UserInfo";
 import CreateStaff from "../components/UserComponents/CreateStaff";
-import { fetchUsers } from "../service";
+import {
+  createStaffAccount,
+  fetchUsers,
+  lockUserAccount,
+  unLockUserAccount,
+} from "../service";
+import { toast } from "sonner";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,18 +22,19 @@ const UserManagement = () => {
   const [showStaffForm, setShowStaffForm] = useState(false);
   // removed staff password modal: password changes are handled elsewhere (or via API)
   const [staffFormData, setStaffFormData] = useState({
-    name: "",
     email: "",
     phone: "",
-    password: "",
-    confirmPassword: "",
   });
 
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
-    fetchUsers().then((data) => setUsers(data));
+    fetchUsers().then(setUsers);
   }, []);
+  const refreshUsers = async () => {
+    const fresh = await fetchUsers();
+    setUsers(fresh);
+  };
   //---------------------------------------------
   const getStatusColor = (is_locked) => {
     switch (is_locked) {
@@ -67,22 +74,26 @@ const UserManagement = () => {
     }
   };
 
-  const handleLockUser = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, is_locked: true } : user
-      )
-    );
-    console.log("Locking user:", userId);
+  const handleLockUser = async (userId) => {
+    try {
+      console.log("Token hiện tại:", localStorage.getItem("token"));
+      await lockUserAccount(userId);
+      await refreshUsers();
+      toast.success(`Đã khóa tài khoản: ${userId}`);
+    } catch (err) {
+      toast.error(`Lỗi khi khóa tài khoản: ${err.message}`);
+    }
   };
 
-  const handleUnlockUser = (userId) => {
-    setUsers(
-      users.map((user) =>
-        user.id === userId ? { ...user, is_locked: false } : user
-      )
-    );
-    console.log("Unlocking user:", userId);
+  const handleUnlockUser = async (userId) => {
+    try {
+      console.log("Token hiện tại:", localStorage.getItem("token"));
+      await unLockUserAccount(userId);
+      await refreshUsers();
+      toast.success(`Đã mở khóa tài khoản: ${userId}`);
+    } catch (err) {
+      toast.error(`Lỗi khi mở khóa tài khoản: ${err.message}`);
+    }
   };
 
   const handleCreateStaff = () => {
@@ -92,40 +103,24 @@ const UserManagement = () => {
   const handleCloseStaffForm = () => {
     setShowStaffForm(false);
     setStaffFormData({
-      name: "",
       email: "",
       phone: "",
-      password: "",
-      confirmPassword: "",
     });
   };
 
-  const handleStaffFormSubmit = () => {
-    // Validation
-    if (staffFormData.password !== staffFormData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    if (staffFormData.password.length < 6) {
-      alert("Password must be at least 6 characters!");
-      return;
-    }
-
+  const handleStaffFormSubmit = async (staff) => {
     // Create new staff user
-    const newStaff = {
-      id: users.length + 1,
-      name: staffFormData.name,
-      email: staffFormData.email,
-      phone: staffFormData.phone,
-      is_locked: false,
-      role: 1,
-      joinDate: new Date().toISOString().split("T")[0],
-    };
 
-    setUsers([...users, newStaff]);
-    handleCloseStaffForm();
-    alert("Tài khoản nhân viên đã được tạo thành công!");
+    await createStaffAccount({ email: staff.email, phone: staff.phone })
+      .then(() => {
+        refreshUsers();
+        handleCloseStaffForm();
+        alert("Tài khoản nhân viên đã được tạo thành công!");
+      })
+      .catch((error) => {
+        console.error("Error creating staff account:", error);
+        alert("Đã xảy ra lỗi khi tạo tài khoản nhân viên.");
+      });
   };
 
   // removed password change handlers
@@ -232,7 +227,7 @@ const UserManagement = () => {
           },
         ]}
       />
-      ;{/* Users List */}
+      {/* Users List */}
       <div className="space-y-4">
         {filteredUsers.map((user) => (
           <UserInfo

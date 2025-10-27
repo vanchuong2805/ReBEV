@@ -42,9 +42,6 @@ const createCart = async (req, res) => {
         const errors = [];
 
         const post = await postService.getById(post_id);
-        if (!post) {
-            errors.push(ERROR_MESSAGE.POST_NOT_FOUND);
-        }
 
         if (post.user_id === parseInt(user_id)) {
             errors.push(ERROR_MESSAGE.CREATE_CART_FAIL);

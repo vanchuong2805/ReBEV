@@ -1,4 +1,5 @@
 import favoritePostService from "../../services/favorite/favoritePostService.js";
+import postService from "../../services/post/postService.js";
 
 /** 
  * @swagger
@@ -24,10 +25,12 @@ const getFavorite = async (req, res) => {
     try {
         const userId = req.params.userId;
         const favorite = await favoritePostService.getByUserId(userId);
-        if (!favorite) {
-            return res.status(404).json({ error: "Favorite post not found" });
+        const response = { userId, favoritePosts: [] };
+        for (const items of favorite) {
+            const post = await postService.getById(items.post_id);
+            response.favoritePosts.push(post);
         }
-        res.status(200).json(favorite);
+        res.status(200).json(response);
     } catch (error) {
         console.error("Error fetching favorite posts:", error);
         res.status(500).json({ error: "Internal server error" });

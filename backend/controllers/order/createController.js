@@ -31,7 +31,8 @@ const createOrder = async (req, res) => {
             !order_type ||
             !from_contact_id ||
             !to_contact_id ||
-            !delivery_price ||
+            delivery_price === undefined ||
+            delivery_price < 0 ||
             !order_details ||
             order_details.length === 0 ||
             !total_amount
@@ -83,7 +84,6 @@ const createOrder = async (req, res) => {
 
         for (const item of order_details) {
             const post = await postService.getById(item.post_id, {
-                // lock: t.LOCK.UPDATE,
                 transaction: t,
             });
             // Validate post existence and status
@@ -137,6 +137,9 @@ const createOrder = async (req, res) => {
             redirectUrl,
             ipnUrl: process.env.INTERNAL_API_URL + '/transactions',
         };
+
+        console.log('Payment info:', process.env.INTERNAL_API_URL + '/transactions');
+
         const result = await momoService.createPayment(paymentInfo);
         if (!result.payUrl) {
             // cancel order if payment creation failed

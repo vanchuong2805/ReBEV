@@ -5,6 +5,7 @@ import orderDetailService from '../../services/order/orderDetailService.js';
 import postService from '../../services/post/postService.js';
 
 const createOrderTransaction = async (req, res) => {
+    console.log("Receive momo request");
     try {
         const { orderId, amount, resultCode, extraData } = req.body;
 
@@ -19,6 +20,7 @@ const createOrderTransaction = async (req, res) => {
             amount,
             status: resultCode,
         };
+        console.log("Creating transaction:", transactionData);
         const transaction = await transactionService.createTransaction(transactionData);
         const orderDetails = await orderDetailService.getByOrderId(order_id);
         if (resultCode !== TRANSACTION_STATUS.SUCCESS) {
