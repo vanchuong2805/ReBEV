@@ -1,11 +1,14 @@
 import React from "react";
 import Promotions from "../components/PromotionBanner";
 import FeaturedListings from "@/features/home/components/FeaturedListings.jsx";
+import { Link } from "react-router-dom";
 
 function Home() {
   return (
     <>
       <div className="container mx-auto my-8 text-center">
+        <Link to="/admin">Go to Admin</Link>
+
         <h1 className="mb-2 text-3xl font-bold text-gray-800">
           Chào mừng bạn đến với <span className="text-blue-600">ReBEV</span>
         </h1>
