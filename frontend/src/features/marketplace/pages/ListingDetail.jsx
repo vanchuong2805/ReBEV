@@ -19,6 +19,7 @@ import {
   getPosts,
   updatePostVisibility,
   addCarts,
+  getVariationValues,
 } from "../service";
 import { useUser } from "@/contexts/UserContext";
 import ChatWindow from "@/features/chat/components/ChatWindow";
@@ -45,25 +46,26 @@ const ListingDetail = () => {
   const [limit] = useState(2);
   const [hasMoreOther, setHasMoreOther] = useState(true);
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
+  const [variationValuesId, setVariationValuesId] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
-        const postRes = await getPostById(listingId)
-        const [varRes, cateRes, baseRes, userRes, contactRes,varValRes] = await Promise.all([
-          getVariations(),
-          getCategories(),
-          getBases(),
-          getUserById(postRes.user_id),
-          postRes.seller_contact_id
-            ? getContactById(postRes.seller_contact_id)
-            : Promise.resolve(null),
-          getVariationValues(),
-        ])
+        setLoading(true);
+        const postRes = await getPostById(listingId);
+        const [varRes, cateRes, baseRes, userRes, contactRes, varValRes] =
+          await Promise.all([
+            getVariations(),
+            getCategories(),
+            getBases(),
+            getUserById(postRes.user_id),
+            postRes.seller_contact_id
+              ? getContactById(postRes.seller_contact_id)
+              : Promise.resolve(null),
+            getVariationValues(),
+          ]);
 
-
-        let mediaParsed = []
+        let mediaParsed = [];
         try {
           mediaParsed =
             typeof postRes.media === "string"
@@ -83,11 +85,16 @@ const ListingDetail = () => {
         setPostContact(contactRes);
         const [otherRes, similarRes] = await Promise.all([
           getPosts({ user_id: postRes.user_id, status: 1, page: 1, limit }),
-          getPosts({ category_id: postRes.category_id, status: 1, page: 1, limit }),
-        ])
-        setOtherPosts(otherRes)
-        setSimilarPosts(similarRes)
-        setVariationValuesId(varValRes)
+          getPosts({
+            category_id: postRes.category_id,
+            status: 1,
+            page: 1,
+            limit,
+          }),
+        ]);
+        setOtherPosts(otherRes);
+        setSimilarPosts(similarRes);
+        setVariationValuesId(varValRes);
       } catch (error) {
         console.error(" Lỗi tải dữ liệu:", error);
       } finally {
@@ -100,18 +107,18 @@ const ListingDetail = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
+      <div className="flex items-center justify-center min-h-screen text-gray-500">
         Đang tải dữ liệu...
       </div>
     );
 
   if (!listing)
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-gray-600">
-        <p className="text-lg mb-4">Không tìm thấy bài đăng.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen text-gray-600">
+        <p className="mb-4 text-lg">Không tìm thấy bài đăng.</p>
         <button
           onClick={() => navigate(from)}
-          className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition"
+          className="flex items-center gap-2 text-gray-700 transition hover:text-blue-600"
         >
           <ChevronLeft className="w-5 h-5" />
           <span>Quay lại danh sách</span>
@@ -236,11 +243,11 @@ const ListingDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white border-b shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3 mx-auto max-w-7xl">
           <button
             onClick={() => navigate(from)}
-            className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium"
+            className="flex items-center gap-2 font-medium text-gray-700 hover:text-blue-600"
           >
             <ChevronLeft className="w-5 h-5" />
             <span>Quay lại danh sách</span>
@@ -249,12 +256,12 @@ const ListingDetail = () => {
       </div>
 
       {/* Body */}
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 px-4 py-6 mx-auto max-w-7xl lg:grid-cols-3">
         {/* ===== Cột trái ===== */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="space-y-4 lg:col-span-2">
           {/* Ảnh */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="relative aspect-video bg-gray-200 flex items-center justify-center">
+          <div className="overflow-hidden bg-white shadow-sm rounded-xl">
+            <div className="relative flex items-center justify-center bg-gray-200 aspect-video">
               {listing.media?.length > 0 && (
                 <img
                   src={listing.media[currentImageIndex]?.url?.replace(
@@ -262,7 +269,7 @@ const ListingDetail = () => {
                     ""
                   )}
                   alt={listing.title}
-                  className="h-full object-contain "
+                  className="object-contain h-full "
                 />
               )}
 
@@ -270,17 +277,17 @@ const ListingDetail = () => {
                 <>
                   <button
                     onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                    className="absolute p-2 text-white -translate-y-1/2 rounded-full left-4 top-1/2 bg-black/50 hover:bg-black/70"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full"
+                    className="absolute p-2 text-white -translate-y-1/2 rounded-full right-4 top-1/2 bg-black/50 hover:bg-black/70"
                   >
                     <ChevronRight className="w-6 h-6" />
                   </button>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                  <div className="absolute px-3 py-1 text-sm text-white -translate-x-1/2 rounded-full bottom-4 left-1/2 bg-black/60">
                     {currentImageIndex + 1} / {listing.media.length}
                   </div>
                 </>
@@ -289,24 +296,28 @@ const ListingDetail = () => {
           </div>
 
           {/* Mô tả */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-3">Mô tả chi tiết</h2>
+          <div className="p-6 bg-white shadow-sm rounded-xl">
+            <h2 className="mb-3 text-lg font-semibold">Mô tả chi tiết</h2>
             <div
-              className="text-gray-700 leading-relaxed prose max-w-none"
+              className="leading-relaxed prose text-gray-700 max-w-none"
               dangerouslySetInnerHTML={{ __html: listing.description }}
             />
           </div>
           {/* Thông số kỹ thuật */}
           {listing.post_details?.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold mb-4">Thông số kỹ thuật</h2>
+            <div className="p-6 bg-white shadow-sm rounded-xl">
+              <h2 className="mb-4 text-lg font-semibold">Thông số kỹ thuật</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-6">
                 {listing.post_details.map((detail) => {
-                  const v = variations.find((vv) => vv.id === detail.variation_id)
-                  const varVal = variationValuesId.find((vv) => vv.id === detail.variation_value_id)
+                  const v = variations.find(
+                    (vv) => vv.id === detail.variation_id
+                  );
+                  const varVal = variationValuesId.find(
+                    (vv) => vv.id === detail.variation_value_id
+                  );
                   return (
                     <div key={detail.variation_id}>
-                      <p className="text-gray-500 text-sm">{v?.name}</p>
+                      <p className="text-sm text-gray-500">{v?.name}</p>
                       <p className="font-medium text-gray-900">
                         {detail.custom_value !== "null"
                           ? detail.custom_value
@@ -322,48 +333,48 @@ const ListingDetail = () => {
 
         {/* ===== CỘT PHẢI ===== */}
         <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm p-6 sticky top-20">
+          <div className="sticky p-6 bg-white shadow-sm rounded-xl top-20">
             {/* Tiêu đề & giá */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="mb-1 text-2xl font-bold text-gray-900">
               {listing.title}
             </h1>
-            <p className="text-3xl font-bold text-red-600 mb-4">
+            <p className="mb-4 text-3xl font-bold text-red-600">
               {formatPrice(listing.price)}
             </p>
 
             {/* ===== NÚT HÀNH ĐỘNG / ĐÁNH GIÁ ===== */}
             {Number(listing.status) === 3 ? (
               // Nếu sản phẩm đã bán
-              <div className="text-center py-4 border border-gray-200 rounded-lg bg-gray-50">
-                <p className="text-lg font-semibold text-gray-700 mb-1">
+              <div className="py-4 text-center border border-gray-200 rounded-lg bg-gray-50">
+                <p className="mb-1 text-lg font-semibold text-gray-700">
                   🔒 Sản phẩm đã bán
                 </p>
-                <p className="text-red-600 font-bold text-xl">
+                <p className="text-xl font-bold text-red-600">
                   {formatPrice(listing.price)}
                 </p>
 
                 {/* ===== PHẦN ĐÁNH GIÁ ===== */}
                 <div className="mt-5 text-left">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="mb-3 text-lg font-semibold text-gray-900">
                     Đánh giá sản phẩm
                   </h3>
 
                   {listing.reviews?.length > 0 ? (
                     <div className="space-y-3">
                       {listing.reviews.map((review, idx) => (
-                        <div key={idx} className="border-b pb-3">
+                        <div key={idx} className="pb-3 border-b">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-medium text-gray-900">
                               {review.user_name}
                             </span>
-                            <span className="text-yellow-500 text-sm">
+                            <span className="text-sm text-yellow-500">
                               {"⭐".repeat(review.rating)}
                             </span>
                           </div>
                           <p className="text-sm text-gray-700">
                             {review.comment}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="mt-1 text-xs text-gray-400">
                             {new Date(review.created_at).toLocaleDateString(
                               "vi-VN"
                             )}
@@ -372,7 +383,7 @@ const ListingDetail = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500 italic">
+                    <p className="text-sm italic text-gray-500">
                       Chưa có đánh giá nào cho sản phẩm này.
                     </p>
                   )}
@@ -380,18 +391,18 @@ const ListingDetail = () => {
                   {/* Nếu là người mua (không phải người bán) thì cho phép viết đánh giá */}
                   {user && user.id !== seller.id && (
                     <div className="mt-4">
-                      <h4 className="font-medium text-gray-800 mb-2">
+                      <h4 className="mb-2 font-medium text-gray-800">
                         Viết đánh giá của bạn
                       </h4>
                       <textarea
-                        className="w-full border rounded-lg p-2 text-sm mb-2 focus:ring-2 focus:ring-orange-400"
+                        className="w-full p-2 mb-2 text-sm border rounded-lg focus:ring-2 focus:ring-orange-400"
                         rows={3}
                         placeholder="Nhập nội dung đánh giá..."
                       ></textarea>
                       <div className="flex justify-end">
                         <button
                           onClick={() => alert(" Đã gửi đánh giá!")}
-                          className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
+                          className="px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600"
                         >
                           Gửi đánh giá
                         </button>
@@ -408,7 +419,7 @@ const ListingDetail = () => {
                     handleHidePost(listing.id);
                     alert(" Tin đã được hiển thị lại");
                   }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition mb-3"
+                  className="w-full px-4 py-3 mb-3 font-semibold text-white transition bg-green-600 rounded-lg hover:bg-green-700"
                 >
                   Hiện tin
                 </button>
@@ -418,7 +429,7 @@ const ListingDetail = () => {
                     handleHidePost(listing.id);
                     alert(" Tin đã được ẩn");
                   }}
-                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition mb-3"
+                  className="w-full px-4 py-3 mb-3 font-semibold text-white transition bg-gray-500 rounded-lg hover:bg-gray-600"
                 >
                   Ẩn tin
                 </button>
@@ -428,15 +439,16 @@ const ListingDetail = () => {
               <>
                 <button
                   onClick={() => handleBuyNow()}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition mb-3"
+                  className="flex items-center justify-center w-full gap-2 px-4 py-3 mb-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
-                  <CreditCard className="w-5 h-5" /> {categoryInfo?.id === 1 ? 'Đặt cọc ngay' : 'Mua ngay'}
+                  <CreditCard className="w-5 h-5" />{" "}
+                  {categoryInfo?.id === 1 ? "Đặt cọc ngay" : "Mua ngay"}
                 </button>
 
                 {listing.category_id !== 1 && (
                   <button
                     onClick={() => handleAddToCart(listing.id)}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition mb-3"
+                    className="flex items-center justify-center w-full gap-2 px-4 py-3 mb-3 font-semibold text-white transition bg-orange-500 rounded-lg hover:bg-orange-600"
                   >
                     <ShoppingCart className="w-5 h-5" /> Thêm vào giỏ hàng
                   </button>
@@ -448,7 +460,7 @@ const ListingDetail = () => {
                       `/chat?buyer=${user.id}&seller=${listing.user_id}`
                     );
                   }}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition"
+                  className="flex items-center justify-center w-full gap-2 px-4 py-3 font-semibold text-white transition bg-green-600 rounded-lg hover:bg-green-700"
                 >
                   <MessageCircle className="w-5 h-5" /> Nhắn tin
                 </button>
@@ -456,7 +468,7 @@ const ListingDetail = () => {
             )}
 
             {/* ===== ĐỊA CHỈ & NGÀY ĐĂNG ===== */}
-            <div className="flex items-center gap-2 text-gray-700 text-sm mt-6 mb-2">
+            <div className="flex items-center gap-2 mt-6 mb-2 text-sm text-gray-700">
               <MapPin className="w-4 h-4 text-gray-500" />
               {listing.base_id && baseInfo ? (
                 <span>{baseInfo.name}</span>
@@ -469,21 +481,21 @@ const ListingDetail = () => {
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-gray-700 text-sm mb-4">
+            <div className="flex items-center gap-2 mb-4 text-sm text-gray-700">
               <Calendar className="w-4 h-4 text-gray-500" />
               <span>Đăng {formatDate(listing.create_at)}</span>
             </div>
 
             {/* ===== NGƯỜI BÁN ===== */}
             <div
-              className="border-t pt-4 cursor-pointer"
+              className="pt-4 border-t cursor-pointer"
               onClick={handleViewShop}
             >
               <div className="flex items-center gap-3 mb-2">
                 <img
                   src={seller.avatar || "/placeholder.jpg"}
                   alt={seller.display_name || "Seller Avatar"}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="object-cover w-12 h-12 rounded-full"
                 />
                 <div>
                   <p className="font-semibold text-gray-900">
@@ -495,8 +507,8 @@ const ListingDetail = () => {
             </div>
 
             {/* ===== LƯU Ý AN TOÀN ===== */}
-            <div className="mt-5 pt-5 border-t">
-              <h4 className="font-semibold text-gray-900 mb-2 text-sm">
+            <div className="pt-5 mt-5 border-t">
+              <h4 className="mb-2 text-sm font-semibold text-gray-900">
                 Lưu ý an toàn
               </h4>
               <ul className="text-xs text-gray-600 space-y-1.5">
@@ -511,31 +523,31 @@ const ListingDetail = () => {
       </div>
 
       {/* ===== CÁC TIN KHÁC ===== */}
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+      <div className="px-4 py-8 mx-auto space-y-10 max-w-7xl">
         {/* Tin khác của người bán */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">
+          <h2 className="mb-4 text-lg font-semibold">
             Tin rao khác của {seller.display_name || "người bán"}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
             {otherPosts.map((p) => {
               const thumbnailUrl = getThumbnailUrl(p);
               return (
                 <div
                   key={p.id}
                   onClick={() => navigate(`/marketplace/listing/${p.id}`)}
-                  className="cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden"
+                  className="overflow-hidden transition bg-white shadow-sm cursor-pointer rounded-xl hover:shadow-md"
                 >
                   <img
                     src={thumbnailUrl}
                     alt={p.title}
-                    className="w-full h-40 object-cover"
+                    className="object-cover w-full h-40"
                   />
                   <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
+                    <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
                       {p.title}
                     </h3>
-                    <p className="text-red-600 font-semibold text-sm mt-1">
+                    <p className="mt-1 text-sm font-semibold text-red-600">
                       {formatPrice(p.price)}
                     </p>
                   </div>
@@ -544,10 +556,10 @@ const ListingDetail = () => {
             })}
           </div>
           {hasMoreOther && (
-            <div className="text-center mt-6">
+            <div className="mt-6 text-center">
               <button
                 onClick={() => handleLoadMore("other")}
-                className="border border-gray-300 px-5 py-2 rounded-full text-gray-700 hover:bg-gray-100 transition"
+                className="px-5 py-2 text-gray-700 transition border border-gray-300 rounded-full hover:bg-gray-100"
               >
                 Xem thêm bài đăng
               </button>
@@ -557,26 +569,26 @@ const ListingDetail = () => {
 
         {/* Tin tương tự */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Tin đăng tương tự</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <h2 className="mb-4 text-lg font-semibold">Tin đăng tương tự</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
             {similarPosts.map((p) => {
               const thumbnailUrl = getThumbnailUrl(p);
               return (
                 <div
                   key={p.id}
                   onClick={() => navigate(`/marketplace/listing/${p.id}`)}
-                  className="cursor-pointer bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden"
+                  className="overflow-hidden transition bg-white shadow-sm cursor-pointer rounded-xl hover:shadow-md"
                 >
                   <img
                     src={thumbnailUrl}
                     alt={p.title}
-                    className="w-full h-40 object-cover"
+                    className="object-cover w-full h-40"
                   />
                   <div className="p-3">
-                    <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
+                    <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
                       {p.title}
                     </h3>
-                    <p className="text-red-600 font-semibold text-sm mt-1">
+                    <p className="mt-1 text-sm font-semibold text-red-600">
                       {formatPrice(p.price)}
                     </p>
                   </div>
@@ -585,10 +597,10 @@ const ListingDetail = () => {
             })}
           </div>
           {hasMoreSimilar && (
-            <div className="text-center mt-6">
+            <div className="mt-6 text-center">
               <button
                 onClick={() => handleLoadMore("similar")}
-                className="border border-gray-300 px-5 py-2 rounded-full text-gray-700 hover:bg-gray-100 transition"
+                className="px-5 py-2 text-gray-700 transition border border-gray-300 rounded-full hover:bg-gray-100"
               >
                 Xem thêm bài đăng
               </button>
