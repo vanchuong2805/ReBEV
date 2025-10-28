@@ -1,6 +1,7 @@
 import models from '../../models/index.js';
-import { Op } from 'sequelize';
+import { Op, Sequelize, where } from 'sequelize';
 import { sequelize } from '../../models/index.js';
+import { POST_STATUS } from '../../config/constants.js';
 const { posts } = models;
 const getPosts = async (filters = {}) => {
     // Use query to filter user, part of title / description, variation values, category, status,...
@@ -54,7 +55,7 @@ const getPosts = async (filters = {}) => {
 
     const total = await posts.count({ where });
 
-    return {data, pagination: pageSize ?  { page: pageNum, limit: pageSize, total } : null};
+    return { data, pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null };
 };
 
 const getById = async (id, options) => {
@@ -62,6 +63,27 @@ const getById = async (id, options) => {
         include: ['post_details'],
         ...options,
     });
+    return data;
+};
+
+const getCartItem = async (postId) => {
+    const data = await posts.findByPk(postId, {
+        include: [{
+            association: 'post_details',
+            where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
+        }, 'category', 'seller_contact'],
+        where: {
+            is_deleted: false,
+            is_hidden: false,
+            status: POST_STATUS.APPROVED,
+        },
+        attributes: ['id', 'user_id', 'title', 'price', "media"],
+    });
+
+    const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
+
+    data.media = image;
+
     return data;
 };
 
@@ -105,4 +127,5 @@ export default {
     deletePost,
     updateStatus,
     changeVisibility,
+    getCartItem,
 };

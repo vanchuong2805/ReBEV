@@ -20,3 +20,17 @@ export const googleLogin = async (idToken) => {
   });
   return response.data;
 };
+
+export const logoutUser = async () => {
+  const response = await axios.post(
+    `${API_BASE_URL}/users/logout`,
+    {},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }
+  );
+  return response.data;
+};

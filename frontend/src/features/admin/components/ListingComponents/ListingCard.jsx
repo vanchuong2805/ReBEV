@@ -9,8 +9,15 @@ export default function ListingCard({
   onViewDetails,
   onApprove,
   onReject,
-  onEdit,
 }) {
+  const STATUS = { PENDING: 0, APPROVED: 1, REJECTED: 2 };
+
+  const media = JSON.parse(listing.media || "[]");
+  console.log(typeof media);
+  const url = media.find((item) => item.is_thumbnail)?.url || media[0]?.url;
+  console.log(url);
+  const imageUrl = url.split(" ")[1] || null;
+  console.log(imageUrl);
   const getStatusIcon = (status) => {
     switch (status) {
       case 1:
@@ -54,7 +61,9 @@ export default function ListingCard({
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Image */}
         <div className="w-full lg:w-48 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
-          <span className="text-gray-500 text-sm"> ảnh</span>
+          <span className="text-gray-500 text-sm">
+            <img src={imageUrl} alt="" />
+          </span>
         </div>
 
         {/* Details */}
@@ -98,13 +107,6 @@ export default function ListingCard({
             </div>
           </div>
 
-          <div className="mb-3">
-            <p className="text-sm text-gray-500 mb-1">Mô tả</p>
-            <p className="text-gray-700 text-sm line-clamp-2">
-              {listing.description}
-            </p>
-          </div>
-
           <p className="text-xs text-gray-400">
             Tạo: {new Date(listing.create_at).toLocaleString("vi-VN")}
           </p>
@@ -122,15 +124,8 @@ export default function ListingCard({
             Xem
           </Button>
 
-          {listing.status == 0 && (
+          {(listing.status === 0 || listing.status === 1) && (
             <>
-              <Button
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => onApprove(listing.id)}
-              >
-                Phê duyệt
-              </Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -142,15 +137,13 @@ export default function ListingCard({
             </>
           )}
 
-          {listing.status == 1 && (
+          {(listing.status === 0 || listing.status === 2) && (
             <Button
               size="sm"
-              variant="outline"
-              className="border-blue-300 text-blue-600 hover:bg-blue-50"
-              onClick={() => onEdit(listing.id)}
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => onApprove(listing.id)}
             >
-              <Edit size={16} className="mr-1" />
-              Chỉnh sửa
+              Phê duyệt
             </Button>
           )}
         </div>

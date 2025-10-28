@@ -2,16 +2,11 @@
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
-import { Edit, Save, X } from "lucide-react";
-import { formatVND } from "../../functions/function";
-
-export default function PackageCard({
-  pkg,
-  onStartEdit,
-  onSave,
-  onCancel,
-  onChangePrice,
-}) {
+import { Edit, Save, Trash, TrashIcon, X } from "lucide-react";
+import EditPackage from "./EditPackage";
+import { useState } from "react";
+export default function PackageCard({ pkg, onDelete, onEdit }) {
+  const [isEditing, setIsEditing] = useState(false);
   return (
     <Card className="p-6">
       <div className="flex justify-between items-start">
@@ -39,60 +34,25 @@ export default function PackageCard({
               )}
             </ul>
           </div>
-
-          <div className="flex items-center space-x-4">
-            <div>
-              <p className="text-sm font-medium text-gray-700">Giá gói:</p>
-              {pkg.isEditing ? (
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="number"
-                    value={pkg.price}
-                    onChange={(e) => onChangePrice(pkg.id, e.target.value)}
-                    className="w-32"
-                  />
-                  <span className="text-sm text-gray-500">VND</span>
-                </div>
-              ) : (
-                <p className="text-xl font-bold text-blue-600">
-                  {formatVND(pkg.price)}
-                </p>
-              )}
-            </div>
-          </div>
         </div>
-
         <div className="flex space-x-2 ml-4">
-          {pkg.isEditing ? (
-            <>
-              <Button
-                onClick={() => onSave(pkg.id)}
-                size="sm"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Save size={16} />
-              </Button>
-              <Button
-                onClick={() => onCancel(pkg.id)}
-                size="sm"
-                variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50"
-              >
-                <X size={16} />
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={() => onStartEdit(pkg.id)}
-              size="sm"
-              variant="outline"
-              className="border-blue-300 text-blue-600 hover:bg-blue-50"
-            >
-              <Edit size={16} />
-            </Button>
-          )}
+          <Button
+            onClick={() => onDelete(pkg.id)}
+            className="border-red-300 text-red-600 bg-red-50 hover:bg-red-100"
+          >
+            <Trash size={16} />
+          </Button>
+          <Button
+            onClick={() => {
+              setIsEditing(true);
+            }}
+            className="border-blue-300 text-blue-600 bg-blue-50 hover:bg-blue-100"
+          >
+            <Edit size={16} />
+          </Button>
         </div>
       </div>
+      {isEditing && <EditPackage pkg={pkg} onEdit={onEdit} />}
     </Card>
   );
 }

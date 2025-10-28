@@ -19,6 +19,7 @@ const RegisterForm = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { login } = useUser();
 
   const handleChange = (e) => {
@@ -28,6 +29,8 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
+    setLoading(true);
     const newErrors = validateRegister(formData);
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
@@ -51,6 +54,8 @@ const RegisterForm = () => {
     } catch (error) {
       console.error("Error registering user:", error);
       toast.error("Số điện thoại đã được sử dụng!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -158,9 +163,10 @@ const RegisterForm = () => {
 
         <button
           type="submit"
+          disabled={loading}
           className="w-full py-2 mt-5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
         >
-          Đăng Ký
+          {loading ? "Đang đăng ký..." : "Đăng Ký"}
         </button>
 
         {/* social */}

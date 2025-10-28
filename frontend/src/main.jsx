@@ -13,7 +13,6 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { FavoriteProvider } from "@/contexts/FavoritesContexts.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
     <BrowserRouter>
       <CartProvider>
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -29,5 +28,4 @@ createRoot(document.getElementById("root")).render(
       </CartProvider>
       <Toaster position="top-center" richColors closeButton />
     </BrowserRouter>
-  </React.StrictMode>
 );

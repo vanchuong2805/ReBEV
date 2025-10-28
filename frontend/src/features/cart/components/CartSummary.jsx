@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export default function CartSummary({
-  selectedCount,
   total,
   onSelectAll,
   isAllSelected,
@@ -41,7 +40,7 @@ export default function CartSummary({
           <div className="flex items-center gap-4">
             <div>
               <span className="text-gray-600">
-                Tổng cộng ({selectedCount} sản phẩm):
+                Tạm tính:
               </span>
               <span className="ml-2 text-2xl font-bold text-red-600">
                 {formatCurrency(total)}
@@ -50,12 +49,12 @@ export default function CartSummary({
             <Link
               to="/checkout"
               className={`px-8 py-3 rounded-lg font-semibold text-white transition-colors ${
-                selectedCount > 0
+                total > 0
                   ? "bg-blue-600 hover:bg-blue-700"
                   : "bg-gray-400 cursor-not-allowed"
               }`}
               // Vô hiệu hóa nút nếu không có sản phẩm nào được chọn
-              onClick={(e) => selectedCount === 0 && e.preventDefault()}
+              onClick={(e) => total === 0 && e.preventDefault()}
             >
               Thanh toán
             </Link>

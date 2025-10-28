@@ -12,7 +12,10 @@ const getOrders = async (options) => {
                 limit: 1,
                 order: [['create_at', 'DESC']],
             },
-            'order_details',
+            {
+                association: 'order_details',
+                include: ['post'],
+            },
         ],
         where: options,
     });
