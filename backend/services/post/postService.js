@@ -71,14 +71,18 @@ const getCartItem = async (postId) => {
         include: [{
             association: 'post_details',
             where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
-        }, 'category'],
+        }, 'category', 'seller_contact'],
         where: {
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
         },
-        attributes: ['id', 'user_id', 'title', 'price', "seller_contact_id"],
+        attributes: ['id', 'user_id', 'title', 'price', "media"],
     });
+
+    const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
+
+    data.media = image;
 
     return data;
 };
