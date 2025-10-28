@@ -7,7 +7,7 @@ export default function MemberLayout() {
   return (
     <>
       <Header />
-      <main className="min-h-screen pt-10 ">
+      <main className="min-h-screen">
         <Outlet />
       </main>
       <ScrollToTop />
