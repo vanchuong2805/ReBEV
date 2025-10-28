@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Router } from "react-router";
+import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
 import { ROUTES } from "../constants/routes.js";
 import Home from "@/features/home/pages/Home";
@@ -24,6 +24,11 @@ import AdminDashboard from "../features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
 import ShopPage from "@/features/shop/pages/ShopPage.jsx";
 import ChatPage from "@/features/chat/pages/ChatPage.jsx";
+import UserManagement from "@/features/admin/pages/UserManagement.jsx";
+import ReportsStatistics from "@/features/admin/pages/ReportsStatistics.jsx";
+import ListingManagement from "@/features/admin/pages/ListingManagement.jsx";
+import SystemFeesManagement from "@/features/admin/pages/SystemFeesManagement.jsx";
+import TransactionManagement from "@/features/admin/pages/TransactionManagement.jsx";
 
 export default function AppRoutes() {
   return (
@@ -56,7 +61,13 @@ export default function AppRoutes() {
         </Route>
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />
-        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
+        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />}>
+          <Route path="users" element={<UserManagement />} />
+          <Route index element={<ReportsStatistics />} />
+          <Route path="listings" element={<ListingManagement />} />
+          <Route path="fees" element={<SystemFeesManagement />} />
+          <Route path="transactions" element={<TransactionManagement />} />
+        </Route>
         <Route path={"chat"} element={<ChatPage />} />
       </Routes>
     </>

@@ -11,6 +11,10 @@ export const ROUTES = {
   FAIL: "/checkout/fail",
   ADMIN: {
     DASHBOARD: "/admin",
+    USERS: "/admin/users",
+    LISTINGS: "/admin/listings",
+    FEES: "/admin/fees",
+    TRANSACTIONS: "/admin/transactions",
   },
   NOT_FOUND: "*",
 };
