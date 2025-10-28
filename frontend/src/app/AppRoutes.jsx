@@ -20,7 +20,7 @@ import TransactionsSection from "@/features/profile/components/transactions/Tran
 import SettingsPage from "@/features/profile/components/settings/SettingsPage.jsx";
 import FavoritesList from "@/features/profile/components/favorites/FavoritesList.jsx";
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
-import AdminDashboard from "@/features/admin/pages/AdminPage.jsx";
+import AdminDashboard from "../features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
 import ShopPage from "@/features/shop/pages/ShopPage.jsx";
 import ChatPage from "@/features/chat/pages/ChatPage.jsx";
