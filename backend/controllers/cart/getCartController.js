@@ -47,7 +47,7 @@ const getCart = async (req, res) => {
                 groupedCart[key] = {
                     seller_id,
                     seller_display_name,
-                    seller_contact_id,
+                    seller_contact: post.seller_contact,
                     items: [],
                 };
             }
@@ -60,6 +60,7 @@ const getCart = async (req, res) => {
                 deposit_rate: post.category.deposit_rate,
                 commission_rate: post.category.commission_rate,
                 is_deposit: post.category.is_deposit,
+                media: post.media,
             });
         }
         const cartItems = Object.values(groupedCart);
