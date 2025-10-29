@@ -147,11 +147,34 @@ const handleCompletedStatus = async (order, t) => {
     }
 };
 
+const handleCustomerCancelledStatus = async (order, t) => {
+     // Restore post statuses
+    const orderDetails = await orderDetailService.getByOrderId(order.id);
+    for (const item of orderDetails) {
+        await postService.updateStatus(item.post_id, POST_STATUS.APPROVED);
+    }
+    // Issue refund to customer
+    await userService.deposit(order.seller_id, order.total_amount, { transaction: t });
+    // Record refund transaction
+    await transactionService.createTransaction(
+        {
+            receiver_id: order.seller_id,
+            amount: order.total_amount,
+            transaction_type: TRANSACTION_TYPE.RELEASE,
+            related_order_id: order.id,
+            status: TRANSACTION_STATUS.SUCCESS,
+        },
+        { transaction: t }
+    );
+}
+
 const mapStatusHandlers = {
     [ORDER_STATUS.CANCELLED]: handleCancelledStatus,
     [ORDER_STATUS.DELIVERING]: handleDeliveringStatus,
     [ORDER_STATUS.COMPLETED]: handleCompletedStatus,
     [ORDER_STATUS.DELIVERED]: handleDeliveredStatus,
+    [ORDER_STATUS.CUSTOMER_CANCELLED]: handleCustomerCancelledStatus,
+    [ORDER_STATUS.SELLER_CANCELLED]: handleCancelledStatus,
 };
 
 const handleStatus = async (order, status, t) => {

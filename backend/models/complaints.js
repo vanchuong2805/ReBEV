@@ -1,68 +1,74 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('complaints', {
-    id: {
-      autoIncrement: true,
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true
-    },
-    user_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
-    },
-    order_detail_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: 'order_detail',
-        key: 'id'
-      }
-    },
-    conplaint_type: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    description: {
-      type: DataTypes.STRING(500),
-      allowNull: false
-    },
-    complaint_status: {
-      type: DataTypes.TINYINT,
-      allowNull: false,
-      defaultValue: 0
-    },
-    media: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    create_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.fn('getdate')
-    },
-    update_at: {
-      type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: Sequelize.Sequelize.fn('getdate')
-    }
-  }, {
-    sequelize,
-    tableName: 'complaints',
-    schema: 'dbo',
-    timestamps: false,
-    indexes: [
-      {
-        name: "PK__complain__3213E83F1AE29B98",
-        unique: true,
-        fields: [
-          { name: "id" },
-        ]
-      },
-    ]
-  });
+module.exports = function (sequelize, DataTypes) {
+    return sequelize.define(
+        'complaints',
+        {
+            id: {
+                autoIncrement: true,
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                primaryKey: true,
+            },
+            user_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'users',
+                    key: 'id',
+                },
+            },
+            order_detail_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'order_detail',
+                    key: 'id',
+                },
+            },
+            conplaint_type: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            description: {
+                type: DataTypes.STRING(500),
+                allowNull: false,
+            },
+            complaint_status: {
+                type: DataTypes.TINYINT,
+                allowNull: false,
+                defaultValue: 0,
+            },
+            media: {
+                type: DataTypes.TEXT,
+                allowNull: true,
+            },
+            create_at: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                defaultValue: Sequelize.Sequelize.fn('getdate'),
+            },
+            moderator: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+            },
+            update_at: {
+                type: DataTypes.DATE,
+                allowNull: true,
+                defaultValue: Sequelize.Sequelize.fn('getdate'),
+            },
+        },
+        {
+            sequelize,
+            tableName: 'complaints',
+            schema: 'dbo',
+            timestamps: false,
+            indexes: [
+                {
+                    name: 'PK__complain__3213E83F1AE29B98',
+                    unique: true,
+                    fields: [{ name: 'id' }],
+                },
+            ],
+        }
+    );
 };
