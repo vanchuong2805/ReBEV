@@ -1,120 +1,5 @@
-// import { useEffect, useState } from "react";
-// import { useNavigate, Link } from "react-router";
-// import { useCart } from "@/contexts/CartContext";
-// import { createOrder, getDeliveryFees } from "../service";
-// import CheckoutBar from "../components/CheckoutBar";
-// import Header from "@/components/common/Header";
-
-// export default function Checkout() {
-//   const { items, selectedTotal, clear } = useCart();
-//   const [loading, setLoading] = useState(false);
-//   const [shippingFee, setShippingFee] = useState(0);
-//   const navigate = useNavigate();
-//   const selectedItems = items.filter((it) => it.selected);
-
-//   const placeOrder = async () => {
-//     try {
-//       setLoading(true);
-//       const res = await createOrder();
-//       clear();
-//       navigate(
-//         `/checkout/success?orderId=${res.orderId}&total=${selectedTotal}`,
-//         {
-//           replace: true,
-//         }
-//       );
-//     } catch (error) {
-//       console.error("Failed to place order:", error);
-//       navigate("/checkout/fail", { replace: true });
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   useEffect(() => {
-//     const fetchShippingFee = async () => {
-//       try {
-//         const weight = selectedItems?.reduce(
-//           (sum, item) => sum + (item.weight || 0),
-//           0
-//         );
-//         const fee = await getDeliveryFees({ weight });
-//         setShippingFee(fee);
-//       } catch (error) {
-//         console.error("Failed to fetch shipping fee:", error);
-//         setShippingFee(0);
-//       }
-//     };
-//     fetchShippingFee();
-//   }, [selectedItems]);
-
-//   return (
-//     <>
-//       <Header />
-//       <div className="grid w-11/12 max-w-6xl gap-6 p-6 mx-auto md:w-4/5">
-//         {/* Top: items */}
-//         {selectedItems.length === 0 ? (
-//           <div className="p-6 text-center bg-white rounded-md shadow-sm">
-//             <p className="text-gray-500">
-//               Giỏ hàng trống – không thể thanh toán
-//             </p>
-//             <Link to="/" className="inline-block mt-2 text-blue-600 underline">
-//               Quay lại mua sắm
-//             </Link>
-//           </div>
-//         ) : (
-//           <>
-//             {/* Top: items */}
-//             <div>
-//               <h1 className="text-xl font-semibold">Thanh toán</h1>
-//               <div className="bg-white divide-y rounded-lg shadow-sm">
-//                 {selectedItems.map((item) => (
-//                   <div
-//                     key={item.post_id}
-//                     className="flex items-center gap-4 p-3"
-//                   >
-//                     {/* Khung ảnh: không phóng to/cắt, hỗ trợ dọc/ngang */}
-//                     <div className="flex items-center justify-center w-16 h-16 overflow-hidden rounded bg-gray-50">
-//                       <img
-//                         src={item.image}
-//                         alt={item.title}
-//                         className="object-contain max-w-full max-h-full"
-//                         loading="lazy"
-//                       />
-//                     </div>
-
-//                     <div className="flex-1">
-//                       <p className="font-medium line-clamp-2">{item.title}</p>
-//                       <p className="text-sm text-red-500">
-//                         {(item.price || 0).toLocaleString("vi-VN")}₫
-//                       </p>
-//                     </div>
-//                     <div className="font-medium text-red-500">
-//                       {(item.price || 0).toLocaleString("vi-VN")}₫
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-
-//             {/* Bottom: summary */}
-//             <div className="px-4 py-3">
-//               <CheckoutBar
-//                 subtotal={selectedTotal}
-//                 shipping={shippingFee}
-//                 onPlaceOrder={placeOrder}
-//                 loading={loading}
-//               />
-//             </div>
-//           </>
-//         )}
-//       </div>
-//     </>
-//   );
-// }
-
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, Link, redirect } from "react-router";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder, getDeliveryFees } from "../service";
 import CheckoutBar from "../components/CheckoutBar";
@@ -134,12 +19,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import GroupCheckout from "../components/GroupCheckout";
+import { from } from "@apollo/client";
 
 export default function CheckoutPage() {
-  const { items, selectedTotal, clear, selectedGroups } = useCart();
+  const { selectedTotal, selectedGroups } = useCart();
+  const [paymentGroup, setPaymentGroup] = useState({});
   const [loading, setLoading] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
-
   const [addressOpen, setAddressOpen] = useState(false);
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(false);
@@ -148,47 +35,21 @@ export default function CheckoutPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const [fromAddr, setFromAddr] = useState({
-    from_district_id: undefined,
-    from_ward_code: undefined,
-  });
-
   const navigate = useNavigate();
 
-  const selectedItems = useMemo(
-    () => items.filter((it) => it.selected),
-    [items]
-  );
+  useEffect(() => {
+    const totalDeliveryFee = Object.values(paymentGroup).reduce(
+      (acc, curr) => acc + curr.delivery_price,
+      0
+    );
+    console.log(totalDeliveryFee);
+    setShippingFee(totalDeliveryFee);
+  }, [paymentGroup]);
 
   // lấy user id (tuỳ app của bạn)
   const userRaw =
     typeof window !== "undefined" ? localStorage.getItem("user") : null;
   const user = userRaw ? JSON.parse(userRaw) : null;
-
-  // Helper: gom giỏ theo seller để gửi cho BE
-  const buildSellerGroups = (list) => {
-    const map = new Map();
-    for (const it of list) {
-      if (!map.has(it.seller_id)) {
-        map.set(it.seller_id, {
-          seller_id: it.seller_id,
-          seller_contact_id: it.seller_contact_id ?? null,
-          seller_display_name: it.seller_display_name ?? "",
-          posts: [],
-        });
-      }
-      map.get(it.seller_id).posts.push({
-        post_id: it.post_id,
-        user_id: it.user_id,
-        title: it.title,
-        weight: it.weight,
-        deposit_rate: it.deposit_rate,
-        commission_rate: it.commission_rate,
-        is_deposit: !!it.is_deposit,
-      });
-    }
-    return Array.from(map.values());
-  };
 
   // mở modal -> load contact từ DB
   useEffect(() => {
@@ -214,133 +75,41 @@ export default function CheckoutPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addressOpen, user?.id]);
 
-  // Lấy địa chỉ người bán (from_*) từ seller_contact_id của item đầu tiên (nếu có)
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      // không có item nào => reset
-      if (!selectedItems.length) {
-        if (!cancelled)
-          setFromAddr({
-            from_district_id: undefined,
-            from_ward_code: undefined,
-          });
-        return;
-      }
-
-      try {
-        const sellerContact = await getContactById(
-          selectedItems[0].seller_contact_id
-        );
-        if (cancelled) return;
-        console.log(sellerContact);
-        // API của bạn trả về đúng các field dưới:
-        // { district_id: 1774, ward_code: "430403", ... }
-        const from_district_id = Number(sellerContact?.district_id);
-        const from_ward_code = sellerContact?.ward_code
-          ? String(sellerContact.ward_code)
-          : undefined;
-
-        // Log nhanh kiểm tra
-        console.log("[sellerContact]", sellerContact);
-        console.log("[from_*]", { from_district_id, from_ward_code });
-
-        setFromAddr({ from_district_id, from_ward_code });
-      } catch (e) {
-        console.error("Load seller from-address failed:", e);
-        if (!cancelled)
-          setFromAddr({
-            from_district_id: undefined,
-            from_ward_code: undefined,
-          });
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedItems]);
-
-  // tính phí ship khi danh sách sp hoặc địa chỉ thay đổi (dùng đủ from_* to_*)
-  useEffect(() => {
-    const fetchFee = async () => {
-      try {
-        const weight = selectedItems.reduce((s, it) => s + (it.weight || 0), 0);
-        if (!weight || !selectedContact) {
-          setShippingFee(0);
-          return;
-        }
-        console.log(fromAddr);
-        const fee = await getDeliveryFees({
-          weight,
-          to_district_id: selectedContact.district_id,
-          to_ward_code: selectedContact.ward_code,
-          from_district_id: fromAddr.from_district_id,
-          from_ward_code: fromAddr.from_ward_code,
-        });
-        console.log(fromAddr.from_district_id, fromAddr.from_ward_code);
-        setShippingFee(fee || 0);
-      } catch (e) {
-        console.error("getDeliveryFees failed:", e);
-        setShippingFee(0);
-      }
-    };
-    fetchFee();
-  }, [selectedItems, selectedContact, fromAddr]);
-
   const placeOrder = async () => {
-    try {
-      if (!selectedItems.length) {
-        alert("Giỏ hàng trống.");
-        return;
-      }
-      if (!selectedContact) {
-        alert("Vui lòng chọn địa chỉ nhận hàng.");
-        return;
-      }
+    // selectedGroups, selectedContact, paymentGroup
+    const paymentInfo = {
+      total_amount: selectedTotal + shippingFee,
+      redirectUrl: `${window.location.origin}`,
+    };
 
-      setLoading(true);
-
-      const groups = buildSellerGroups(selectedItems);
-      const totalWeight = selectedItems.reduce(
-        (s, it) => s + (it.weight || 0),
-        0
-      );
-
-      // Tạo payload gửi BE (object)
-      const orderData = {
-        buyer_contact_id: selectedContact.id, // id địa chỉ người mua
-        shipping_fee: shippingFee || 0,
-        subtotal: selectedTotal || 0,
-        total: (selectedTotal || 0) + (shippingFee || 0),
-        payment_method: "momo",
-        note: "",
-
-        // GHN fields:
-        to_district_id: selectedContact.district_id,
-        to_ward_code: selectedContact.ward_code,
-        from_district_id: fromAddr.from_district_id,
-        from_ward_code: fromAddr.from_ward_code,
-        weight: totalWeight,
-
-        // nhóm theo seller + posts đúng format bạn yêu cầu
-        groups,
+    const orders = selectedGroups.map((group) => {
+      const key = `${group.seller_id}_${group.seller_contact.id}`;
+      const weight = paymentGroup[key]?.weight || 0;
+      const delivery_price = paymentGroup[key]?.delivery_price || 0;
+      const appointment_time = paymentGroup[key]?.appointment_time || "";
+      const total_amount = paymentGroup[key]?.total_amount || 0;
+      const order_details = group.items.map((item) => ({
+        post_id: item.post_id,
+        price: item.price,
+        deposit_amount: item.price * item.deposit_rate,
+        commission_amount: item.commission_rate * item.price,
+        appointment_time,
+      }));
+      return {
+        seller_id: group.seller_id,
+        order_type: 1,
+        from_contact_id: group.seller_contact.id,
+        to_contact_id: selectedContact.id,
+        weight,
+        delivery_price,
+        total_amount,
+        order_details,
       };
-
-      const res = await createOrder(orderData);
-
-      clear();
-      navigate(
-        `/checkout/success?orderId=${res.orderId || ""}&total=${selectedTotal}`,
-        { replace: true }
-      );
-    } catch (error) {
-      console.error("Failed to place order:", error);
-      navigate("/checkout/fail", { replace: true });
-    } finally {
-      setLoading(false);
-    }
+    });
+    const orderData = { orders, paymentInfo };
+    const { payUrl } = await createOrder(orderData);
+    console.log(payUrl);
+    window.location.href = payUrl;
   };
 
   // ==== handlers cho modal danh sách địa chỉ ====
@@ -437,11 +206,13 @@ export default function CheckoutPage() {
           <div className="bg-white divide-y rounded-lg shadow-sm">
             {console.log(selectedGroups)}
             {selectedGroups.map((group) => (
-              <div key={group.seller_id} className="p-3">
-                <h2 className="mb-2 font-medium">
-                  {group.seller_display_name}
-                </h2>
-              </div>
+              <GroupCheckout
+                key={group.seller_id}
+                groupItems={group}
+                customerContact={selectedContact}
+                setPaymentGroup={setPaymentGroup}
+                paymentGroup={paymentGroup}
+              />
             ))}
           </div>
         </div>
@@ -453,6 +224,9 @@ export default function CheckoutPage() {
             shipping={shippingFee}
             onPlaceOrder={placeOrder}
             loading={loading}
+            customerContact={selectedContact}
+            groupItems={selectedGroups}
+            paymentGroup={paymentGroup}
           />
         </div>
       </div>
@@ -483,7 +257,9 @@ export default function CheckoutPage() {
                 return (
                   <div
                     key={c.id}
-                    onClick={() => setSelectedContact(c)}
+                    onClick={() => {
+                      setSelectedContact(c);
+                    }}
                     className={`cursor-pointer rounded-lg border p-3 transition ${
                       active ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
                     }`}
