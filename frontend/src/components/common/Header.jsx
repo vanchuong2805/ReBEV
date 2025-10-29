@@ -61,8 +61,7 @@ const Header = () => {
   const [provError, setProvError] = useState(null);
   const [wardError, setWardError] = useState(null);
 
-  const { items } = useCart();
-  const itemCount = items.length;
+  const { cartItemCount } = useCart();
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     (async () => {
@@ -472,14 +471,14 @@ const Header = () => {
                   className="relative inline-flex items-center justify-center w-10 h-10 text-white rounded-full hover:bg-white/20"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {itemCount > 0 && (
+                  {cartItemCount > 0 && (
                     <span
-                      aria-label={`Có ${itemCount} mặt hàng trong giỏ`}
+                      aria-label={`Có ${cartItemCount} mặt hàng trong giỏ`}
                       className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1.5
                  rounded-full bg-red-600 text-white text-[10px] font-semibold
                  flex items-center justify-center leading-none shadow"
                     >
-                      {itemCount > 99 ? "99+" : itemCount}
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
                     </span>
                   )}
                 </Link>
