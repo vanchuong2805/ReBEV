@@ -15,7 +15,7 @@ const changeStatusController = async (req, res) => {
         if (!allowed || !allowed?.includes(post.status)) {
             return res.status(400).json({ message: 'Cannot change post status.'});
         }
-        await postService.updateStatus(postId, status);
+        await postService.updateStatus(postId, { status , moderator: req.user.id });
         res.status(200).json({ message: 'Post status updated successfully.' });
     } catch (error) {
         res.status(500).json({ message: 'Server error.'});
