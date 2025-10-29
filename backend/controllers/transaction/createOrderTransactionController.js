@@ -16,7 +16,6 @@ const createOrderTransaction = async (req, res) => {
         const { resultCode, extraData } = req.body;
 
         const ordersList = JSON.parse(extraData);
-        console.log(ordersList);
         for (const order of ordersList) {
             const transactionData = {
                 sender_id: order.customer_id,
@@ -29,7 +28,6 @@ const createOrderTransaction = async (req, res) => {
                 amount: order.total_amount,
                 status: resultCode,
             };
-            console.log('Creating transaction:', transactionData);
             // Create transaction
 
             await transactionService.createTransaction(transactionData);
@@ -40,8 +38,9 @@ const createOrderTransaction = async (req, res) => {
                     order_id: order.id,
                     status: ORDER_STATUS.FAIL_PAY,
                 });
+
                 for (const item of orderDetails) {
-                    await postService.updateStatus(item.post_id, POST_STATUS.APPROVED);
+                    await postService.updateStatus(item.post_id, { status: POST_STATUS.APPROVED });
                 }
             } else {
                 await orderStatusService.updateOrderStatus({
