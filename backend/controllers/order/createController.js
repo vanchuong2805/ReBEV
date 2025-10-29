@@ -13,15 +13,15 @@ const createOrder = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { orders, paymentInfo } = req.body;
+        console.log("check", orders)
         if (!orders || orders.length === 0 || !paymentInfo) {
             return res.status(400).json({ error: 'Missing required fields of an order' });
         }
         const customer_id = req.user.id;
         let order_id = '';
         const orderLists = [];
-        console.log(orders);
         for (const orderData of orders) {
-            console.log(orderData);
+            console.log("check", orderData);
             const {
                 seller_id,
                 order_type,
