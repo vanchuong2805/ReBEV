@@ -19,7 +19,9 @@ const createOrder = async (req, res) => {
         const customer_id = req.user.id;
         let order_id = '';
         const orderLists = [];
+        console.log(orders);
         for (const orderData of orders) {
+            console.log(orderData);
             const {
                 seller_id,
                 order_type,
