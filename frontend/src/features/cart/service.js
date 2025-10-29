@@ -9,6 +9,7 @@ export const getCartItems = async (user_id) => {
       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
     },
   });
+  console.log("Cart items fetched successfully:", response.data);
   return response.data;
 };
 

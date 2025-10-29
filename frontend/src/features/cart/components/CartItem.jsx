@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import {deleteCartItem} from "../service";
+import { deleteCartItem } from "../service";
 const formatCurrency = (amount) => {
   return (amount || 0).toLocaleString("vi-VN", {
     style: "currency",
@@ -22,7 +22,7 @@ export default function CartItem({ item }) {
       {/* Thông tin sản phẩm */}
       <div className="flex items-center flex-grow gap-4 ml-4">
         <img
-          src={item.image}
+          src={item.media.split(" ")[1]}
           alt={item.title}
           className="object-cover w-20 h-20 border rounded-md"
         />

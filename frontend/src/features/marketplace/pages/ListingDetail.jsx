@@ -23,6 +23,7 @@ import {
 } from "../service";
 import { useUser } from "@/contexts/UserContext";
 import ChatWindow from "@/features/chat/components/ChatWindow";
+import { useCart } from "@/contexts/CartContext";
 
 const ListingDetail = () => {
   const { user } = useUser();
@@ -30,7 +31,7 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/profile?tab=listings";
-
+  const { addToCart } = useCart();
   const [listing, setListing] = useState(null);
   const [variations, setVariations] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -155,7 +156,7 @@ const ListingDetail = () => {
     }
 
     try {
-      await addCarts(user.id, postId);
+      await addToCart(user.id, postId);
       alert(`🛒 Đã thêm "${listing.title}" vào giỏ hàng thành công!`);
     } catch (error) {
       console.error(" Lỗi khi thêm vào giỏ hàng:", error);
