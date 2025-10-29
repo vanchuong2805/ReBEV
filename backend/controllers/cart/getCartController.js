@@ -36,12 +36,10 @@ const getCart = async (req, res) => {
             const post = await postService.getCartItem(cart.post_id);
             if (!post) continue;
             const seller_id = post.user_id;
-            const seller_contact_id = post.seller_contact_id;
             const seller = await userService.getUser(seller_id);
             const seller_display_name = seller.display_name;
 
-            const key = `${seller_id}-${seller_contact_id}`;
-
+            const key = `${seller_id}-${post.seller_contact.id}`;
 
             if (!groupedCart[key]) {
                 groupedCart[key] = {
