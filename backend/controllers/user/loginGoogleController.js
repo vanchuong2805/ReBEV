@@ -3,6 +3,7 @@ import userService from '../../services/user/userService.js';
 import verifyGoogleToken from '../../services/auth/googleService.js';
 import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
+import jwtService from '../../services/auth/jwtService.js';
 
 /**
  * @swagger
