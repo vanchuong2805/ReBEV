@@ -23,6 +23,8 @@ import ListingActions from "../components/ListingActions";
 import ListingSellerInfo from "../components/ListingSellerInfo";
 import ListingSafetyTips from "../components/ListingSafetyTips";
 import RelatedListings from "../components/RelatedListings";
+import ChatWindow from "@/features/chat/components/ChatWindow";
+import { useCart } from "@/contexts/CartContext";
 
 const ListingDetail = () => {
   const { user } = useUser();
@@ -30,7 +32,7 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/profile?tab=listings";
-
+  const { addToCart } = useCart();
   const [listing, setListing] = useState(null);
   const [variations, setVariations] = useState([]);
   const [categories, setCategories] = useState([]);

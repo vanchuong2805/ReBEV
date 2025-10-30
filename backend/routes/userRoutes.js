@@ -19,7 +19,7 @@ const userRouter = express.Router();
 
 /**
  * @swagger
- * tags:S
+ * tags:
  *   name: Users
  *   description: API quản lý người dùng
  */

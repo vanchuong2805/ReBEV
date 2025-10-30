@@ -1,6 +1,6 @@
 import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
-import userService from '../../services/user/userService.js'
+import userService from '../../services/user/userService.js';
 import bcrypt from 'bcrypt';
 import jwtService from '../../services/auth/jwtService.js';
 
@@ -36,7 +36,7 @@ import jwtService from '../../services/auth/jwtService.js';
 
 const loginUserByPhone = async (req, res) => {
     try {
-        const { phone, password } = req.body
+        const { phone, password } = req.body;
         const errors = [];
 
         if (!phone) {
@@ -48,7 +48,7 @@ const loginUserByPhone = async (req, res) => {
 
         if (errors.length > 0) {
             return res.status(400).json({
-                errors: errors
+                errors: errors,
             });
         }
 
@@ -77,14 +77,15 @@ const loginUserByPhone = async (req, res) => {
             avatar: accountUser.avatar,
             package_id: accountUser.package_id,
             package_start: accountUser.package_start,
-        }
+        };
 
         const accessToken = jwtService.createAccessToken(payload);
         const refreshToken = await jwtService.createRefreshToken({ userId: accountUser.id });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: true
+            secure: false,
+            sameSite: 'none',
         });
 
         const { password: pwd, ...userWithoutPassword } = accountUser.dataValues;
@@ -94,13 +95,12 @@ const loginUserByPhone = async (req, res) => {
             user: userWithoutPassword,
             accessToken,
         });
-
     } catch (error) {
         console.error(ERROR_MESSAGE.LOGIN_FAIL, error);
         res.status(400).json({
-            error: error.message
-        })
+            error: error.message,
+        });
     }
-}
+};
 
 export default loginUserByPhone;

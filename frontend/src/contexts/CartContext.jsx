@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getCartItems } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
+import { addCarts } from "@/features/marketplace/service";
 
 const CartCtx = createContext();
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
+  const [refresh, setRefresh] = useState(0);
 
   function getThumbnail(media) {
     // media là chuỗi JSON: [{ url: "image https://...", is_thumbnail: true }, ...]
@@ -36,7 +38,12 @@ export function CartProvider({ children }) {
       }
     };
     fetchData();
-  }, []);
+  }, [refresh]);
+
+  const addToCart = async (userId, postId) => {
+    await addCarts(userId, postId);
+    setRefresh((prev) => prev + 1);
+  };
 
   // --- LOGIC MỚI CHO VIỆC LỰA CHỌN SẢN PHẨM ---
 
@@ -121,17 +128,25 @@ export function CartProvider({ children }) {
     [items]
   );
 
+  // Tinh so luong san pham trong gio hang
+  const cartItemCount = useMemo(
+    () => items.reduce((count, p) => count + p.items.length, 0),
+    [items]
+  );
+
   // Cung cấp các hàm và state mới ra ngoài context
   const value = {
     items,
     selectedGroups,
     selectedTotal,
     isAllSelected,
+    cartItemCount,
     isGroupSelected,
     toggleSelection,
     toggleAllSelection,
     clearSelected,
     toggleGroupSelection,
+    addToCart,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

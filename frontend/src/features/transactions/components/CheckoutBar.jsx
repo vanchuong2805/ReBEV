@@ -10,6 +10,9 @@ export default function CheckoutBar({
   shipping = 0,
   onPlaceOrder,
   loading = false,
+  customerContact,
+  groupItems,
+  paymentGroup,
 }) {
   const total = subtotal + shipping;
 
@@ -47,10 +50,15 @@ export default function CheckoutBar({
                 {currency(total)}
               </div>
             </div>
-
             <button
               onClick={onPlaceOrder}
-              disabled={loading}
+              disabled={
+                loading ||
+                !customerContact ||
+                !groupItems ||
+                groupItems.length === 0 ||
+                Object.keys(paymentGroup).length !== groupItems.length
+              }
               className="flex-shrink-0  min-w-[160px] rounded-md bg-blue-500 px-6 py-2.5 text-white shadow hover:bg-blue-600 disabled:opacity-60"
             >
               {loading ? "Đang xử lý..." : "Đặt hàng"}

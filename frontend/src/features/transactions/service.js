@@ -13,6 +13,31 @@ export const createOrder = async (orderData) => {
   return response.data;
 };
 
+export const getAppointmentTimes = async ({
+  from_district_id,
+  to_district_id,
+  from_ward_code,
+  to_ward_code,
+}) => {
+  const response = await axios.post(
+    `https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/leadtime`,
+    {
+      from_district_id,
+      to_district_id,
+      from_ward_code,
+      to_ward_code,
+      service_id: 53322,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Token: import.meta.env.VITE_GHN_TOKEN,
+      },
+    }
+  );
+  return response.data;
+};
+
 export const getDeliveryFees = async ({
   from_district_id,
   to_district_id,
