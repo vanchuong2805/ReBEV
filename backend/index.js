@@ -12,7 +12,7 @@ async function run() {
     app.use(express.json());
     app.use(
         cors({
-            origin: ['http://localhost:5173', 'https://your-frontend.up.railway.app'],
+            origin: ['http://localhost:5173', 'https://re-bev.vercel.app'],
             credentials: true,
         })
     );
