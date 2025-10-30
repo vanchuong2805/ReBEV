@@ -84,11 +84,7 @@ const deposit = async (userId, amount, options) => {
     return user;
 };
 
-const updateUser = async (id, { 
-    display_name, 
-    email, 
-    phone
- }) => {
+
 const withdraw = async (userId, amount, options) => {
     const user = await users.findByPk(userId);
     if (!user) throw new Error('User not found');
