@@ -62,10 +62,10 @@ const createUser = async ({
 };
 
 const createStaff = async ({
-     display_name, 
-     email, 
-     phone 
-    }) => {
+    display_name,
+    email,
+    phone
+}) => {
     const data = await users.create({
         display_name: display_name || "",
         email,
@@ -107,8 +107,8 @@ const updateUser = async (id, { display_name, email, phone }) => {
     return data;
 };
 
-const checkPassword = async (id, { 
-    password 
+const checkPassword = async (id, {
+    password
 }) => {
     const data = await users.findByPk(id)
     if (!data) {
@@ -119,8 +119,8 @@ const checkPassword = async (id, {
 }
 
 const updatePassword = async (id, {
-     password 
-    }) => {
+    password
+}) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.update({
         password: hashedPassword,
@@ -133,9 +133,9 @@ const updatePassword = async (id, {
     return data;
 }
 
-const updatePackage = async (user_id, { 
+const updatePackage = async (user_id, {
     package_id
- }) => {
+}) => {
     const data = await users.update({
         package_id,
         package_start: Sequelize.literal('GETDATE()')
