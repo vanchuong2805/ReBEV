@@ -31,6 +31,7 @@ const getContacts = async (req, res) => {
         const option = req.query;
 
         const contacts = await userContactService.getUserContacts(option);
+        
         res.status(200).json(contacts);
 
     } catch (error) {

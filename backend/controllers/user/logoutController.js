@@ -1,20 +1,56 @@
 import jwtService from "../../services/auth/jwtService.js";
 
 
-/** 
+/**
  * @swagger
  * /api/users/logout:
  *   post:
- *     summary: Logout user
+ *     summary: Đăng xuất người dùng
+ *     description: API này cho phép người dùng **đăng xuất** bằng cách vô hiệu hóa token truy cập hiện tại (access token). Token phải được gửi trong phần **Authorization Header** dưới dạng Bearer token.
  *     tags: [Users]
- *     description: Logs out the user by invalidating the token
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Logout successful
+ *         description: Đăng xuất thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Logout successful"
+ *       400:
+ *         description: Yêu cầu không hợp lệ (Bad request)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Bad request"
  *       401:
- *         description: Unauthorized
+ *         description: Không có quyền truy cập (thiếu hoặc token không hợp lệ)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       500:
+ *         description: Lỗi máy chủ nội bộ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 
 const logout = async (req, res) => {

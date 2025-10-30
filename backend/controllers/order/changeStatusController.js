@@ -3,48 +3,40 @@ import orderService from '../../services/order/orderService.js';
 import { ORDER_STATUS, ORDER_STATUS_TRANSITION, ORDER_TYPE_STATUS } from '../../config/constants.js';
 import { sequelize } from '../../models/index.js';
 
-/**
+/** 
  * @swagger
- * /api/orders/{id}/status:
+ * /orders/{id}/status:
  *   put:
- *     tags: [Orders]
- *     summary: Change order status
+ *     summary: Update order status
+ *     description: Update the status of an existing order
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Order ID
+ *         description: The ID of the order to update
  *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               status:
- *                 type: string
- *                 enum: ['CONFIRMED', 'DELIVERING', 'DELIVERED', 'CANCELLED', 'RESERVED']
- *               description:
- *                 type: string
+ *           type: integer
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: The new status and description for the order
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               enum: [PENDING, PROCESSING, COMPLETED, CANCELLED]
+ *             description:
+ *               type: string
  *     responses:
  *       200:
  *         description: Order status updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Order status updated successfully
- *       400:
- *         description: Invalid request
  *       404:
  *         description: Order not found
- *       500:
- *         description: Internal server error
+ *       403:
+ *         description: Forbidden
+ *       400:
+ *         description: Invalid status value
  */
 
 const changeStatus = async (req, res) => {

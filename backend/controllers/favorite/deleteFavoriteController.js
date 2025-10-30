@@ -31,7 +31,9 @@ const deleteFavorite = async (req, res) => {
         const favorite = await favoritePostService.getByPostId(post_id);
 
         if (!favorite) {
-            return res.status(400).json({ errors: ERROR_MESSAGE.FAVORITE_NOT_FOUND });
+            return res.status(400).json({ 
+                errors: ERROR_MESSAGE.FAVORITE_NOT_FOUND
+             });
         }
 
         res.status(200).json({

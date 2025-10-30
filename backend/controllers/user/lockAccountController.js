@@ -2,27 +2,111 @@ import userService from "../../services/user/userService.js";
 import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
-/** 
+/**
  * @swagger
  * /api/users/{user_id}/lock-account:
  *   patch:
- *     summary: Lock user account
+ *     summary: Khóa tài khoản người dùng
+ *     description: Khóa tài khoản của người dùng dựa trên ID. Nếu tài khoản đã bị khóa trước đó, API sẽ trả về lỗi 400.
  *     tags: [Users]
- *     description: Lock a user account by user ID
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: ID of the user to lock
+ *         description: ID của người dùng cần khóa
  *         schema:
  *           type: integer
+ *           example: 5
  *     responses:
  *       200:
- *         description: Account locked successfully
+ *         description: Khóa tài khoản thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account locked successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 5
+ *                     display_name:
+ *                       type: string
+ *                       example: "Nguyen Van A"
+ *                     phone:
+ *                       type: string
+ *                       example: "0901234567"
+ *                     email:
+ *                       type: string
+ *                       example: "vana@example.com"
+ *                     role:
+ *                       type: integer
+ *                       example: 0
+ *                     balance:
+ *                       type: string
+ *                       example: "150000.00"
+ *                     avatar:
+ *                       type: string
+ *                       example: "https://example.com/avatar.jpg"
+ *                     package_id:
+ *                       type: integer
+ *                       nullable: true
+ *                       example: 2
+ *                     is_locked:
+ *                       type: boolean
+ *                       example: true
+ *                     package_start:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-01-01T07:00:00Z"
+ *                     create_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-03-01T09:30:00Z"
+ *                     update_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-10-30T09:00:00Z"
+ *
+ *       400:
+ *         description: Tài khoản đã bị khóa trước đó hoặc yêu cầu không hợp lệ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Account is already locked"
+ *
  *       404:
- *         description: User not found
+ *         description: Không tìm thấy người dùng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User not found"
+ *
  *       500:
- *         description: Internal server error
+ *         description: Lỗi máy chủ nội bộ khi khóa tài khoản
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to lock account"
+ *                 error:
+ *                   type: string
+ *                   example: "Database connection timeout"
  */
 
 const lockAccount = async (req, res) => {

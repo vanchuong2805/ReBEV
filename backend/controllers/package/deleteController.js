@@ -34,11 +34,15 @@ const deletePackage = async (req, res) => {
         const packages = await packageService.getPackage(id);
 
         if (!packages) {
-            return res.status(400).json({ error: ERROR_MESSAGE.PACKAGE_NOT_FOUND });
+            return res.status(400).json({ 
+                error: ERROR_MESSAGE.PACKAGE_NOT_FOUND
+             });
         }
 
         if (await packageService.is_deleted(id)) {
-            return res.status(400).json({ error: ERROR_MESSAGE.PACKAGE_NOT_FOUND });
+            return res.status(400).json({ 
+                error: ERROR_MESSAGE.PACKAGE_NOT_FOUND 
+            });
         }
 
         res.status(200).json({
