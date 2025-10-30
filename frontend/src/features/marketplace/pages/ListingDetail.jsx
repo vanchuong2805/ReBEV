@@ -31,7 +31,7 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/profile?tab=listings";
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
   const [listing, setListing] = useState(null);
   const [variations, setVariations] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -148,7 +148,19 @@ const ListingDetail = () => {
         (prev - 1 + (listing.media?.length || 1)) % (listing.media?.length || 1)
     );
 
-  const handleBuyNow = () => alert(` Mua ngay: ${listing.title}`);
+  const handleBuyNow = async (postId) => {
+    if (!user) {
+      alert(" Bạn cần đăng nhập để mua hàng");
+      return;
+    }
+    try {
+      await addToCart(user.id, postId);
+      setBuyNowItem(postId);
+      navigate("/checkout");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleAddToCart = async (postId) => {
     if (!user) {
       alert(" Bạn cần đăng nhập để thêm vào giỏ hàng");
@@ -439,7 +451,7 @@ const ListingDetail = () => {
               //  Nếu là người xem khác
               <>
                 <button
-                  onClick={() => handleBuyNow()}
+                  onClick={() => handleBuyNow(listing.id)}
                   className="flex items-center justify-center w-full gap-2 px-4 py-3 mb-3 font-semibold text-white transition bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
                   <CreditCard className="w-5 h-5" />{" "}
