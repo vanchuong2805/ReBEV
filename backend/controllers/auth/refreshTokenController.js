@@ -64,12 +64,15 @@ const refreshToken = async (req, res) => {
         }
 
         const newAccessToken = jwtService.createAccessToken(payload);
-        res.status(200).json({ accessToken: newAccessToken });
+        res.status(200).json({
+            accessToken: newAccessToken,
+            user: payload
+        });
 
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Server error.' });
+        res.status(401).json({ message: 'Server error.' });
     }
 
 }

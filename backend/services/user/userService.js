@@ -3,6 +3,9 @@ import models from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
 import { ROLE } from '../../config/constants.js';
+import postService from '../post/postService.js';
+import orderDetailService from '../order/orderDetailService.js';
+import userReviewService from './userReviewService.js';
 
 const getUsers = async () => {
     const data = await users.findAll();
@@ -41,7 +44,13 @@ const getUserByPhone = async (phoneUser) => {
 };
 
 
-const createUser = async ({ display_name, email, phone, password }) => {
+const createUser = async ({
+    display_name,
+    email,
+    phone,
+    password
+}) => {
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.create({
         display_name,
@@ -52,7 +61,11 @@ const createUser = async ({ display_name, email, phone, password }) => {
     return data;
 };
 
-const createStaff = async ({ display_name, email, phone }) => {
+const createStaff = async ({
+     display_name, 
+     email, 
+     phone 
+    }) => {
     const data = await users.create({
         display_name: display_name || "",
         email,
@@ -71,7 +84,11 @@ const deposit = async (userId, amount, options) => {
     return user;
 };
 
-const updateUser = async (id, { display_name, email, phone }) => {
+const updateUser = async (id, { 
+    display_name, 
+    email, 
+    phone
+ }) => {
     const data = await users.update({
         display_name,
         email,
@@ -85,7 +102,9 @@ const updateUser = async (id, { display_name, email, phone }) => {
     return data;
 };
 
-const checkPassword = async (id, { password }) => {
+const checkPassword = async (id, { 
+    password 
+}) => {
     const data = await users.findByPk(id)
     if (!data) {
         return false;
@@ -94,7 +113,9 @@ const checkPassword = async (id, { password }) => {
     return isMatch;
 }
 
-const updatePassword = async (id, { password }) => {
+const updatePassword = async (id, {
+     password 
+    }) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const data = await users.update({
         password: hashedPassword,
@@ -107,7 +128,9 @@ const updatePassword = async (id, { password }) => {
     return data;
 }
 
-const updatePackage = async (user_id, { package_id }) => {
+const updatePackage = async (user_id, { 
+    package_id
+ }) => {
     const data = await users.update({
         package_id,
         package_start: Sequelize.literal('GETDATE()')
@@ -147,6 +170,22 @@ const is_locked = async (user_id) => {
     return user.is_locked;
 }
 
+const getUserRating = async (user_id) => {
+    const posts = await postService.getByUserId(user_id);
+    let totalRating = 0;
+    let ratingCount = 0;
+    for (const post of posts) {
+        const orderDetails = await orderDetailService.getByPostId(post.id);
+        for (const orderDetail of orderDetails) {
+            const review = await userReviewService.getByOrderDetailId(orderDetail.id);
+            if (review) {
+                totalRating += review.rating_value;
+                ratingCount += 1;
+            }
+        }
+    }
+    return ratingCount > 0 ? totalRating / ratingCount : 0;
+}
 export default {
     getUsers,
     getUser,
@@ -162,5 +201,6 @@ export default {
     updatePackage,
     lockAccount,
     unLockAccount,
-    is_locked
+    is_locked,
+    getUserRating,
 };

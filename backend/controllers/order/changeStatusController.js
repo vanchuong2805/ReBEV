@@ -5,6 +5,42 @@ import {
 } from '../../config/constants.js';
 import { sequelize } from '../../models/index.js';
 
+/** 
+ * @swagger
+ * /orders/{id}/status:
+ *   put:
+ *     summary: Update order status
+ *     description: Update the status of an existing order
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the order to update
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: The new status and description for the order
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               enum: [PENDING, PROCESSING, COMPLETED, CANCELLED]
+ *             description:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Order status updated successfully
+ *       404:
+ *         description: Order not found
+ *       403:
+ *         description: Forbidden
+ *       400:
+ *         description: Invalid status value
+ */
+
 const changeStatus = async (req, res) => {
     const t = await sequelize.transaction();
     try {

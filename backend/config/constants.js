@@ -44,6 +44,8 @@ export const ERROR_MESSAGE = {
     CREATE_PACKAGE_FAIL: 'Creating package failed',
     DELETE_PACKAGE_FAIL: 'Deleting package failed',
     UPDATE_PACKAGE_FAIL: 'Updating package failed',
+    FORGET_PASSWORD_FAILED: 'Resetting password failed',
+    CREATE_REVIEW_FAILED: 'Creating review failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -64,6 +66,9 @@ export const SUCCESS_MESSAGE = {
     CREATE_PACKAGE_SUCCESS: 'Package created successfully',
     DELETE_PACKAGE_SUCCESS: 'Package deleted successfully',
     UPDATE_PACKAGE_SUCCESS: 'Package updated successfully',
+    OTP_SENT: 'OTP has been sent successfully',
+    PASSWORD_RESET_SUCCESS: 'Password has been reset successfully',
+    CREATE_REVIEW_SUCCESS: 'Review created successfully',
 }
 
 export const POST_STATUS = {

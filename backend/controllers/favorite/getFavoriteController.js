@@ -24,8 +24,13 @@ import postService from "../../services/post/postService.js";
 const getFavorite = async (req, res) => {
     try {
         const userId = req.params.userId;
+
         const favorite = await favoritePostService.getByUserId(userId);
-        const response = { userId, favoritePosts: [] };
+
+        const response = {
+            userId,
+            favoritePosts: []
+        };
         for (const items of favorite) {
             const post = await postService.getById(items.post_id);
             response.favoritePosts.push(post);
