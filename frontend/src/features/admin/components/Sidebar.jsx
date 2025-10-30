@@ -6,13 +6,14 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  MessageCircle,
   LogOut,
 } from "lucide-react";
-import { logoutAdmin } from "../service";
-import { useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 
-const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
+import { ROUTES } from "@/constants/routes";
+import { logoutAdmin } from "../service";
+
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
 
   const menuItems = [
@@ -20,26 +21,31 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
       id: "reports",
       label: "Báo cáo & Thống kê",
       icon: BarChart3,
+      to: ROUTES.ADMIN.DASHBOARD,
     },
     {
       id: "fees",
       label: "Quản lý phí hệ thống",
       icon: DollarSign,
+      to: ROUTES.ADMIN.FEES,
     },
     {
       id: "transactions",
       label: "Quản lý giao dịch",
       icon: ShoppingCart,
+      to: ROUTES.ADMIN.TRANSACTIONS,
     },
     {
       id: "listings",
       label: "Quản lý bài đăng",
       icon: FileText,
+      to: ROUTES.ADMIN.LISTINGS,
     },
     {
       id: "users",
       label: "Quản lý người dùng",
       icon: Users,
+      to: ROUTES.ADMIN.USERS,
     },
   ];
 
@@ -72,24 +78,25 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
       <nav className="mt-6">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
-
           return (
-            <button
+            <NavLink
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center px-4 py-3 text-left transition-colors ${
-                isActive
-                  ? "bg-cyan-600 text-white border-r-4 border-cyan-400"
-                  : "text-slate-300 hover:bg-slate-700 hover:text-white"
-              }`}
+              to={item.to}
+              end={item.to === ROUTES.ADMIN.DASHBOARD}
+              className={({ isActive }) =>
+                `w-full flex items-center px-4 py-3 text-left transition-colors ${
+                  isActive
+                    ? "bg-cyan-600 text-white border-r-4 border-cyan-400"
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`
+              }
               title={isCollapsed ? item.label : ""}
             >
               <Icon size={20} className="flex-shrink-0" />
               {!isCollapsed && (
                 <span className="ml-3 font-medium">{item.label}</span>
               )}
-            </button>
+            </NavLink>
           );
         })}
       </nav>

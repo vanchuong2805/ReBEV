@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import Frame from '../CardFrame'
 
 export default function PendingPurchaseCard({ purchase, onView, onReschedule, onCancel }) {
-  const isCar = purchase.category_name?.toLowerCase().includes('xe')
+  const isCar = purchase.category_id === 1
 
   return (
     <Frame

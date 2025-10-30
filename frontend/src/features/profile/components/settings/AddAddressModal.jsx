@@ -14,27 +14,32 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
-import { fetchProvinces, fetchDistricts, fetchWards } from "@/features/profile/service"
+import { ChevronDown, Loader2 } from "lucide-react"
+import {
+  fetchProvinces,
+  fetchDistricts,
+  fetchWards,
+  createContact,
+  updateContact,
+} from "@/features/profile/service"
 import { useUser } from "@/contexts/UserContext"
 
-export default function AddAddressModal({ open, onClose, onSave, contact }) {
+export default function AddAddressModal({ open, onClose, contact }) {
   const { user } = useUser()
-
   const [form, setForm] = useState({
     name: "",
     phone: "",
     detail: "",
     province_id: "",
     district_id: "",
-    ward_code: "",
+    ward_name: "",
   })
-
   const [provinces, setProvinces] = useState([])
   const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
   const [loading, setLoading] = useState({ provinces: false, districts: false, wards: false })
   const [error, setError] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const loadProvinces = async () => {
@@ -58,7 +63,7 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
       ...prev,
       province_id: provinceId,
       district_id: "",
-      ward_code: "",
+      ward_name: "",
     }))
     setDistricts([])
     setWards([])
@@ -76,14 +81,14 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
     }
   }
 
-
   const handleDistrictSelect = async (districtId) => {
     setForm(prev => ({
       ...prev,
       district_id: districtId,
-      ward_code: "",
+      ward_name: "",
     }))
     setWards([])
+
     if (!districtId) return
     setLoading(p => ({ ...p, wards: true }))
     try {
@@ -99,76 +104,65 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
 
 
   useEffect(() => {
-    if (contact) {
-      setForm({
-        name: contact.name || "",
-        phone: contact.phone || "",
-        detail: contact.detail || "",
-        province_id: contact.province_id || "",
-        district_id: contact.district_id || "",
-        ward_code: contact.ward_code || "",
-      })
+    const loadForEdit = async () => {
+      if (contact) {
+        setForm({
+          name: contact.name || "",
+          phone: contact.phone || "",
+          detail: contact.detail || "",
+          province_id: contact.province_id || "",
+          district_id: contact.district_id || "",
+          ward_name: contact.ward_name || "",
+        })
 
-      if (contact.province_id) handleProvinceSelect(contact.province_id)
-      if (contact.district_id) handleDistrictSelect(contact.district_id)
-    } else if (open) {
+        if (contact.province_id) await handleProvinceSelect(contact.province_id)
+        if (contact.district_id) await handleDistrictSelect(contact.district_id)
 
-      setForm({
-        name: "",
-        phone: "",
-        detail: "",
-        province_id: "",
-        district_id: "",
-        ward_code: "",
-      })
-      setDistricts([])
-      setWards([])
+        setForm(prev => ({
+          ...prev,
+          ward_name: contact.ward_name || "",
+        }))
+      } else if (open) {
+        setForm({
+          name: "",
+          phone: "",
+          detail: "",
+          province_id: "",
+          district_id: "",
+          ward_name: "",
+        })
+        setDistricts([])
+        setWards([])
+      }
     }
+
+    if (open) loadForEdit()
   }, [contact, open])
 
+  useEffect(() => {
+    if (!open) {
+      setIsSubmitting(false)
+    }
+  }, [open])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (isSubmitting) return
 
     const phoneRegex = /^(0|\+84)(\d{9})$/
 
-    if (!form.name.trim()) {
-      alert("Vui lòng nhập họ và tên.")
-      return
-    }
+    if (!form.name.trim()) return alert("Vui lòng nhập họ và tên.")
+    if (!form.phone.trim()) return alert("Vui lòng nhập số điện thoại.")
+    if (!phoneRegex.test(form.phone.trim())) return alert("Số điện thoại không hợp lệ.")
+    if (!form.detail.trim()) return alert("Vui lòng nhập địa chỉ chi tiết.")
+    if (!form.province_id) return alert("Vui lòng chọn Tỉnh/Thành phố.")
+    if (!form.district_id) return alert("Vui lòng chọn Quận/Huyện.")
+    if (!form.ward_name) return alert("Vui lòng chọn Phường/Xã.")
 
-    if (!form.phone.trim()) {
-      alert("Vui lòng nhập số điện thoại.")
-      return
-    }
-
-    if (!phoneRegex.test(form.phone.trim())) {
-      alert("Số điện thoại không hợp lệ. Vui lòng nhập số 10 chữ số (VD: 0896402450 hoặc +84896402450).")
-      return
-    }
-
-    if (!form.detail.trim()) {
-      alert("Vui lòng nhập địa chỉ chi tiết (số nhà, tên đường...).")
-      return
-    }
-
-    if (!form.province_id) {
-      alert("Vui lòng chọn Tỉnh/Thành phố.")
-      return
-    }
-
-    if (!form.district_id) {
-      alert("Vui lòng chọn Quận/Huyện.")
-      return
-    }
-
-    if (!form.ward_code) {
-      alert("Vui lòng chọn Phường/Xã.")
-      return
-    }
+    setIsSubmitting(true)
 
     const province = provinces.find(p => p.ProvinceID == form.province_id)
     const district = districts.find(d => d.DistrictID == form.district_id)
-    const ward = wards.find(w => w.WardCode == form.ward_code)
+    const ward = wards.find(w => w.WardName == form.ward_name)
 
     const payload = {
       user_id: user?.id,
@@ -183,18 +177,26 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
       ward_name: ward?.WardName || "",
     }
 
-    onSave(payload)
+    try {
+      if (contact) {
+        await updateContact(contact.id, payload)
+        alert("Đã cập nhật địa chỉ thành công")
+      } else {
+        await createContact(payload)
+        alert("Đã thêm địa chỉ mới thành công")
+      }
+      onClose()
+    } catch (err) {
+      console.error("Lỗi khi lưu contact:", err)
+      alert("Lưu địa chỉ thất bại, vui lòng thử lại.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
-
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md" aria-describedby="add-address-desc">
-        <p id="add-address-desc" className="sr-only">
-          Form nhập thông tin địa chỉ người nhận
-        </p>
-
-
         <DialogHeader>
           <DialogTitle>{contact ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}</DialogTitle>
         </DialogHeader>
@@ -206,23 +208,11 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
         )}
 
         <div className="space-y-3">
-          <Input
-            placeholder="Họ và tên"
-            value={form.name}
-            onChange={e => setForm({ ...form, name: e.target.value })}
-          />
-          <Input
-            placeholder="Số điện thoại"
-            value={form.phone}
-            onChange={e => setForm({ ...form, phone: e.target.value })}
-          />
-          <Input
-            placeholder="Số nhà, tên đường..."
-            value={form.detail}
-            onChange={e => setForm({ ...form, detail: e.target.value })}
-          />
+          <Input placeholder="Họ và tên" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+          <Input placeholder="Số điện thoại" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+          <Input placeholder="Số nhà, tên đường..." value={form.detail} onChange={e => setForm({ ...form, detail: e.target.value })} />
 
-          {/* ===== Province ===== */}
+          {/* Province */}
           <div className="space-y-1">
             <Label>Tỉnh / Thành phố</Label>
             <DropdownMenu>
@@ -231,20 +221,14 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
                   {form.province_id
                     ? provinces.find(p => p.ProvinceID == form.province_id)?.ProvinceName
                     : loading.provinces
-                      ? "Đang tải..."
-                      : "Chọn tỉnh / thành phố"}
+                    ? "Đang tải..."
+                    : "Chọn tỉnh / thành phố"}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-64 overflow-y-auto rounded-lg shadow-xl"
-              >
+              <DropdownMenuContent className="max-h-64 overflow-y-auto">
                 {provinces.map(p => (
-                  <DropdownMenuItem
-                    key={p.ProvinceID}
-                    onClick={() => handleProvinceSelect(p.ProvinceID)}
-                  >
+                  <DropdownMenuItem key={p.ProvinceID} onClick={() => handleProvinceSelect(p.ProvinceID)}>
                     {p.ProvinceName}
                   </DropdownMenuItem>
                 ))}
@@ -252,35 +236,25 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
             </DropdownMenu>
           </div>
 
-          {/* ===== District ===== */}
+          {/* District */}
           <div className="space-y-1">
             <Label>Quận / Huyện</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                  disabled={!form.province_id || loading.districts}
-                >
+                <Button variant="outline" className="w-full justify-between" disabled={!form.province_id || loading.districts}>
                   {form.district_id
                     ? districts.find(d => d.DistrictID == form.district_id)?.DistrictName
                     : !form.province_id
-                      ? "Chọn tỉnh trước"
-                      : loading.districts
-                        ? "Đang tải..."
-                        : "Chọn quận / huyện"}
+                    ? "Chọn tỉnh trước"
+                    : loading.districts
+                    ? "Đang tải..."
+                    : "Chọn quận / huyện"}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-64 overflow-y-auto rounded-lg shadow-xl"
-              >
+              <DropdownMenuContent className="max-h-64 overflow-y-auto">
                 {districts.map(d => (
-                  <DropdownMenuItem
-                    key={d.DistrictID}
-                    onClick={() => handleDistrictSelect(d.DistrictID)}
-                  >
+                  <DropdownMenuItem key={d.DistrictID} onClick={() => handleDistrictSelect(d.DistrictID)}>
                     {d.DistrictName}
                   </DropdownMenuItem>
                 ))}
@@ -288,35 +262,25 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
             </DropdownMenu>
           </div>
 
-          {/* ===== Ward ===== */}
+          {/* Ward */}
           <div className="space-y-1">
             <Label>Phường / Xã</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-between"
-                  disabled={!form.district_id || loading.wards}
-                >
-                  {form.ward_code
-                    ? wards.find(w => w.WardCode == form.ward_code)?.WardName
+                <Button variant="outline" className="w-full justify-between" disabled={!form.district_id || loading.wards}>
+                  {form.ward_name
+                    ? wards.find(w => w.WardName == form.ward_name)?.WardName
                     : !form.district_id
-                      ? "Chọn quận trước"
-                      : loading.wards
-                        ? "Đang tải..."
-                        : "Chọn phường / xã"}
+                    ? "Chọn quận trước"
+                    : loading.wards
+                    ? "Đang tải..."
+                    : "Chọn phường / xã"}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-50 overflow-y-auto rounded-lg shadow-xl"
-              >
+              <DropdownMenuContent className="max-h-64 overflow-y-auto">
                 {wards.map(w => (
-                  <DropdownMenuItem
-                    key={w.WardCode}
-                    onClick={() => setForm({ ...form, ward_code: w.WardCode })}
-                  >
+                  <DropdownMenuItem key={w.WardCode} onClick={() => setForm({ ...form, ward_name: w.WardName })}>
                     {w.WardName}
                   </DropdownMenuItem>
                 ))}
@@ -330,10 +294,14 @@ export default function AddAddressModal({ open, onClose, onSave, contact }) {
             Hủy
           </Button>
           <Button
-            className="bg-[#007BFF] hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm"
+            disabled={isSubmitting}
+            className={`bg-[#007BFF] hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm flex items-center gap-2 ${
+              isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+            }`}
             onClick={handleSubmit}
           >
-            Lưu
+            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isSubmitting ? "Đang lưu..." : "Lưu"}
           </Button>
         </div>
       </DialogContent>

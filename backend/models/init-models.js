@@ -112,7 +112,12 @@ function initModels(sequelize) {
   variation_values.hasMany(variation_values, { as: "variation_values", foreignKey: "parent_id"});
   variation_values.belongsTo(variations, { as: "variation", foreignKey: "variation_id"});
   variations.hasMany(variation_values, { as: "variation_values", foreignKey: "variation_id"});
-
+  order_status.belongsTo(users, { as: "create_by_user", foreignKey: "create_by" });
+  users.hasMany(order_status, { as: "created_order_status", foreignKey: "create_by" });
+  posts.belongsTo(users, { as: "moderator_user", foreignKey: "moderator" });
+  users.hasMany(posts, { as: "moderated_posts", foreignKey: "moderator" });
+  complaints.belongsTo(users, { as: "moderator_user", foreignKey: "moderator" });
+  users.hasMany(complaints, { as: "moderated_complaints", foreignKey: "moderator" });
   return {
     bases,
     cart_items,

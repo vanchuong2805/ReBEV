@@ -1,5 +1,5 @@
 // pages/SystemFeesManagement.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DollarSign, Package as PackageIcon } from "lucide-react";
 import { systemFeesData } from "../data/data";
 import TitlePage from "../components/TitlePage";
@@ -9,8 +9,13 @@ import PackageCard from "../components/systemfeesComponents/PackageCard";
 import AddPackageModal from "../components/systemfeesComponents/AddPackageModal";
 import { Button } from "../../../components/ui/button";
 import { usePlatformFees } from "../../admin/hook/usePlatformFees";
-import { useUserPackages } from "../../admin/hook/useUserPackages";
-import { useFullPackage } from "../service";
+import {
+  createPackage,
+  deletePackage,
+  getFullPackage,
+  updatePackage,
+} from "../service";
+import { toast } from "sonner";
 
 const categoryOptions = [
   { value: "xe-may-dien", label: "Xe máy điện" },
@@ -23,6 +28,38 @@ const tabs = [
 ];
 
 export default function SystemFeesManagement() {
+  const [packageList, setPackageList] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getFullPackage();
+      setPackageList(data);
+    };
+    fetchData();
+  }, []);
+
+  const handleAddPackage = (newPackage) => {
+    createPackage(newPackage);
+    setPackageList([...packageList, newPackage]);
+    toast.success("Đã thêm gói mới");
+  };
+  const handleDeletePackage = (packageId) => {
+    deletePackage(packageId);
+    setPackageList(packageList.filter((pkg) => pkg.id !== packageId));
+    toast.success("Đã xóa gói");
+  };
+  const handleEditPackage = async (updatedPackage) => {
+    const newPackage = await updatePackage(updatedPackage);
+    console.log("New package:", newPackage);
+    console.log("Old Package :", updatedPackage);
+    setPackageList([
+      ...packageList.filter((pkg) => pkg.id !== updatedPackage.id),
+      newPackage.package,
+    ]);
+
+    toast.success("Đã cập nhật gói");
+  };
+
   const [activeTab, setActiveTab] = useState("platform");
   // Platform fees
   const {
@@ -36,20 +73,9 @@ export default function SystemFeesManagement() {
   } = usePlatformFees(systemFeesData[0]);
 
   // User packages
-  const {
-    showAddPackage,
-    setShowAddPackage,
-    newPackage,
-    setNewPackage,
-    startEdit,
-    saveEdit,
-    cancelEdit,
-    changePrice,
-    togglePrivilege,
-    add,
-  } = useUserPackages(systemFeesData[1]);
+  const [showAddPackage, setShowAddPackage] = useState(false);
 
-  const packageList = useFullPackage([]);
+  console.log("Package List:", packageList);
   return (
     <div className="p-6">
       <TitlePage
@@ -94,10 +120,8 @@ export default function SystemFeesManagement() {
               <PackageCard
                 key={pkg.id}
                 pkg={pkg}
-                onStartEdit={startEdit}
-                onSave={saveEdit}
-                onCancel={cancelEdit}
-                onChangePrice={changePrice}
+                onDelete={handleDeletePackage}
+                onEdit={handleEditPackage}
               />
             ))}
           </div>
@@ -105,10 +129,7 @@ export default function SystemFeesManagement() {
           <AddPackageModal
             open={showAddPackage}
             onClose={() => setShowAddPackage(false)}
-            newPackage={newPackage}
-            setNewPackage={setNewPackage}
-            onTogglePrivilege={togglePrivilege}
-            onAdd={add}
+            handleAddPackage={handleAddPackage}
           />
         </div>
       )}
