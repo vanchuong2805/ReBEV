@@ -8,7 +8,7 @@ const CartCtx = createContext();
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [refresh, setRefresh] = useState(0);
-
+  
   function getThumbnail(media) {
     // media là chuỗi JSON: [{ url: "image https://...", is_thumbnail: true }, ...]
     try {
