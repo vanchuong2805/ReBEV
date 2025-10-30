@@ -32,8 +32,9 @@ const MembershipPackage = () => {
       try {
         const data = await getPackage()
         setPackages(data)
+        console.log(' Gói đã tải:', data)
       } catch (error) {
-        console.error('❌ Lỗi tải gói:', error)
+        console.error(' Lỗi tải gói:', error)
       }
     }
     fetchPackages()

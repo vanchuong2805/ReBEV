@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Heart } from "lucide-react";
-import { getFeaturedProducts } from "../service"; // dùng service gọi GET /posts
+import { getFeaturedProducts} from "../service"; // dùng service gọi GET /posts
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 function currency(v) {
   return typeof v === "number" ? v.toLocaleString("vi-VN") + " ₫" : v;
@@ -19,7 +20,10 @@ function getThumbnail(media) {
   }
 }
 
+
+
 export default function PromotionBanner() {
+  const { isFavorite, toggleFavorite } = useFavorite();
   const location = useLocation();
   const [items, setItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,9 +86,16 @@ export default function PromotionBanner() {
                   <button
                     aria-label="Yêu thích"
                     className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 hover:bg-white"
-                    onClick={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite(item.id);
+                    }}
                   >
-                    <Heart className="w-4 h-4 text-gray-800" />
+                    <Heart
+                      className={`w-5 h-5 fill-current ${isFavorite(item.id) ? "text-red-500" : "text-gray-400"
+                        }`}
+                    />
                   </button>
                 </div>
 

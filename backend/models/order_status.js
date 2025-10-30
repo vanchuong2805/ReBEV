@@ -27,6 +27,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.TEXT,
       allowNull: true
     },
+    create_by: { type: DataTypes.INTEGER, allowNull: true },
     create_at: {
       type: DataTypes.DATE,
       allowNull: false,

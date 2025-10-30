@@ -2,7 +2,8 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getFeaturedProducts } from "../service";
+import { getFeaturedProducts } from "../service"; 
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 function currency(v) {
   return typeof v === "number" ? v.toLocaleString("vi-VN") + " ₫" : v;
@@ -94,7 +95,7 @@ export default function FeaturedListings() {
     if (right < totalPages - 1) range.push("...");
     return [1, ...range, totalPages];
   }, [currentPage, totalPages]);
-
+  const { isFavorite, toggleFavorite } = useFavorite();
   return (
     <section className="container mx-auto mt-8">
       <div className="flex items-end justify-between mb-3">
@@ -123,9 +124,16 @@ export default function FeaturedListings() {
                   <button
                     aria-label="Yêu thích"
                     className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 hover:bg-white"
-                    onClick={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleFavorite(it.id);
+                    }}
                   >
-                    <Heart className="w-4 h-4 text-gray-800" />
+                    <Heart
+                      className={`w-5 h-5 fill-current ${isFavorite(it.id) ? "text-red-500" : "text-gray-400"
+                        }`}
+                    />
                   </button>
                 </div>
                 <div className="p-3">
@@ -160,11 +168,10 @@ export default function FeaturedListings() {
                   <button
                     key={p}
                     onClick={() => goToPage(p)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md ${
-                      p === currentPage
+                    className={`px-3 py-1 text-sm font-medium rounded-md ${p === currentPage
                         ? "bg-[#007BFF] text-white shadow-md scale-105 transition"
                         : "bg-white text-gray-700 hover:bg-gray-100"
-                    }`}
+                      }`}
                   >
                     {p}
                   </button>

@@ -1,16 +1,34 @@
+// src/features/home/pages/ListingList.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { Heart, Search, Filter, X, MapPin, Calendar } from "lucide-react";
-import { DEMO } from "@/data";
+import { Heart, Search, Filter, MapPin } from "lucide-react";
+import { getFeaturedProducts } from "@/features/home/service";
+import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 
 function currency(v) {
-  return v.toLocaleString("vi-VN") + " ₫";
+  return Number(v || 0).toLocaleString("vi-VN") + " ₫";
+}
+
+function getThumb(media) {
+  try {
+    const arr = JSON.parse(media);
+    const pick = arr.find((m) => m.is_thumbnail) || arr[0];
+    if (!pick?.url) return "/placeholder.webp";
+    return pick.url.replace(/^(image|video)\s+/, "");
+  } catch {
+    return "/placeholder.webp";
+  }
 }
 
 export default function ListingList() {
   const location = useLocation();
   const { category } = useParams();
+
+  const [allItems, setAllItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Search + sort + favorites
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [displayCount, setDisplayCount] = useState(10);
@@ -19,73 +37,107 @@ export default function ListingList() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Filter states
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 200_000_000 });
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [hasVerified, setHasVerified] = useState(false);
+  // Price slider state (min/max từ dữ liệu)
+  const [priceMin, setPriceMin] = useState(0);
+  const [priceMax, setPriceMax] = useState(0);
+  const [priceRange, setPriceRange] = useState([0, 0]); // [min, max]
+  const SLIDER_STEP = 10000;
 
   const observerTarget = useRef(null);
 
-  // Lọc data theo category
-  const baseItems = useMemo(() => {
-    if (category === "xe") return DEMO.filter((x) => x.category_id === 1);
-    if (category === "pin") return DEMO.filter((x) => x.category_id === 2);
-    return DEMO;
-  }, [category]);
+  // Fetch API
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await getFeaturedProducts();
+        const list = Array.isArray(res) ? res : res?.data || [];
 
-  // Extract brands
-  const brands = useMemo(() => {
-    const set = new Set();
-    baseItems.forEach((x) => {
-      const brand = x.title.split(" ")[0];
-      if (brand) set.add(brand);
-    });
-    return Array.from(set).sort();
+        // Chỉ lấy Approved + chuẩn hóa field ảnh, ngày
+        const approved = list
+          .filter((p) => p?.status === 1)
+          .map((p) => ({
+            ...p,
+            image: getThumb(p.media),
+            // normalize date key (API là create_at)
+            created_at: p.create_at || p.created_at || null,
+          }));
+
+        setAllItems(approved);
+
+        // Tính min/max giá toàn bộ (theo category sau khi user đổi category thì ta tính lại ở useMemo)
+      } catch (e) {
+        console.error(e);
+        setAllItems([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Lọc theo category từ URL
+  const baseItems = useMemo(() => {
+    if (category === "xe") return allItems.filter((x) => x.category_id === 1);
+    if (category === "pin") return allItems.filter((x) => x.category_id === 2);
+    return allItems;
+  }, [allItems, category]);
+
+  // Khởi tạo min/max giá mỗi khi baseItems đổi
+  useEffect(() => {
+    if (!baseItems.length) {
+      setPriceMin(0);
+      setPriceMax(0);
+      setPriceRange([0, 0]);
+      return;
+    }
+    const prices = baseItems.map((x) => Number(x.price) || 0);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    setPriceMin(min);
+    setPriceMax(max);
+    setPriceRange([min, max]);
   }, [baseItems]);
 
-  // Lọc và sắp xếp sản phẩm
+  // Lọc + sắp xếp
   const filteredItems = useMemo(() => {
     let items = baseItems;
 
-    // Tìm kiếm
+    // search theo title
     if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
       items = items.filter((item) =>
-        item.title.toLowerCase().includes(searchTerm.toLowerCase())
+        (item.title || "").toLowerCase().includes(q)
       );
     }
 
-    // Lọc giá
+    // lọc theo slider giá
     items = items.filter(
-      (item) => item.price >= priceRange.min && item.price <= priceRange.max
+      (item) =>
+        (item.price || 0) >= priceRange[0] && (item.price || 0) <= priceRange[1]
     );
 
-    // Lọc thương hiệu
-    if (selectedBrands.length > 0) {
-      items = items.filter((item) =>
-        selectedBrands.some((brand) => item.title.startsWith(brand))
-      );
-    }
-
-    // Lọc đã kiểm định
-    if (hasVerified) {
-      items = items.filter((item) => item.badge === "ĐÃ KIỂM ĐỊNH");
-    }
-
-    // Sắp xếp
+    // sort
     if (sortBy === "price-asc") {
-      items = [...items].sort((a, b) => a.price - b.price);
+      items = [...items].sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === "price-desc") {
-      items = [...items].sort((a, b) => b.price - a.price);
-    } else if (sortBy === "newest") {
+      items = [...items].sort((a, b) => (b.price || 0) - (a.price || 0));
+    } else {
+      // newest
       items = [...items].sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        (a, b) =>
+          new Date(b.created_at || 0).getTime() -
+          new Date(a.created_at || 0).getTime()
       );
     }
 
     return items;
-  }, [baseItems, searchTerm, priceRange, selectedBrands, hasVerified, sortBy]);
+  }, [baseItems, searchTerm, priceRange, sortBy]);
 
   // Infinite scroll
+  useEffect(() => {
+    setDisplayCount(10); // reset khi filter/sort đổi
+  }, [filteredItems.length]);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -104,6 +156,7 @@ export default function ListingList() {
   // Favorites
   const toggleFavorite = (id) => {
     setFavorites((prev) => {
+      toast.dismiss();
       if (prev.includes(id)) {
         toast.info("Đã xóa khỏi yêu thích");
         return prev.filter((x) => x !== id);
@@ -113,7 +166,6 @@ export default function ListingList() {
       }
     });
   };
-
   useEffect(() => {
     localStorage.setItem("favorites", JSON.stringify(favorites));
   }, [favorites]);
@@ -170,84 +222,44 @@ export default function ListingList() {
               </div>
             </div>
 
-            {/* Price Range */}
+            {/* Price Range Slider (kéo thả) */}
             <div className="p-4 bg-white border rounded-lg">
               <h3 className="mb-3 text-sm font-semibold text-gray-900">
                 Khoảng giá
               </h3>
-              <div className="space-y-3">
-                <input
-                  type="number"
-                  placeholder="Từ"
-                  value={priceRange.min}
-                  onChange={(e) =>
-                    setPriceRange({
-                      ...priceRange,
-                      min: Number(e.target.value),
-                    })
-                  }
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-                <input
-                  type="number"
-                  placeholder="Đến"
-                  value={priceRange.max}
-                  onChange={(e) =>
-                    setPriceRange({
-                      ...priceRange,
-                      max: Number(e.target.value),
-                    })
-                  }
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
 
-            {/* Brand */}
-            {brands.length > 0 && (
-              <div className="p-4 bg-white border rounded-lg">
-                <h3 className="mb-3 text-sm font-semibold text-gray-900">
-                  Thương hiệu
-                </h3>
-                <div className="space-y-2 overflow-y-auto max-h-48">
-                  {brands.map((brand) => (
-                    <label
-                      key={brand}
-                      className="flex items-center gap-2 cursor-pointer"
+              {priceMin === priceMax ? (
+                <p className="text-sm text-gray-500">
+                  Không có dữ liệu giá để lọc
+                </p>
+              ) : (
+                <>
+                  <Slider
+                    min={priceMin}
+                    max={priceMax}
+                    step={SLIDER_STEP}
+                    value={priceRange}
+                    onValueChange={setPriceRange} // trả về [min, max]
+                    className="w-full"
+                  />
+                  <div className="flex items-center justify-between mt-3 text-sm">
+                    <span>
+                      {(priceRange[0] || 0).toLocaleString("vi-VN")} ₫
+                    </span>
+                    <span>
+                      {(priceRange[1] || 0).toLocaleString("vi-VN")} ₫
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <button
+                      className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                      onClick={() => setPriceRange([priceMin, priceMax])}
                     >
-                      <input
-                        type="checkbox"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={(e) => {
-                          if (e.target.checked)
-                            setSelectedBrands([...selectedBrands, brand]);
-                          else
-                            setSelectedBrands(
-                              selectedBrands.filter((b) => b !== brand)
-                            );
-                        }}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                      />
-                      <span className="text-sm text-gray-700">{brand}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Verified */}
-            <div className="p-4 bg-white border rounded-lg">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasVerified}
-                  onChange={(e) => setHasVerified(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                />
-                <span className="text-sm font-medium text-gray-900">
-                  Đã kiểm định
-                </span>
-              </label>
+                      Đặt lại
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </aside>
 
@@ -283,7 +295,11 @@ export default function ListingList() {
             </div>
 
             {/* Listings */}
-            {filteredItems.length === 0 ? (
+            {loading ? (
+              <div className="py-16 text-center bg-white border rounded-lg">
+                Đang tải…
+              </div>
+            ) : filteredItems.length === 0 ? (
               <div className="py-16 text-center bg-white border rounded-lg">
                 <p className="text-lg text-gray-500">Không có sản phẩm</p>
               </div>
@@ -299,11 +315,14 @@ export default function ListingList() {
                       state={{ from: location.pathname + location.search }}
                       className="shrink-0"
                     >
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="object-cover w-48 h-32 rounded-lg"
-                      />
+                      <div className="flex items-center justify-center w-48 h-32 overflow-hidden bg-gray-100 rounded-lg">
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="object-contain max-w-full max-h-full"
+                          loading="lazy"
+                        />
+                      </div>
                     </Link>
 
                     <div className="flex flex-col justify-between flex-1">
@@ -316,18 +335,6 @@ export default function ListingList() {
                             {item.title}
                           </h3>
                         </Link>
-
-                        <div className="flex items-center gap-3 mt-2 text-sm text-gray-600">
-                          {item.badge && (
-                            <span className="px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded">
-                              {item.badge}
-                            </span>
-                          )}
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-4 h-4" />
-                            {item.base_name || "TP.HCM"}
-                          </span>
-                        </div>
                       </div>
 
                       <div className="flex items-center justify-between mt-3">
@@ -357,7 +364,7 @@ export default function ListingList() {
                           </button>
 
                           <Link
-                            to={`listing/${item.id}`}
+                            to={`/marketplace/listing/${item.id}`}
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
                           >
                             Xem chi tiết

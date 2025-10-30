@@ -15,7 +15,7 @@ export default function ListingCard({ listing, onView, onEdit, onHide }) {
         <Button size="lg"
           variant="outline"
           className="h-10 w-full text-red-600 border-red-200"
-          onClick={() => onHide?.(listing)}>Ẩn tin</Button>,
+          onClick={() => onHide?.(listing.id)}>Ẩn tin</Button>,
       ]}
     />
   )

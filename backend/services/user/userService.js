@@ -89,6 +89,15 @@ const updateUser = async (id, {
     email, 
     phone
  }) => {
+const withdraw = async (userId, amount, options) => {
+    const user = await users.findByPk(userId);
+    if (!user) throw new Error('User not found');
+    user.balance -= amount;
+    await user.save({ ...options });
+    return user;
+};
+
+const updateUser = async (id, { display_name, email, phone }) => {
     const data = await users.update({
         display_name,
         email,

@@ -61,8 +61,7 @@ const Header = () => {
   const [provError, setProvError] = useState(null);
   const [wardError, setWardError] = useState(null);
 
-  const { items } = useCart();
-  const itemCount = items.length;
+  const { cartItemCount } = useCart();
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     (async () => {
@@ -230,8 +229,8 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups.xe).map(([name, group]) =>
-                          group.data ? (
+                        {Object.entries(groups?.xe || {}).map(([name, group]) =>
+                          group?.data ? (
                             <div key={name}>
                               <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
                                 {group.icon} {name}
@@ -240,9 +239,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -284,8 +281,8 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups.pin).map(([name, group]) =>
-                          group.data ? (
+                        {Object.entries(groups?.pin || {}).map(([name, group]) =>
+                          group?.data ? (
                             <div key={name}>
                               <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
                                 {group.icon} {name}
@@ -294,9 +291,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -338,11 +333,11 @@ const Header = () => {
                     <span className="font-medium text-gray-700">
                       {selectedProvince
                         ? provinces.find(
-                            (p) => p.ProvinceID === Number(selectedProvince)
-                          )?.ProvinceName
+                          (p) => p.ProvinceID === Number(selectedProvince)
+                        )?.ProvinceName
                         : provLoading
-                        ? "Đang tải khu vực..."
-                        : "Chọn khu vực"}
+                          ? "Đang tải khu vực..."
+                          : "Chọn khu vực"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </Button>
@@ -400,8 +395,8 @@ const Header = () => {
                           {!selectedProvince
                             ? "Chọn tỉnh trước"
                             : districtLoading
-                            ? "Đang tải..."
-                            : "-- Chọn quận --"}
+                              ? "Đang tải..."
+                              : "-- Chọn quận --"}
                         </option>
                         {districts.map((d) => (
                           <option key={d.DistrictID} value={d.DistrictID}>
@@ -426,8 +421,8 @@ const Header = () => {
                           {!selectedDistrict
                             ? "Chọn quận trước"
                             : wardLoading
-                            ? "Đang tải..."
-                            : "-- Chọn xã --"}
+                              ? "Đang tải..."
+                              : "-- Chọn xã --"}
                         </option>
                         {wards.map((w) => (
                           <option key={w.WardCode} value={w.WardCode}>
@@ -472,14 +467,14 @@ const Header = () => {
                   className="relative inline-flex items-center justify-center w-10 h-10 text-white rounded-full hover:bg-white/20"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {itemCount > 0 && (
+                  {cartItemCount > 0 && (
                     <span
-                      aria-label={`Có ${itemCount} mặt hàng trong giỏ`}
+                      aria-label={`Có ${cartItemCount} mặt hàng trong giỏ`}
                       className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1.5
                  rounded-full bg-red-600 text-white text-[10px] font-semibold
                  flex items-center justify-center leading-none shadow"
                     >
-                      {itemCount > 99 ? "99+" : itemCount}
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
                     </span>
                   )}
                 </Link>
@@ -506,7 +501,10 @@ const Header = () => {
                     <Link to="/profile">Tài khoản</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/profile/posts">Tin đăng của tôi</Link>
+                    <Link to={`/shop/${user.id}`}>Trang của tôi</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to={`/chat?buyer=${user.id}`}>Tin Nhắn</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to="/upgrade">Nâng cấp tài khoản</Link>
