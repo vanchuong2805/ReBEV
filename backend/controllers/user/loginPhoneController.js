@@ -86,6 +86,7 @@ const loginUserByPhone = async (req, res) => {
             httpOnly: true,
             secure: false,
             sameSite: 'none',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
         const { password: pwd, ...userWithoutPassword } = accountUser.dataValues;
