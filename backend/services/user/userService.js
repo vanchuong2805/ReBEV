@@ -104,11 +104,12 @@ const withdraw = async (userId, amount, options) => {
     return user;
 };
 
-const updateUser = async (id, { display_name, email, phone }) => {
+const updateUser = async (id, { display_name, email, phone, avatar }) => {
     const data = await users.update({
         display_name,
         email,
         phone,
+        avatar,
         update_at: Sequelize.literal('GETDATE()')
     }, {
         where: {
