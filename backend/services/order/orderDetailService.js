@@ -51,7 +51,7 @@ const createReview = async ({
     //     order: [['created_at', 'DESC']],
     // });
 
-    const latestStatus = await orderStatusService.getLatestStatus(orderDetail.order_id);
+    const latestStatus = await orderStatusService.getCurrentStatus(orderDetail.order_id);
 
     if (!latestStatus || latestStatus.status !== ORDER_STATUS.COMPLETED) {
         throw new Error('Cannot review an order that is not completed');
