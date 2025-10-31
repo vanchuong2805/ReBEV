@@ -112,14 +112,14 @@ const ListingDetail = () => {
     new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(date));
 
   // ====== Các hành động ======
-  const handleBuyNow = async (postId) => {
+  const handleBuyNow = async () => {
     if (!user) {
       alert(" Bạn cần đăng nhập để mua hàng");
       return;
     }
     try {
-      await addToCart(user.id, postId);
-      setBuyNowItem(postId);
+      await addToCart(user.id, listing.id);
+      setBuyNowItem(listing.id);
       navigate("/checkout");
     } catch (error) {
       console.log(error);

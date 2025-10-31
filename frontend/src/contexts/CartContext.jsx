@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getCartItems } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
 import { addCarts } from "@/features/marketplace/service";
+import { useUser } from "./UserContext";
 
 const CartCtx = createContext();
 
@@ -9,7 +10,7 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [refresh, setRefresh] = useState(0);
   const [buyNowItem, setBuyNowItem] = useState(null);
-
+  const { user } = useUser();
   function getThumbnail(media) {
     // media là chuỗi JSON: [{ url: "image https://...", is_thumbnail: true }, ...]
     try {
@@ -24,13 +25,14 @@ export function CartProvider({ children }) {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const fetchData = async () => {
-      if (user.id) {
+      if (user) {
+        console.log(user.id);
         const data = await getCartItems(user.id);
         const cartItems = data.map((item) => ({
           ...item,
           items: item.items.map((it) => ({
             ...it,
-            selected: (it.post_id === buyNowItem),
+            selected: it.post_id === buyNowItem,
           })),
           selected: false,
         }));
@@ -39,7 +41,7 @@ export function CartProvider({ children }) {
       }
     };
     fetchData();
-  }, [refresh]);
+  }, [refresh, user]);
 
   const addToCart = async (userId, postId) => {
     try {
