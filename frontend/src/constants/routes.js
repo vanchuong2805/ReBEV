@@ -9,6 +9,7 @@ export const ROUTES = {
   CHECKOUT: "/checkout",
   SUCCESS: "/checkout/success",
   FAIL: "/checkout/fail",
+  DEPOSIT: "/checkout/deposit",
   ADMIN: {
     DASHBOARD: "/admin",
     USERS: "/admin/users",

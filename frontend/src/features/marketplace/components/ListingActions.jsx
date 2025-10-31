@@ -2,6 +2,9 @@ import { ShoppingCart, CreditCard, MessageCircle, Heart } from "lucide-react";
 import { addCarts } from "../service";
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 import { useCart } from "@/contexts/CartContext";
+import { getPostById, getCategories } from "@/features/profile/service";
+import { order_detail } from "@/features/profile/components/purchases/MockPurchases";
+import { ca } from "zod/v4/locales";
 
 export default function ListingActions({
   listing,
@@ -15,6 +18,33 @@ export default function ListingActions({
   const { favoriteList, toggleFavorite } = useFavorite();
   const isFav = favoriteList.some((f) => f.id === listing.id);
   const { addToCart } = useCart();
+
+  const handleDeposit = async () => {
+    if (!user) {
+      alert(" Bạn cần đăng nhập để mua hàng");
+      return;
+    }
+    const category = await getCategories();
+    const categoryInfo = category.find((cat) => cat.id === listing.category_id);
+
+    const orderData = {
+      seller_id: listing.user_id,
+      order_type: 2,
+      from_contact_id: listing.base_id,
+      delivery_price: 0,
+      total_amount: (listing.price * categoryInfo.deposit_rate) / 100,
+      order_details: [
+        {
+          post_id: listing.id,
+          price: listing.price,
+          deposit_amount: (listing.price * categoryInfo.deposit_rate) / 100,
+          commission_amount: 0,
+        },
+      ],
+    };
+    navigate("/checkout/deposit", { state: { orderData } });
+  };
+
   const handleAddToCart = async () => {
     if (!user) {
       alert(" Bạn cần đăng nhập để thêm vào giỏ hàng");
@@ -56,15 +86,24 @@ export default function ListingActions({
   return (
     <div className="flex flex-col gap-3">
       {/* MUA NGAY */}
-      <button
-        onClick={() => handleBuyNow()}
-        className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white rounded-xl 
-                   bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 
-                   shadow-md transition-transform hover:scale-[1.02]"
-      >
-        <CreditCard className="w-5 h-5" />
-        {categoryInfo?.id === 1 ? "Đặt cọc ngay" : "Mua ngay"}
-      </button>
+
+      {categoryInfo?.id === 1 ? (
+        <button
+          onClick={() => handleDeposit()}
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md transition-transform hover:scale-[1.02]"
+        >
+          <CreditCard className="w-5 h-5" />
+          Đặt cọc ngay
+        </button>
+      ) : (
+        <button
+          onClick={() => handleBuyNow()}
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md transition-transform hover:scale-[1.02]"
+        >
+          <CreditCard className="w-5 h-5" />
+          Mua ngay
+        </button>
+      )}
 
       {/* THÊM VÀO GIỎ */}
       {listing.category_id !== 1 && (
