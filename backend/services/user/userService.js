@@ -8,11 +8,22 @@ import orderDetailService from '../order/orderDetailService.js';
 import userReviewService from './userReviewService.js';
 
 const getUsers = async () => {
-    const data = await users.findAll();
+    const data = await users.findAll({ raw: true });
+    for (const user of data) {
+        const { count, totalRating } = await getUserRatingCount(user.id);
+        user.rating_count = count;
+        user.total_rating = totalRating;
+    }
+
     return data;
 };
 const getUser = async (id) => {
-    const data = await users.findByPk(id);
+    const data = await users.findByPk(id, { raw: true });
+    if (data) {
+        const { count, totalRating } = await getUserRatingCount(data.id);
+        data.rating_count = count;
+        data.total_rating = totalRating;
+    }
     return data;
 };
 
@@ -191,6 +202,22 @@ const getUserRating = async (user_id) => {
     }
     return ratingCount > 0 ? totalRating / ratingCount : 0;
 }
+
+const getUserRatingCount = async (user_id) => {
+    const posts = await postService.getByUserId(user_id);
+    let count = 0;
+    let totalRating = 0;
+    for (const post of posts) {
+        const userReview = await orderDetailService.getRatingByPost(post.id);
+        if (userReview) {
+            console.log(userReview[0]?.rating_value);
+            count += 1;
+            totalRating += userReview[0]?.rating_value || 0;
+        }
+    }
+    return { count, totalRating };
+}
+
 export default {
     getUsers,
     getUser,
@@ -208,4 +235,5 @@ export default {
     unLockAccount,
     is_locked,
     getUserRating,
+    getUserRatingCount
 };
