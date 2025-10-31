@@ -23,7 +23,6 @@ export function CartProvider({ children }) {
   }
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
     const fetchData = async () => {
       if (user) {
         console.log(user.id);
@@ -38,6 +37,8 @@ export function CartProvider({ children }) {
         }));
         console.log(cartItems);
         setItems(cartItems);
+      } else {
+        setItems([]);
       }
     };
     fetchData();
