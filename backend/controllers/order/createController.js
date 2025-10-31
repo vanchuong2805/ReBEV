@@ -28,7 +28,6 @@ const createOrder = async (req, res) => {
                 delivery_price,
                 order_details,
                 total_amount,
-                weight,
             } = orderData;
             if (
                 !seller_id ||
@@ -39,8 +38,7 @@ const createOrder = async (req, res) => {
                 delivery_price < 0 ||
                 !order_details ||
                 order_details.length === 0 ||
-                !total_amount ||
-                weight === undefined
+                !total_amount
             ) {
                 await t.rollback();
                 return res.status(400).json({ error: 'Missing required fields of an order' });
@@ -85,7 +83,6 @@ const createOrder = async (req, res) => {
                 { transaction: t }
             );
 
-            newOrder.weight = weight;
             order_id += newOrder.id + '_';
             orderLists.push(newOrder);
             // Process each order detail
