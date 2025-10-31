@@ -30,8 +30,6 @@ const ListingDetail = () => {
   const { user } = useUser();
   const { listingId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from || "/profile?tab=listings";
   const { addToCart } = useCart();
   const [listing, setListing] = useState(null);
   const [variations, setVariations] = useState([]);
