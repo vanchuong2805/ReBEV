@@ -67,12 +67,13 @@ const getById = async (id, options) => {
 };
 
 const getCartItem = async (postId) => {
-    const data = await posts.findByPk(postId, {
+    const data = await posts.findOne({
         include: [{
             association: 'post_details',
             where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
         }, 'category', 'seller_contact'],
         where: {
+            id: postId,
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
@@ -82,7 +83,7 @@ const getCartItem = async (postId) => {
 
     const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
 
-    data.media = image;
+    if (data) data.media = image;
 
     return data;
 };
