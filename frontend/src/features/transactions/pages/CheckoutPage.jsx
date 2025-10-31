@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { useNavigate, Link, redirect } from "react-router";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder, getDeliveryFees } from "../service";
@@ -20,10 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import GroupCheckout from "../components/GroupCheckout";
-import { from } from "@apollo/client";
 
 export default function CheckoutPage() {
-  const { selectedTotal, selectedGroups } = useCart();
+  const {
+    selectedTotal,
+    selectedGroups,
+  } = useCart();
   const [paymentGroup, setPaymentGroup] = useState({});
   const [loading, setLoading] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
@@ -38,12 +40,14 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    
     const totalDeliveryFee = Object.values(paymentGroup).reduce(
       (acc, curr) => acc + curr.delivery_price,
       0
     );
     console.log(totalDeliveryFee);
     setShippingFee(totalDeliveryFee);
+    console.log(selectedGroups);
   }, [paymentGroup]);
 
   // lấy user id (tuỳ app của bạn)

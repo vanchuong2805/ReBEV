@@ -32,7 +32,7 @@ const ListingDetail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from || "/profile?tab=listings";
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
   const [listing, setListing] = useState(null);
   const [variations, setVariations] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -112,7 +112,19 @@ const ListingDetail = () => {
     new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(date));
 
   // ====== Các hành động ======
-  const handleBuyNow = () => alert(`Mua ngay: ${listing.title}`);
+  const handleBuyNow = async (postId) => {
+    if (!user) {
+      alert(" Bạn cần đăng nhập để mua hàng");
+      return;
+    }
+    try {
+      await addToCart(user.id, postId);
+      setBuyNowItem(postId);
+      navigate("/checkout");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   
 
