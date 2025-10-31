@@ -61,6 +61,7 @@ const updateContact = async (req, res) => {
         } = req.body;
 
         const contact_id = await userContactService.getUserContact(id);
+        
         const user = await userContactService.getUserById(user_id);
         const error = [];
 

@@ -13,6 +13,8 @@ import authRouter from './authRoutes.js';
 import transactionRouter from './transactionRoutes.js';
 import favoritePostRouter from './favoritePostRoutes.js';
 import packageRoute from './packageRoutes.js';
+import orderDetailRoute from './orderDetailRoutes.js';
+
 const router = express.Router();
 
 router.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -29,5 +31,6 @@ router.use('/auth', authRouter);
 router.use('/transactions', transactionRouter);
 router.use('/favorites', favoritePostRouter);
 router.use('/packages', packageRoute);
+router.use('/order-details', orderDetailRoute);
 
 export default router;

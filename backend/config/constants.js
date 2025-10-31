@@ -44,6 +44,8 @@ export const ERROR_MESSAGE = {
     CREATE_PACKAGE_FAIL: 'Creating package failed',
     DELETE_PACKAGE_FAIL: 'Deleting package failed',
     UPDATE_PACKAGE_FAIL: 'Updating package failed',
+    FORGET_PASSWORD_FAILED: 'Resetting password failed',
+    CREATE_REVIEW_FAILED: 'Creating review failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -64,6 +66,9 @@ export const SUCCESS_MESSAGE = {
     CREATE_PACKAGE_SUCCESS: 'Package created successfully',
     DELETE_PACKAGE_SUCCESS: 'Package deleted successfully',
     UPDATE_PACKAGE_SUCCESS: 'Package updated successfully',
+    OTP_SENT: 'OTP has been sent successfully',
+    PASSWORD_RESET_SUCCESS: 'Password has been reset successfully',
+    CREATE_REVIEW_SUCCESS: 'Review created successfully',
 }
 
 export const POST_STATUS = {
@@ -113,7 +118,7 @@ export const ORDER_STATUS_TRANSITION = {
     [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING, ORDER_STATUS.PAID],
     [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.DELIVERING],
-    [ORDER_STATUS.COMPLETED]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.PAID],
+    [ORDER_STATUS.COMPLETED]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.PAID, ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.CUSTOMER_CANCELLED]: [ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.SELLER_CANCELLED]: [ORDER_STATUS.CONFIRMED],
 };

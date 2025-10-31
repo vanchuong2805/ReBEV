@@ -23,6 +23,7 @@ import userContactService from "../../services/user/userContactService.js";
 const getContact = async (req, res) => {
     try {
         const contact = await userContactService.getUserContactsByUserId(req.params.id);
+        
         if (!contact) {
             return res.status(404).json({ error: "Contact not found" });
         }

@@ -47,7 +47,10 @@ const createFavoritePost = async (req, res) => {
             errors.push(ERROR_MESSAGE.CREATE_FAVORITE_FAIL);
         }
 
-        const existedFavoritePost = await favoritePostService.findFavoritePost({ user_id, post_id });
+        const existedFavoritePost = await favoritePostService.findFavoritePost({ 
+            user_id,
+             post_id 
+        });
 
         if (existedFavoritePost) {
             errors.push(ERROR_MESSAGE.FAVORITE_POST_EXISTED);

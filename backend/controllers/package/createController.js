@@ -39,10 +39,19 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
 const createPackage = async (req, res) => {
 
     try {
-        const { name, price, description, highlight, top, duration } = req.body;
+        const {
+            name,
+            price,
+            description,
+            highlight,
+            top,
+            duration
+        } = req.body;
 
         if (!name || !price || !description || !duration) {
-            return res.status(400).json({ error: ERROR_MESSAGE.BLANK_INFORMATION });
+            return res.status(400).json({
+                error: ERROR_MESSAGE.BLANK_INFORMATION
+            });
         }
 
         const newPackage = await packageService.createPackage(
@@ -61,7 +70,9 @@ const createPackage = async (req, res) => {
 
     } catch (error) {
         console.error(ERROR_MESSAGE.CREATE_PACKAGE_FAIL, error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.message
+        });
     }
 };
 export default createPackage;

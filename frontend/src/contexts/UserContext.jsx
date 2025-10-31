@@ -1,22 +1,27 @@
+import { logoutUser, refreshToken } from "@/features/auth/service";
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     // Check if user is logged in on app start
-    const accessToken = localStorage.getItem("accessToken");
-    const userData = localStorage.getItem("user");
+    const initAuth = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        setUser(user);
+      } catch (error) {
+        console.error("Error during initialization:", error);
+      }
 
-    if (accessToken && userData) {
-      setUser(JSON.parse(userData));
-      setIsAuthenticated(true);
-    }
-    setLoading(false);
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
   const login = (userData, accessToken) => {
@@ -26,11 +31,18 @@ export const UserProvider = ({ children }) => {
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await logoutUser();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const updateUser = (userData) => {

@@ -47,7 +47,10 @@ const createCart = async (req, res) => {
             errors.push(ERROR_MESSAGE.CREATE_CART_FAIL);
         }
 
-        const existedCart = await cartService.findCartItem({ user_id, post_id });
+        const existedCart = await cartService.findCartItem({
+            user_id,
+            post_id
+        });
 
         if (existedCart) {
             errors.push(ERROR_MESSAGE.CART_ITEM_EXISTED);
