@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import Frame from '../CardFrame'
 
+
 export default function SuccessSaleCard({ sale, onView, onContract, onMessage }) {
   return (
     <Frame

@@ -5,7 +5,7 @@ import { Car } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useUser } from '@/contexts/UserContext'
-import { getOrderBySeller,changeOrderStatus } from '@/features/profile/service'
+import { getOrderBySeller, changeOrderStatus } from '@/features/profile/service'
 
 
 import PendingSaleCard from '@/features/profile/components/sales/PendingSaleCard'
@@ -31,6 +31,7 @@ const SalesSection = () => {
       if (!user?.id) return
       try {
         const data = await getOrderBySeller(user.id)
+        console.log("Đơn bán tải về:", data)
         setOrders(data || [])
       } catch (error) {
         console.error("❌ Lỗi tải đơn bán:", error)
@@ -39,11 +40,11 @@ const SalesSection = () => {
     fetchOrders()
   }, [user])
 
-  const pendingOrders    = orders.filter(o => getStatus(o) === 'PAID')
+  const pendingOrders = orders.filter(o => getStatus(o) === 'PAID')
   const processingOrders = orders.filter(o => getStatus(o) === 'CONFIRMED')
-  const shippingOrders   = orders.filter(o => getStatus(o) === 'DELIVERING')
-  const successOrders    = orders.filter(o => getStatus(o) === 'COMPLETED')
-  const canceledOrders   = orders.filter(o => getStatus(o) === 'SELLER_CANCELLED')
+  const shippingOrders = orders.filter(o => getStatus(o) === 'DELIVERING')
+  const successOrders = orders.filter(o => getStatus(o) === 'COMPLETED')
+  const canceledOrders = orders.filter(o => getStatus(o) === 'SELLER_CANCELLED' || getStatus(o) === 'FAIL_PAY')
   const total = orders.length
 
   const handleView = (order) => {
@@ -53,35 +54,47 @@ const SalesSection = () => {
   }
 
   const handleAccept = async (order) => {
-  try {
-    await changeOrderStatus(order.id, "CONFIRMED", "Người bán đã xác nhận đơn hàng")
-    setOrders(prev =>
-      prev.map(o =>
-        o.id === order.id
-          ? { ...o, order_statuses: [...o.order_statuses, { status: "CONFIRMED" }] }
-          : o
+    try {
+      await changeOrderStatus(order.id, "CONFIRMED", "Người bán đã xác nhận đơn hàng")
+      setOrders(prev =>
+        prev.map(o =>
+          o.id === order.id
+            ? { ...o, order_statuses: [...o.order_statuses, { status: "CONFIRMED" }] }
+            : o
+        )
       )
-    )
-    alert(" Đã xác nhận đơn hàng thành công!")
-  } catch (error) {
-    console.error(" Lỗi khi xác nhận đơn hàng:", error)
-    alert("Xác nhận thất bại, vui lòng thử lại.")
+      alert(" Đã xác nhận đơn hàng thành công!")
+    } catch (error) {
+      console.error(" Lỗi khi xác nhận đơn hàng:", error)
+      alert("Xác nhận thất bại, vui lòng thử lại.")
+    }
   }
-}
   const renderSaleCard = (order) => {
-    const s = getStatus(order)
-    if (s === 'PAID')
-      return <PendingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} onAccept={() => handleAccept(order)} />
-    if (s === 'CONFIRMED')
-      return <ProcessingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
-    if (s === 'DELIVERING')
-      return <ShippingSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
-    if (s === 'COMPLETED')
-      return <SuccessSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
-    if (s === 'SELLER_CANCELLED')
-      return <CanceledSaleCard key={order.id} sale={order.order_details?.[0]?.post} onView={() => handleView(order)} />
-    return null
-  }
+  const s = getStatus(order)
+
+  const renderDetails = (CardComponent, extraProps = {}) =>
+    order.order_details.map((detail) => (
+      <CardComponent
+        key={detail.id}
+        sale={detail.post}
+        onView={() => handleView(order)}
+        {...extraProps}
+      />
+    ))
+  return (
+    <div key={order.id} className="border border-gray-300 rounded-md p-4 mb-4">
+      <h3 className="font-semibold mb-2">Đơn hàng #{order.id}</h3>
+
+      {s === "PAID" && renderDetails(PendingSaleCard, { onAccept: () => handleAccept(order) })}
+      {s === "CONFIRMED" && renderDetails(ProcessingSaleCard)}
+      {s === "DELIVERING" && renderDetails(ShippingSaleCard)}
+      {s === "COMPLETED" && renderDetails(SuccessSaleCard)}
+      {(s === "SELLER_CANCELLED" || s === "FAIL_PAY") &&
+        renderDetails(CanceledSaleCard, { onAccept: () => handleAccept(order) })}
+    </div>
+  )
+}
+
 
   return (
     <Card>
