@@ -51,7 +51,7 @@ const createReview = async ({
     //     order: [['created_at', 'DESC']],
     // });
 
-    const latestStatus = await orderStatusService.getLatestStatus(orderDetail.order_id);
+    const latestStatus = await orderStatusService.getCurrentStatus(orderDetail.order_id);
 
     if (!latestStatus || latestStatus.status !== ORDER_STATUS.COMPLETED) {
         throw new Error('Cannot review an order that is not completed');
@@ -88,22 +88,44 @@ const updateReview = async (reviewId, {
         }
     });
 
-    if(!review) {
-        throw new Error
+    if (!review) {
+        throw new Error('Review not found');
     }
 
-    const data = await user_reviews.update({
-        rating,
-        comment,
-        update_at: Sequelize.literal('GETDATE()')
-    }, {
-        where: {
-            id: reviewId
-        }
-    });
+    const createAt = new Date(review.create_at);
 
-    return data;
-};
+    const expDate = new Date(createAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    if (expDate < Date.now()) {
+
+        const data = await user_reviews.update({
+            rating,
+            comment,
+            update_at: Sequelize.literal('GETDATE()')
+        }, {
+            where: {
+                id: reviewId
+            }
+        });
+
+        return data;
+    }
+
+    else throw new Error('Review update period has expired');
+}
+
+const getRatingByPost = async (post_id) => {
+    const data = await order_detail.findOne({
+        include: [{
+            association: "user_reviews",
+            required: true,
+        }],
+        where: {
+            post_id: post_id
+        }
+    })
+    return data?.user_reviews;
+}
 
 export default {
     getAll,
@@ -112,5 +134,6 @@ export default {
     getByOrderId,
     getByPostId,
     createReview,
-    updateReview
+    updateReview,
+    getRatingByPost
 };

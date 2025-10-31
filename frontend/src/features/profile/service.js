@@ -1,4 +1,5 @@
 import axios from "axios";
+import { order_detail } from "./components/purchases/MockPurchases";
 
 const GHN_API = import.meta.env.VITE_GHN_API;
 const TOKEN = import.meta.env.VITE_GHN_TOKEN;
@@ -77,7 +78,7 @@ export const updateProfile = async (id, data) => {
       },
     }
   );
-  console.log(data);
+  console.log(res.data);
   return res.data;
 };
 export const changePassword = async (id, oldPassword, newPassword) => {
@@ -183,5 +184,20 @@ export async function changeOrderStatus(orderId, status, description) {
       },
     }
   );
+  return res.data;
+}
+export async function createReview(user_id, order_detail_id, rating, comment) {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.post(
+    `${API_BASE_URL}/order-details/${user_id}/review`,
+    { order_detail_id, rating, comment },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  console.log(res.data.error);
   return res.data;
 }

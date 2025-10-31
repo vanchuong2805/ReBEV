@@ -118,16 +118,14 @@ const updateUser = async (req, res) => {
 
         const error = [];
 
-        const data = {};
-
-        if (display_name) {
-            data.display_name = display_name;
+        if (!display_name) {
+            error.push(ERROR_MESSAGE.DISPLAY_NAME_BLANK);
         }
 
         const newUser = await userService.updateUser(id, {
-            avatar,
-            ...data,
-            update_at: new Date()
+            display_name,
+            update_at: new Date(),
+            avatar
         });
         res.status(200).json({
             message: SUCCESS_MESSAGE.UPDATE_USER_SUCCESS,
@@ -137,7 +135,6 @@ const updateUser = async (req, res) => {
         if (error.length > 0) {
             return res.status(400).json({ errors: error });
         }
-
 
     } catch (error) {
         console.error(ERROR_MESSAGE.UPDATE_USER_FAIL, error);

@@ -109,7 +109,9 @@ export default function ListingActions({
       {listing.category_id !== 1 && (
         <button
           onClick={() => handleAddToCart(listing.id)}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-600 hover:to-amber-500 shadow-md transition-transform hover:scale-[1.02]"
+          className="flex items-center justify-center gap-2 w-full px-4 py-3 font-semibold text-white rounded-xl 
+                     bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-600 hover:to-amber-500 
+                     shadow-md transition-transform hover:scale-[1.02]"
         >
           <ShoppingCart className="w-5 h-5" />
           Thêm vào giỏ hàng
