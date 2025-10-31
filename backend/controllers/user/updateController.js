@@ -125,9 +125,9 @@ const updateUser = async (req, res) => {
         }
 
         const newUser = await userService.updateUser(id, {
-            avatar,
             ...data,
-            update_at: new Date()
+            update_at: new Date(),
+            avatar
         });
         res.status(200).json({
             message: SUCCESS_MESSAGE.UPDATE_USER_SUCCESS,
