@@ -1,9 +1,43 @@
 import orderStatusService from '../../services/order/orderStatusService.js';
 import orderService from '../../services/order/orderService.js';
-import {
-    ORDER_STATUS_TRANSITION,
-} from '../../config/constants.js';
+import { ORDER_STATUS, ORDER_STATUS_TRANSITION, ORDER_TYPE_STATUS } from '../../config/constants.js';
 import { sequelize } from '../../models/index.js';
+
+/** 
+ * @swagger
+ * /orders/{id}/status:
+ *   put:
+ *     summary: Update order status
+ *     description: Update the status of an existing order
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the order to update
+ *         schema:
+ *           type: integer
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: The new status and description for the order
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               enum: [PENDING, PROCESSING, COMPLETED, CANCELLED]
+ *             description:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: Order status updated successfully
+ *       404:
+ *         description: Order not found
+ *       403:
+ *         description: Forbidden
+ *       400:
+ *         description: Invalid status value
+ */
 
 const changeStatus = async (req, res) => {
     const t = await sequelize.transaction();
@@ -16,11 +50,15 @@ const changeStatus = async (req, res) => {
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         } else {
-            if (user.role === 0 && order.customer_id !== user.id && order.seller_id !== user.id) {
+            if (
+                (user.role === 0 && order.customer_id !== user.id && order.seller_id !== user.id) ||
+                (order.customer_id === user.id && status === ORDER_STATUS.SELLER_CANCELLED) ||
+                (order.seller_id === user.id && status === ORDER_STATUS.CUSTOMER_CANCELLED)
+            ) {
                 return res.status(403).json({ message: 'Forbidden' });
             }
         }
-        if (!Object.keys(ORDER_STATUS_TRANSITION).includes(status)) {
+        if (!ORDER_TYPE_STATUS[order.order_type].includes(status)) {
             return res.status(400).json({ message: 'Invalid status value' });
         }
         const currentStatus = order.order_statuses[order.order_statuses.length - 1]?.status;
@@ -31,84 +69,9 @@ const changeStatus = async (req, res) => {
         }
         // Update order status
         await orderStatusService.updateOrderStatus(
-            { order_id: id, status, description },
+            { order_id: id, status, description, create_by: user.id },
             { transaction: t }
         );
-        // Process additional actions based on specific status changes
-        // if (status === ORDER_STATUS.CANCELLED) {
-        //     // Restore post statuses
-        //     const orderDetails = await orderDetailService.getByOrderId(id);
-        //     for (const item of orderDetails) {
-        //         await postService.updateStatus(item.post_id, POST_STATUS.APPROVED);
-        //     }
-        //     // Issue refund to customer
-        //     await userService.deposit(order.customer_id, order.total_amount, { transaction: t });
-        //     // Record refund transaction
-        //     await transactionService.createTransaction(
-        //         {
-        //             receiver_id: order.customer_id,
-        //             amount: order.total_amount,
-        //             transaction_type: TRANSACTION_TYPE.REFUND,
-        //             related_order_id: id,
-        //             status: TRANSACTION_STATUS.SUCCESS,
-        //         },
-        //         { transaction: t }
-        //     );
-        // } else if (status === ORDER_STATUS.DELIVERING) {
-        //     // Get contact info
-        //     const from_contact = JSON.parse(order.from_contact);
-        //     const to_contact = JSON.parse(order.to_contact);
-        //     // get order weight
-        //     const orderDetails = await orderDetailService.getByOrderId(id);
-        //     for (const item of orderDetails) {
-        //         const postDetail = await postDetailService.getWeightByPostId(item.post_id);
-        //         if (!postDetail) {
-        //             throw new Error(`Weight detail not found for post ID: ${item.post_id}`);
-        //         }
-        //         order.weight = (order.weight || 0) + parseFloat(postDetail.custom_value);
-        //     }
-        //     // Create delivery order via external service
-        //     const deliveryInfo = await deliveryService.createOrder({
-        //         from_name: from_contact.name,
-        //         from_phone: from_contact.phone,
-        //         from_address: `${from_contact.detail}, ${from_contact.ward_name}, ${from_contact.district_name}, ${from_contact.province_name}`,
-        //         from_ward_name: from_contact.ward_name,
-        //         from_district_name: from_contact.district_name,
-        //         from_province_name: from_contact.province_name,
-        //         to_name: to_contact.name,
-        //         to_phone: to_contact.phone,
-        //         to_address: `${to_contact.detail}, ${to_contact.ward_name}, ${to_contact.district_name}, ${to_contact.province_name}`,
-        //         to_ward_name: to_contact.ward_name,
-        //         to_district_name: to_contact.district_name,
-        //         to_province_name: to_contact.province_name,
-        //         payment_type_id: 2, // Receiver pays
-        //         service_type_id: 2, // Standard delivery
-        //         required_note: 'CHOXEMHANGKHONGTHU',
-        //         weight: order.weight,
-        //         items: [
-        //             {
-        //                 name: 'Order Items',
-        //                 code: 'Polo123',
-        //                 quantity: 1,
-        //                 price: 200000,
-        //                 length: 12,
-        //                 width: 12,
-        //                 height: 12,
-        //                 weight: order.weight,
-        //             },
-        //         ],
-        //     });
-        //     // check deliveryInfo for errors
-        //     if (deliveryInfo.code !== 200) {
-        //         throw new Error(
-        //             `Failed to create delivery order: ${deliveryInfo.message || 'Unknown error'}`
-        //         );
-        //     }
-
-        //     // Update order with delivery details
-
-        //     await orderService.updateOrder(id, { delivery_code: deliveryInfo.data.order_code });
-        // }
 
         await orderStatusService.handleStatus(order, status, t);
 

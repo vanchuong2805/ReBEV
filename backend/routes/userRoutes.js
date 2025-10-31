@@ -14,14 +14,16 @@ import lockAccount from '../controllers/user/lockAccountController.js';
 import unLockAccount from '../controllers/user/unLockAccountController.js';
 import registerStaff from '../controllers/user/registerStaffController.js';
 import logout from '../controllers/user/logoutController.js';
+import forgetPassword from '../controllers/user/forgetPasswordController.js';
+import getOTPPassword from '../controllers/user/getOTPController.js';
 
 const userRouter = express.Router();
 
-/**
+/** 
  * @swagger
- * tags:S
+ * tags:
  *   name: Users
- *   description: API quản lý người dùng
+ *   description: User management and retrieval
  */
 
 userRouter.get('/', getAll);
@@ -33,6 +35,8 @@ userRouter.post('/login/google', loginUserByGoogle);
 userRouter.put('/:id/update', authMiddleware, updateUser);
 userRouter.post('/:user_id/register-package/:package_id', authMiddleware, registerPackage);
 userRouter.put('/:id/update-password', authMiddleware, updatePassword);
+userRouter.post('/get-otp', getOTPPassword);
+userRouter.post('/forget-password', forgetPassword);
 userRouter.get('/:id/posts', authMiddleware, getPosts);
 userRouter.patch('/:user_id/lock-account', authMiddleware, authorize([1, 2]), lockAccount);
 userRouter.patch('/:user_id/unlock-account', authMiddleware, authorize([1, 2]), unLockAccount);

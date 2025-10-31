@@ -45,16 +45,26 @@ const updatePackage = async (req, res) => {
             id
         } = req.params;
 
-        const { name, price, description, highlight, top, duration } = req.body;
+        const { 
+            name, 
+            price, 
+            description, 
+            highlight, 
+            top, 
+            duration } = req.body;
 
         const oldPackages = await packageService.getPackage(id);
 
         if (!oldPackages) {
-            return res.status(400).json({ error: ERROR_MESSAGE.PACKAGE_NOT_FOUND });
+            return res.status(400).json({ 
+                error: ERROR_MESSAGE.PACKAGE_NOT_FOUND 
+            });
         }
 
         if (await packageService.is_deleted(id)) {
-            return res.status(400).json({ error: ERROR_MESSAGE.PACKAGE_NOT_FOUND });
+            return res.status(400).json({ 
+                error: ERROR_MESSAGE.PACKAGE_NOT_FOUND
+             });
         } else {
             await packageService.deletePackage(id);
         }

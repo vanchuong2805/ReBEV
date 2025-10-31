@@ -110,8 +110,8 @@ const deletePost = async (postId) => {
     return await posts.update({ is_deleted: true }, { where: { id: postId } });
 };
 
-const updateStatus = async (postId, status, options = {}) => {
-    return await posts.update({ status }, { where: { id: postId }, ...options });
+const updateStatus = async (postId, data, options = {}) => {
+    return await posts.update(data, { where: { id: postId }, ...options });
 };
 
 const changeVisibility = async (postId, isHidden, options = {}) => {

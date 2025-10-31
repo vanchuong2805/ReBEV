@@ -41,7 +41,7 @@ const handleCancelledStatus = async (order, t) => {
     // Restore post statuses
     const orderDetails = await orderDetailService.getByOrderId(order.id);
     for (const item of orderDetails) {
-        await postService.updateStatus(item.post_id, POST_STATUS.APPROVED);
+        await postService.updateStatus(item.post_id, {status: POST_STATUS.APPROVED});
     }
     // Issue refund to customer
     await userService.deposit(order.customer_id, order.total_amount, { transaction: t });
@@ -115,7 +115,7 @@ const handleDeliveringStatus = async (order, t) => {
 };
 
 const handleDeliveredStatus = async (order, t) => {
-    
+
 };
 
 const handleCompletedStatus = async (order, t) => {
@@ -124,7 +124,7 @@ const handleCompletedStatus = async (order, t) => {
         const orderDetail = await complaintService.getByOrderDetailId(item.id);
         if (!orderDetail) {
             // No complaint, proceed to mark post as SOLD
-            await postService.updateStatus(item.post_id, POST_STATUS.SOLD, { transaction: t });
+            await postService.updateStatus(item.post_id, {status: POST_STATUS.SOLD}, { transaction: t });
             const amount =
                 order.order_type === ORDER_TYPE.BUY
                     ? item.price - item.commission_amount
@@ -147,11 +147,34 @@ const handleCompletedStatus = async (order, t) => {
     }
 };
 
+const handleCustomerCancelledStatus = async (order, t) => {
+     // Restore post statuses
+    const orderDetails = await orderDetailService.getByOrderId(order.id);
+    for (const item of orderDetails) {
+        await postService.updateStatus(item.post_id, {status: POST_STATUS.APPROVED});
+    }
+    // Issue refund to customer
+    await userService.deposit(order.seller_id, order.total_amount, { transaction: t });
+    // Record refund transaction
+    await transactionService.createTransaction(
+        {
+            receiver_id: order.seller_id,
+            amount: order.total_amount,
+            transaction_type: TRANSACTION_TYPE.RELEASE,
+            related_order_id: order.id,
+            status: TRANSACTION_STATUS.SUCCESS,
+        },
+        { transaction: t }
+    );
+}
+
 const mapStatusHandlers = {
     [ORDER_STATUS.CANCELLED]: handleCancelledStatus,
     [ORDER_STATUS.DELIVERING]: handleDeliveringStatus,
     [ORDER_STATUS.COMPLETED]: handleCompletedStatus,
     [ORDER_STATUS.DELIVERED]: handleDeliveredStatus,
+    [ORDER_STATUS.CUSTOMER_CANCELLED]: handleCustomerCancelledStatus,
+    [ORDER_STATUS.SELLER_CANCELLED]: handleCancelledStatus,
 };
 
 const handleStatus = async (order, status, t) => {
@@ -161,12 +184,23 @@ const handleStatus = async (order, status, t) => {
     }
 };
 
+const getLatestStatus = async (orderId) => {
+    const data = await order_status.findOne({
+        where: {
+            order_id: orderId
+        },
+        order: [['created_at', 'DESC']],
+    });
+    return data;
+}
+
 export default {
     getAll,
     createOrderStatus,
     updateOrderStatus,
     getCurrentStatus,
     handleStatus,
+    getLatestStatus
 };
 
 export { handleCompletedStatus };

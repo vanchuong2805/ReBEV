@@ -34,9 +34,9 @@ const ListingsSection = () => {
     fetchListings()
   }, [user])
 
-  const activeListings = listings.filter(l => Number(l?.status) === 1 || Number(l?.status) === 7)
-  const pendingListings = listings.filter(l => Number(l?.status) === 0)
-  const soldListings = listings.filter(l => Number(l?.status) === 3)
+  const activeListings = listings.filter(l => (Number(l?.status) === 1 || Number(l?.status) === 7) && l?.is_hidden === false)
+  const pendingListings = listings.filter(l => Number(l?.status) === 0 && l?.is_hidden === false)
+  const soldListings = listings.filter(l => Number(l?.status) === 3 && l?.is_hidden === false)
   const expiredListings = listings.filter(l => l?.is_hidden === true)
   const rejectedListings = listings.filter(l => Number(l?.status) === 2)
   const canceledListings = listings.filter(l => Number(l?.status) === 5)

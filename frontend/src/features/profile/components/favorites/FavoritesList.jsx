@@ -5,25 +5,12 @@ import { Button } from '@/components/ui/button'
 import { getFavoritesByUserId } from '../../service'
 import { useUser } from '@/contexts/UserContext'
 import { useState, useEffect } from 'react'
+import { useFavorite } from '@/contexts/FavoritesContexts.jsx'
 
 export default function FavoriteList() {
   const { user } = useUser();
-  const [favoriteList, setFavoriteList] = useState([]);
+  const { favoriteList } = useFavorite()
 
-  useEffect(() => {
-  if (!user?.id) return;
-  const fetchFavorites = async () => {
-    try {
-      const res = await getFavoritesByUserId(user.id);
-      const favorites = res.favoritePosts || [];
-      setFavoriteList(favorites);
-    } catch (err) {
-      console.error("Lỗi load favorites:", err);
-      setFavoriteList([]);
-    }
-  };
-  fetchFavorites();
-}, [user]);
 
   return (
     <Card>
