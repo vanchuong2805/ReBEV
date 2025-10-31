@@ -43,7 +43,6 @@ function GroupCheckout({ groupItems, customerContact, setPaymentGroup }) {
             total_amount: totalAmount,
             appointment_time:
               appointmentTimes.data.leadtime_order.to_estimate_date,
-            weight,
           },
         }));
       } catch (error) {
