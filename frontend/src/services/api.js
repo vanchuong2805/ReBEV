@@ -6,10 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-  },
+  
 });
 api.interceptors.response.use(
   (response) => response, // nếu thành công thì cứ trả về
@@ -31,10 +28,10 @@ api.interceptors.response.use(
         return api(originalRequest);
       } else {
         console.log("refreshToken");
-        console.log(error)
-        // localStorage.removeItem("accessToken");
-        // localStorage.removeItem("user");
-        // window.location.href = "/";
+        console.log(error);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("user");
+        window.location.href = "/";
       }
     }
     return Promise.reject(error);
