@@ -46,6 +46,7 @@ export const ERROR_MESSAGE = {
     UPDATE_PACKAGE_FAIL: 'Updating package failed',
     FORGET_PASSWORD_FAILED: 'Resetting password failed',
     CREATE_REVIEW_FAILED: 'Creating review failed',
+    UPDATE_REVIEW_FAILED: 'Updating review failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -69,6 +70,7 @@ export const SUCCESS_MESSAGE = {
     OTP_SENT: 'OTP has been sent successfully',
     PASSWORD_RESET_SUCCESS: 'Password has been reset successfully',
     CREATE_REVIEW_SUCCESS: 'Review created successfully',
+    UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
 }
 
 export const POST_STATUS = {
