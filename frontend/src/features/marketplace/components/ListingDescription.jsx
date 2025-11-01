@@ -1,6 +1,6 @@
 import { FileText } from "lucide-react"
 
-export default function ListingDescription({ listing, variations, variationValuesId }) {
+export default function ListingDescription({ listing, variations=[], variationValuesId=[] }) {
   return (
     <div className="space-y-8 font-sans text-[15px]">
       {/* === MÔ TẢ CHI TIẾT === */}
@@ -29,8 +29,8 @@ export default function ListingDescription({ listing, variations, variationValue
 
           <div className="divide-y divide-gray-100">
             {listing.post_details.map((detail, idx) => {
-              const v = variations.find((vv) => vv.id === detail.variation_id)
-              const varVal = variationValuesId.find((vv) => vv.id === detail.variation_value_id)
+              const v = variations?.find((vv) => vv.id === detail.variation_id)
+              const varVal = variationValuesId?.find((vv) => vv.id === detail.variation_value_id)
               const displayValue =
                 detail.custom_value !== "null" ? detail.custom_value : varVal?.value || "—"
 

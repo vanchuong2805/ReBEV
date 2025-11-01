@@ -3,16 +3,19 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useUser } from "@/contexts/UserContext"
-import { updateProfile } from "@/features/profile/service" 
+import { updateProfile } from "@/features/profile/service"
+import { useUpload } from "@/hooks/posts/useUpload"   
 
 export default function EditProfileForm() {
   const { user, loading, updateUser } = useUser()
+  const { upload } = useUpload() // 🔹 dùng custom hook
+  const [uploading, setUploading] = useState(false)
 
   const [form, setForm] = useState({
     avatar: "/default-avatar.png",
     display_name: "",
-    phone:"",
-    email:"",
+    phone: "",
+    email: "",
   })
 
   useEffect(() => {
@@ -29,18 +32,27 @@ export default function EditProfileForm() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
-
-  const handleAvatarChange = (e) => {
+  // === UPLOAD ẢNH LÊN CLOUDINARY ===
+  const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Vui lòng chọn một file hình ảnh hợp lệ (jpg, png, jpeg...)")
+      alert("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
       return
     }
-    const imageUrl = URL.createObjectURL(file)
-    setForm({ ...form, avatar: imageUrl })
-  }
 
+    try {
+      setUploading(true)
+      const data = await upload(file) // 🔹 upload thật lên Cloudinary
+      setForm({ ...form, avatar: data.url.split(" ")[1] }) // chỉ lấy phần URL
+      alert("Tải ảnh lên thành công!")
+    } catch (err) {
+      console.error(err)
+      alert("Lỗi khi tải ảnh lên Cloudinary")
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -50,7 +62,8 @@ export default function EditProfileForm() {
       display_name: form.display_name,
       update_at: new Date().toISOString(),
     }
-    const res = await updateProfile(user.id, updatedUser)
+    console.log("📤 Gửi updateProfile:", user.id, updatedUser )
+    await updateProfile(user.id, updatedUser)
     updateUser(updatedUser)
     alert("Cập nhật thông tin thành công!")
   }
@@ -80,9 +93,10 @@ export default function EditProfileForm() {
           <Button
             type="button"
             variant="outline"
+            disabled={uploading}
             onClick={() => document.getElementById("avatarUpload").click()}
           >
-            Đổi ảnh đại diện
+            {uploading ? "Đang tải lên..." : "Đổi ảnh đại diện"}
           </Button>
           <input
             type="file"
@@ -93,6 +107,7 @@ export default function EditProfileForm() {
           />
         </div>
       </div>
+
       {/* Display name */}
       <div>
         <label className="block text-sm font-medium mb-1">Tên hiển thị</label>
@@ -102,6 +117,7 @@ export default function EditProfileForm() {
           onChange={handleChange}
         />
       </div>
+
       {/* Email */}
       <div>
         <label className="block text-sm font-medium mb-1">Email</label>
@@ -113,6 +129,7 @@ export default function EditProfileForm() {
           className="bg-white text-black cursor-not-allowed border border-gray-300"
         />
       </div>
+
       {/* Phone */}
       <div>
         <label className="block text-sm font-medium mb-1">Số điện thoại</label>
@@ -123,6 +140,7 @@ export default function EditProfileForm() {
           className="bg-white text-black text-sm font-medium cursor-not-allowed border border-gray-300"
         />
       </div>
+
       <Button
         type="submit"
         className="w-full bg-[#007BFF] hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm"

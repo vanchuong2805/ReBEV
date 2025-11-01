@@ -118,8 +118,7 @@ const getUser = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
 
         }
-        const rating = await userService.getUserRating(req.params.id);
-        res.status(200).json({ user, rating });
+        res.status(200).json(user);
 
     } catch (error) {
         console.error("Failed to get user:", error);

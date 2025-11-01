@@ -1,7 +1,7 @@
 import { ORDER_STATUS } from '../../config/constants.js';
 import models from '../../models/index.js';
 import orderStatusService from './orderStatusService.js';
-const { order_detail } = models;
+const { order_detail, user_reviews } = models;
 
 const getAll = async () => {
     const data = await order_detail.findAll();
@@ -44,13 +44,6 @@ const createReview = async ({
         throw new Error('Order detail not found');
     }
 
-    // const latestStatus = await order_status.findOne({
-    //     where: {
-    //         order_id: orderDetail.order_id
-    //     },
-    //     order: [['created_at', 'DESC']],
-    // });
-
     const latestStatus = await orderStatusService.getLatestStatus(orderDetail.order_id);
 
     if (!latestStatus || latestStatus.status !== ORDER_STATUS.COMPLETED) {
@@ -88,22 +81,44 @@ const updateReview = async (reviewId, {
         }
     });
 
-    if(!review) {
-        throw new Error
+    if (!review) {
+        throw new Error('Review not found');
     }
 
-    const data = await user_reviews.update({
-        rating,
-        comment,
-        update_at: Sequelize.literal('GETDATE()')
-    }, {
-        where: {
-            id: reviewId
-        }
-    });
+    const createAt = new Date(review.create_at);
 
-    return data;
-};
+    const expDate = new Date(createAt.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    if (expDate > Date.now()) {
+
+        const data = await user_reviews.update({
+            rating,
+            comment,
+            update_at: Sequelize.literal('GETDATE()')
+        }, {
+            where: {
+                id: reviewId
+            }
+        });
+
+        return data;
+    }
+
+    else throw new Error('Review update period has expired');
+}
+
+const getRatingByPost = async (post_id) => {
+    const data = await order_detail.findOne({
+        include: [{
+            association: "user_reviews",
+            required: true,
+        }],
+        where: {
+            post_id: post_id
+        }
+    })
+    return data?.user_reviews;
+}
 
 export default {
     getAll,
@@ -112,5 +127,6 @@ export default {
     getByOrderId,
     getByPostId,
     createReview,
-    updateReview
+    updateReview,
+    getRatingByPost
 };
