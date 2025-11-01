@@ -137,3 +137,10 @@ export const TRANSACTION_TYPE = {
     RELEASE: 5,
     CASH_OUT: 6,
 };
+
+
+export const COMPLAINT_STATUS = {
+    PENDING: 0,
+    RESOLVED: 1,
+    REJECTED: 2,
+}

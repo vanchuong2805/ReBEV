@@ -7,6 +7,11 @@ const getByOrderDetailId = async (orderDetailId) => {
     return data;
 };
 
+const createComplaint = async (data, options = {}) => {
+    const complaint = await complaints.create(data, options);
+    return complaint;
+}
+
 export default {
     getByOrderDetailId,
 };

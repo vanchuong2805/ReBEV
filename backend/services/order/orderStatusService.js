@@ -3,6 +3,7 @@ import orderDetailService from './orderDetailService.js';
 import userService from '../user/userService.js';
 import postService from '../post/postService.js';
 import {
+    COMPLAINT_STATUS,
     ORDER_STATUS,
     ORDER_TYPE,
     POST_STATUS,
@@ -122,7 +123,7 @@ const handleCompletedStatus = async (order, t) => {
     const orderDetails = await orderDetailService.getByOrderId(order.id);
     for (const item of orderDetails) {
         const orderDetail = await complaintService.getByOrderDetailId(item.id);
-        if (!orderDetail) {
+        if (!orderDetail || orderDetail.complaint_status === COMPLAINT_STATUS.REJECTED) {
             // No complaint, proceed to mark post as SOLD
             await postService.updateStatus(item.post_id, {status: POST_STATUS.SOLD}, { transaction: t });
             const amount =
