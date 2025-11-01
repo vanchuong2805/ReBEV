@@ -3,33 +3,77 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import favoritePostService from "../../services/favorite/favoritePostService.js";
 import postService from "../../services/post/postService.js";
 
-/** 
+/**
  * @swagger
  * /api/favorites/{user_id}:
  *   post:
- *     summary: Create a favorite post
+ *     summary: Thêm bài viết vào danh sách yêu thích của người dùng
  *     tags: [Favorites]
+ *     description: API cho phép người dùng thêm một bài viết cụ thể vào danh sách yêu thích của họ.
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: ID of the user
+ *         description: ID của người dùng thực hiện hành động yêu thích
  *         schema:
  *           type: integer
+ *           example: 1
  *     requestBody:
  *       required: true
+ *       description: Dữ liệu của bài viết cần thêm vào danh sách yêu thích
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - post_id
  *             properties:
  *               post_id:
  *                 type: integer
+ *                 example: 12
+ *                 description: ID của bài viết cần được thêm vào danh sách yêu thích
  *     responses:
  *       200:
- *         description: Favorite post created successfully
+ *         description: Thêm bài viết vào danh sách yêu thích thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Favorite post created successfully"
+ *                 favoritePost:
+ *                   type: object
+ *                   properties:
+ *                     user_id:
+ *                       type: integer
+ *                       example: 1
+ *                     post_id:
+ *                       type: integer
+ *                       example: 12
  *       400:
- *         description: Bad request
+ *         description: Yêu cầu không hợp lệ — có thể do bài viết không tồn tại, đã được yêu thích, hoặc lỗi logic khác
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["Post not found", "Favorite post already exists"]
+ *       500:
+ *         description: Lỗi máy chủ trong quá trình xử lý yêu cầu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "CREATE_FAVORITE_FAIL"
  */
 
 const createFavoritePost = async (req, res) => {
@@ -47,9 +91,9 @@ const createFavoritePost = async (req, res) => {
             errors.push(ERROR_MESSAGE.CREATE_FAVORITE_FAIL);
         }
 
-        const existedFavoritePost = await favoritePostService.findFavoritePost({ 
+        const existedFavoritePost = await favoritePostService.findFavoritePost({
             user_id,
-             post_id 
+            post_id
         });
 
         if (existedFavoritePost) {

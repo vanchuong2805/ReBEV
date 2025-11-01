@@ -14,7 +14,7 @@ const createReview = async (req, res) => {
 
         if (!order_detail_id || !rating) {
             return res.status(400).json({
-                message: ERROR_MESSAGE.BLANK_INFORMATION,
+                message: ERROR_MESSAGE.BLANK_INFORMATION,   
             });
         }
 

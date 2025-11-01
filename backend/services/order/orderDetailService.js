@@ -1,7 +1,7 @@
 import { ORDER_STATUS } from '../../config/constants.js';
 import models from '../../models/index.js';
 import orderStatusService from './orderStatusService.js';
-const { order_detail } = models;
+const { order_detail, user_reviews } = models;
 
 const getAll = async () => {
     const data = await order_detail.findAll();
@@ -43,13 +43,6 @@ const createReview = async ({
     if (!orderDetail) {
         throw new Error('Order detail not found');
     }
-
-    // const latestStatus = await order_status.findOne({
-    //     where: {
-    //         order_id: orderDetail.order_id
-    //     },
-    //     order: [['created_at', 'DESC']],
-    // });
 
     const latestStatus = await orderStatusService.getLatestStatus(orderDetail.order_id);
 
@@ -96,7 +89,7 @@ const updateReview = async (reviewId, {
 
     const expDate = new Date(createAt.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    if (expDate < Date.now()) {
+    if (expDate > Date.now()) {
 
         const data = await user_reviews.update({
             rating,
