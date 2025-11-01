@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CheckCircle2,
   Star,
@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { getPackage } from '../service'
 
 const iconById = {
   basic: Star,
@@ -24,38 +25,20 @@ const formatPrice = v => {
 
 const MembershipPackage = () => {
   const [selectedPlan, setSelectedPlan] = useState('vip1')
+  const [packages, setPackages] = useState([])
 
-
-  const packages = [
-    {
-      id: 'basic',
-      name: 'Basic',
-      description: 'Chỉ đăng bài',
-      price: 0,
-      highlight: false,
-      top: false,
-      duration: '3'
-    },
-    {
-      id: 'vip1',
-      name: 'VIP 1',
-      description: 'Đăng bài & Highlight',
-      price: 299000,
-      highlight: true,
-      top: false,
-      duration: '6'
-    },
-    {
-      id: 'vip2',
-      name: 'VIP 2',
-      description: 'Đăng bài, Highlight & Top Search',
-      price: 599000,
-      highlight: true,
-      top: true,
-      duration: '12'
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const data = await getPackage()
+        setPackages(data)
+        console.log(' Gói đã tải:', data)
+      } catch (error) {
+        console.error(' Lỗi tải gói:', error)
+      }
     }
-  ]
-  // ====================================
+    fetchPackages()
+  }, [])
 
   const currentPlan = packages.find(p => p.id === selectedPlan)
 
@@ -83,13 +66,14 @@ const MembershipPackage = () => {
             return (
               <Card
                 key={pkg.id}
-                className={`relative transition-all duration-300 cursor-pointer ${isSelected ? 'ring-2 ring-red-500 shadow-xl scale-105' : 'hover:shadow-lg'
-                  } ${isPopular ? 'border-red-300' : ''}`}
+                className={`relative transition-all duration-300 cursor-pointer ${
+                  isSelected ? 'ring-2 ring-red-500 shadow-xl scale-105' : 'hover:shadow-lg'
+                } ${isPopular ? 'border-red-300' : ''}`}
                 onClick={() => setSelectedPlan(pkg.id)}
               >
                 {isPopular && (
                   <div className='absolute -top-4 left-1/2 -translate-x-1/2'>
-                    <Badge className='bg-red-600 text-white px-4 py-1 rounded-full'>
+                    <Badge className='bg-red-600 text-white px-4 py-1 rounded-full flex items-center'>
                       <Sparkles className='w-3 h-3 mr-1' />
                       Phổ biến
                     </Badge>
@@ -103,9 +87,11 @@ const MembershipPackage = () => {
                   <CardTitle className='text-2xl font-bold'>{pkg.name}</CardTitle>
 
                   <div className='mt-4'>
-                    <span className='text-3xl font-bold text-gray-900'>{formatPrice(pkg.price)}</span>
+                    <span className='text-3xl font-bold text-gray-900'>
+                      {formatPrice(pkg.price)}
+                    </span>
                     {pkg.duration && pkg.duration !== 0 && (
-                      <span className='text-gray-600'> / {pkg.duration} tháng</span>
+                      <span className='text-gray-600'> / {pkg.duration} ngày</span>
                     )}
                   </div>
                   <p className='text-gray-600 mt-3'>{pkg.description}</p>
@@ -114,15 +100,17 @@ const MembershipPackage = () => {
                 <CardContent className='pt-2'>
                   <div className='flex flex-wrap gap-2 justify-center'>
                     <Badge variant={pkg.highlight ? 'default' : 'secondary'}>
-                      Highlight {pkg.highlight ? <CheckCircle2 className='w-4 h-4 ml-1' /> : null}
+                      Highlight {pkg.highlight && <CheckCircle2 className='w-4 h-4 ml-1' />}
                     </Badge>
                     <Badge variant={pkg.top ? 'default' : 'secondary'}>
-                      Top trang chủ {pkg.top ? <CheckCircle2 className='w-4 h-4 ml-1' /> : null}
+                      Top trang chủ {pkg.top && <CheckCircle2 className='w-4 h-4 ml-1' />}
                     </Badge>
                   </div>
 
                   <Button
-                    className={`w-full mt-6 ${isSelected ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+                    className={`w-full mt-6 ${
+                      isSelected ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700'
+                    }`}
                     onClick={handleChoose}
                   >
                     {isSelected ? 'Nâng cấp ngay' : 'Chọn gói này'}

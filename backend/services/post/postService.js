@@ -1,5 +1,5 @@
 import models from '../../models/index.js';
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, where } from 'sequelize';
 import { sequelize } from '../../models/index.js';
 import { POST_STATUS } from '../../config/constants.js';
 const { posts } = models;
@@ -67,18 +67,24 @@ const getById = async (id, options) => {
 };
 
 const getCartItem = async (postId) => {
-    const data = await posts.findByPk(postId, {
-        include: ['post_details', 'category'],
+    const data = await posts.findOne({
+        include: [{
+            association: 'post_details',
+            where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
+        }, 'category', 'seller_contact'],
         where: {
+            id: postId,
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
-            'post_details.variation_id': 13,
         },
-        attributes: ['id', 'user_id', 'title', 'price', "seller_contact_id"],
+        attributes: ['id', 'user_id', 'title', 'price', "media"],
     });
 
-    console.log(data);
+    const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
+
+    if (data) data.media = image;
+
     return data;
 };
 
@@ -124,3 +130,4 @@ export default {
     changeVisibility,
     getCartItem,
 };
+

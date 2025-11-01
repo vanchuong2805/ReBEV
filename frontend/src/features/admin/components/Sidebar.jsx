@@ -1,60 +1,77 @@
 import {
   BarChart3,
   DollarSign,
-  CreditCard,
+  ShoppingCart,
   FileText,
   Users,
   ChevronLeft,
   ChevronRight,
-  MessageCircle,
+  LogOut,
 } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
 
-const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
+import { ROUTES } from "@/constants/routes";
+import { logoutAdmin } from "../service";
+
+const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       id: "reports",
-      label: "Reports & Statistics",
+      label: "Báo cáo & Thống kê",
       icon: BarChart3,
+      to: ROUTES.ADMIN.DASHBOARD,
     },
     {
       id: "fees",
-      label: "System Fees",
+      label: "Quản lý phí hệ thống",
       icon: DollarSign,
+      to: ROUTES.ADMIN.FEES,
     },
     {
       id: "transactions",
-      label: "Transaction Management",
-      icon: CreditCard,
+      label: "Quản lý giao dịch",
+      icon: ShoppingCart,
+      to: ROUTES.ADMIN.TRANSACTIONS,
     },
     {
       id: "listings",
-      label: "Listing Management",
+      label: "Quản lý bài đăng",
       icon: FileText,
+      to: ROUTES.ADMIN.LISTINGS,
     },
     {
       id: "users",
-      label: "User Management",
+      label: "Quản lý người dùng",
       icon: Users,
+      to: ROUTES.ADMIN.USERS,
     },
   ];
 
   return (
     <div
-      className={`bg-gray-900 text-white transition-all duration-300 ${
+      className={`bg-slate-800 text-white transition-all duration-300 ${
         isCollapsed ? "w-16" : "w-64"
       } min-h-screen`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        {!isCollapsed && (
-          <h2 className="text-xl font-bold text-white">Admin Panel</h2>
-        )}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-2 rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-        </button>
+      <div className="p-4 border-b border-slate-700">
+        <div className="flex items-center justify-between">
+          {!isCollapsed && (
+            <h1 className="text-xl font-bold text-cyan-400">Admin Panel</h1>
+          )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-2 rounded-lg hover:bg-slate-700 transition-colors text-slate-300"
+          >
+            {isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Menu Items */}
@@ -62,24 +79,43 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <NavLink
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center px-4 py-3 text-left transition-colors ${
-                activeTab === item.id
-                  ? "bg-blue-600 text-white border-r-4 border-blue-400"
-                  : "text-gray-300 hover:bg-gray-700 hover:text-white"
-              }`}
+              to={item.to}
+              end={item.to === ROUTES.ADMIN.DASHBOARD}
+              className={({ isActive }) =>
+                `w-full flex items-center px-4 py-3 text-left transition-colors ${
+                  isActive
+                    ? "bg-cyan-600 text-white border-r-4 border-cyan-400"
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`
+              }
               title={isCollapsed ? item.label : ""}
             >
               <Icon size={20} className="flex-shrink-0" />
               {!isCollapsed && (
                 <span className="ml-3 font-medium">{item.label}</span>
               )}
-            </button>
+            </NavLink>
           );
         })}
       </nav>
+
+      {/* Logout Button */}
+      <div className="border-t border-slate-700 mt-6">
+        <button
+          onClick={() => {
+            logoutAdmin();
+            navigate("/");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+          }}
+          className="w-full flex items-center px-4 py-3 text-left transition-colors hover:bg-slate-700 hover:text-white"
+        >
+          <LogOut size={20} className="flex-shrink-0" />
+          {!isCollapsed && <span className="ml-3 font-medium">Đăng xuất</span>}
+        </button>
+      </div>
     </div>
   );
 };

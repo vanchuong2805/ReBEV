@@ -15,7 +15,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const cartRouter = express.Router();
 
 cartRouter.post('/:user_id', authMiddleware, createCart);
-cartRouter.get('/:user_id', getCart);
+cartRouter.get('/:user_id', authMiddleware, getCart);
 cartRouter.get('/', getAll);
 cartRouter.delete('/delete/:post_id', authMiddleware, deleteCart);
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/contexts/CartContext";
-import axios from "axios";
 import { useAuthDialog } from "@/contexts/AuthDialogContext";
 import {
   Search,
@@ -35,9 +34,13 @@ import {
 } from "@/components/ui/hover-card";
 import { Link } from "react-router";
 import { useUser } from "@/contexts/UserContext";
+import {
+  fetchDistricts,
+  fetchProvinces,
+  fetchWards,
+} from "../../features/profile/service";
+import { getVariationValues } from "@/features/posts/service";
 // ========== GHN CONFIG ==========
-const GHN_API = import.meta.env.VITE_GHN_API;
-const TOKEN = import.meta.env.VITE_GHN_TOKEN;
 
 // ===== Header Component =====
 const Header = () => {
@@ -58,32 +61,21 @@ const Header = () => {
   const [provError, setProvError] = useState(null);
   const [wardError, setWardError] = useState(null);
 
-  const { items } = useCart();
-  const itemCount = items.length;
+  const { cartItemCount } = useCart();
   // ======= FETCH PROVINCES =======
   useEffect(() => {
-    const fetchProvinces = async () => {
-      setProvLoading(true);
+    (async () => {
       try {
-        const res = await axios.get(`${GHN_API}/master-data/province`, {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        });
-        setProvinces(
-          res.data.data.filter(
-            (p) => !/\d/.test(p.ProvinceName) && !/test/i.test(p.ProvinceName)
-          )
-        );
+        setProvLoading(true);
+        const data = await fetchProvinces();
+        setProvinces(data);
       } catch (err) {
         console.error("❌ Error loading provinces:", err);
         setProvError(err);
       } finally {
         setProvLoading(false);
       }
-    };
-    fetchProvinces();
+    })();
   }, []);
 
   // ======= FETCH DISTRICTS =======
@@ -98,17 +90,8 @@ const Header = () => {
     if (!id) return;
     try {
       setDistrictLoading(true);
-      const res = await axios.post(
-        `${GHN_API}/master-data/district`,
-        { province_id: Number(id) },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        }
-      );
-      setDistricts(res.data.data);
+      const res = await fetchDistricts(id);
+      setDistricts(res);
     } catch (err) {
       console.error("❌ Error loading districts:", err);
     } finally {
@@ -126,17 +109,8 @@ const Header = () => {
     if (!id) return;
     try {
       setWardLoading(true);
-      const res = await axios.post(
-        `${GHN_API}/master-data/ward`,
-        { district_id: Number(id) },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Token: TOKEN,
-          },
-        }
-      );
-      setWards(res.data.data);
+      const res = await fetchWards(id);
+      setWards(res);
     } catch (err) {
       console.error("❌ Error loading wards:", err);
       setWardError(err);
@@ -145,17 +119,15 @@ const Header = () => {
     }
   };
 
-  // ===== VARIATIONS (Giữ nguyên phần này) =====
+  // ===== VARIATIONS =====
   const [groups, setGroups] = useState({});
   const [loadingVariations, setLoadingVariations] = useState(true);
 
   useEffect(() => {
     const fetchVariations = async () => {
       try {
-        const res = await axios.get(
-          "https://rebev.onrender.com/api/variationValues"
-        );
-        const roots = res.data.filter((item) => item.parent_id === null);
+        const res = await getVariationValues();
+        const roots = res.filter((item) => item.parent_id === null);
 
         const grouped = roots.reduce((acc, item) => {
           if (!acc[item.variation_id]) acc[item.variation_id] = [];
@@ -231,7 +203,6 @@ const Header = () => {
                 className="relative w-72 p-2 bg-white rounded-2xl border border-gray-100 shadow-2xl z-[9999]"
               >
                 {/* === Xe điện cũ === */}
-                {/* === Xe điện cũ === */}
                 <HoverCard openDelay={80} closeDelay={120}>
                   <HoverCardTrigger asChild>
                     <div className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50">
@@ -258,8 +229,8 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-3 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups.xe).map(([name, group]) =>
-                          group.data ? (
+                        {Object.entries(groups?.xe || {}).map(([name, group]) =>
+                          group?.data ? (
                             <div key={name}>
                               <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
                                 {group.icon} {name}
@@ -268,9 +239,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -312,8 +281,8 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups.pin).map(([name, group]) =>
-                          group.data ? (
+                        {Object.entries(groups?.pin || {}).map(([name, group]) =>
+                          group?.data ? (
                             <div key={name}>
                               <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
                                 {group.icon} {name}
@@ -322,9 +291,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -366,11 +333,11 @@ const Header = () => {
                     <span className="font-medium text-gray-700">
                       {selectedProvince
                         ? provinces.find(
-                            (p) => p.ProvinceID === Number(selectedProvince)
-                          )?.ProvinceName
+                          (p) => p.ProvinceID === Number(selectedProvince)
+                        )?.ProvinceName
                         : provLoading
-                        ? "Đang tải khu vực..."
-                        : "Chọn khu vực"}
+                          ? "Đang tải khu vực..."
+                          : "Chọn khu vực"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </Button>
@@ -428,8 +395,8 @@ const Header = () => {
                           {!selectedProvince
                             ? "Chọn tỉnh trước"
                             : districtLoading
-                            ? "Đang tải..."
-                            : "-- Chọn quận --"}
+                              ? "Đang tải..."
+                              : "-- Chọn quận --"}
                         </option>
                         {districts.map((d) => (
                           <option key={d.DistrictID} value={d.DistrictID}>
@@ -454,8 +421,8 @@ const Header = () => {
                           {!selectedDistrict
                             ? "Chọn quận trước"
                             : wardLoading
-                            ? "Đang tải..."
-                            : "-- Chọn xã --"}
+                              ? "Đang tải..."
+                              : "-- Chọn xã --"}
                         </option>
                         {wards.map((w) => (
                           <option key={w.WardCode} value={w.WardCode}>
@@ -500,14 +467,14 @@ const Header = () => {
                   className="relative inline-flex items-center justify-center w-10 h-10 text-white rounded-full hover:bg-white/20"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {itemCount > 0 && (
+                  {cartItemCount > 0 && (
                     <span
-                      aria-label={`Có ${itemCount} mặt hàng trong giỏ`}
+                      aria-label={`Có ${cartItemCount} mặt hàng trong giỏ`}
                       className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1.5
                  rounded-full bg-red-600 text-white text-[10px] font-semibold
                  flex items-center justify-center leading-none shadow"
                     >
-                      {itemCount > 99 ? "99+" : itemCount}
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
                     </span>
                   )}
                 </Link>
@@ -534,7 +501,10 @@ const Header = () => {
                     <Link to="/profile">Tài khoản</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
-                    <Link to="/profile/posts">Tin đăng của tôi</Link>
+                    <Link to={`/shop/${user.id}`}>Trang của tôi</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer py-2.5">
+                    <Link to={`/chat?buyer=${user.id}`}>Tin Nhắn</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild className="cursor-pointer py-2.5">
                     <Link to="/upgrade">Nâng cấp tài khoản</Link>

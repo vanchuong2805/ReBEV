@@ -5,18 +5,7 @@ import StatsGrid from "../components/StatsGrid"
 import SidebarNav from "../components/SidebarNav"
 
 const ProfilePage = () => {
-  const userData = {
-    name: "Nguyễn Văn Nam",
-    email: "nam.nguyen@email.com",
-    phone: "+84 901 234 567",
-    location: "TP.HCM, Việt Nam",
-    memberSince: "Tháng 3, 2023",
-    avatar: "https://picsum.photos/120",
-    rating: 4.8,
-    totalReviews: 47,
-    verificationStatus: "Đã xác thực",
-    memberLevel: "Gold",
-  }
+
 
   const stats = {
     totalListings: 8,
@@ -31,7 +20,7 @@ const ProfilePage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header và thống kê luôn cố định */}
-        <ProfileHeader userData={userData} />
+        <ProfileHeader />
         <StatsGrid stats={stats} />
 
         {/* Layout có sidebar bên trái */}

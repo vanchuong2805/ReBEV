@@ -18,9 +18,11 @@ const ReportsStatistics = () => {
   useEffect(() => {
     fetchPost().then((data) => setListings(data));
   }, []);
+  console.log("Listings data:", listings);
   const number_Listing = listings.filter(
-    (listing) => listing.status === 1
+    (listing) => listing.status == 1
   ).length;
+
   useEffect(() => {
     const yearData = reportService.getDataByYear(selectedYear);
     setMonthlyData(yearData);

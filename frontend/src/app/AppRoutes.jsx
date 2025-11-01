@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Router } from "react-router";
+import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
 import { ROUTES } from "../constants/routes.js";
 import Home from "@/features/home/pages/Home";
@@ -20,8 +20,16 @@ import TransactionsSection from "@/features/profile/components/transactions/Tran
 import SettingsPage from "@/features/profile/components/settings/SettingsPage.jsx";
 import FavoritesList from "@/features/profile/components/favorites/FavoritesList.jsx";
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
-import AdminDashboard from "@/features/admin/pages/AdminPage.jsx";
+import AdminDashboard from "../features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
+import ShopPage from "@/features/shop/pages/ShopPage.jsx";
+import ChatPage from "@/features/chat/pages/ChatPage.jsx";
+import UserManagement from "@/features/admin/pages/UserManagement.jsx";
+import ReportsStatistics from "@/features/admin/pages/ReportsStatistics.jsx";
+import ListingManagement from "@/features/admin/pages/ListingManagement.jsx";
+import SystemFeesManagement from "@/features/admin/pages/SystemFeesManagement.jsx";
+import TransactionManagement from "@/features/admin/pages/TransactionManagement.jsx";
+import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -41,19 +49,28 @@ export default function AppRoutes() {
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
           </Route>
+          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
-          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
+          <Route path={ROUTES.DEPOSIT} element={<DepositPage />} />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
             element={<ListingDetail />}
           />
+          <Route path={`/shop/:sellerId`} element={<ShopPage />} />
         </Route>
         <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
         <Route path={ROUTES.FAIL} element={<PaymentFail />} />
-        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />} />
+        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />}>
+          <Route path="users" element={<UserManagement />} />
+          <Route index element={<ReportsStatistics />} />
+          <Route path="listings" element={<ListingManagement />} />
+          <Route path="fees" element={<SystemFeesManagement />} />
+          <Route path="transactions" element={<TransactionManagement />} />
+        </Route>
+        <Route path={"chat"} element={<ChatPage />} />
       </Routes>
     </>
   );

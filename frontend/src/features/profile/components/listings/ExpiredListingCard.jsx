@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import Frame from '../CardFrame'
 
-export default function ExpiredListingCard({ listing, onView, onRenew, onUnhide, onEdit }) {
+export default function ExpiredListingCard({ listing, onView, onRenew, onHide, onEdit }) {
   const status = (listing?.current_status || '').trim()
   const isHidden = status === 'Tin ẩn'
   const note = isHidden
@@ -19,8 +19,8 @@ export default function ExpiredListingCard({ listing, onView, onRenew, onUnhide,
           variant="outline"
           className="h-10 w-full"
           onClick={() => onView?.(listing)}>Chi tiết</Button>,
-        <Button size="lg" className="h-10 w-full bg-red-600 hover:bg-red-700" onClick={() => (isHidden ? onUnhide?.(listing) : onRenew?.(listing))}>
-          {isHidden ? 'Bỏ ẩn' : 'Gia hạn'}
+        <Button size="lg" className="h-10 w-full bg-red-600 hover:bg-red-700" onClick={() =>  onHide?.(listing.id)}>
+          Bỏ ẩn tin
         </Button>
       ]}
     />

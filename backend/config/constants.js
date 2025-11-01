@@ -1,4 +1,5 @@
 export const ERROR_MESSAGE = {
+    BLANK_INFORMATION: 'Information cannot be left blank.',
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
     EMAIL_BLANK: 'Email cannot be left blank.',
@@ -35,6 +36,17 @@ export const ERROR_MESSAGE = {
     ACCOUNT_ALREADY_LOCKED: 'Account is already locked',
     ACCOUNT_UNLOCK_FAILED: 'Unlocking account failed',
     ACCOUNT_ALREADY_UNLOCKED: 'Account is already unlocked',
+    GOOGLE_TOKEN_BLANK: 'Google ID token cannot be left blank',
+    GOOGLE_EMAIL_NOT_VERIFIED: 'Google email is not verified',
+    LOGIN_GOOGLE_FAIL: 'Login with Google failed',
+    EMAIL_EXISTS: 'Email already exists.',
+    PHONE_EXISTS: 'Phone number already exists.',
+    CREATE_PACKAGE_FAIL: 'Creating package failed',
+    DELETE_PACKAGE_FAIL: 'Deleting package failed',
+    UPDATE_PACKAGE_FAIL: 'Updating package failed',
+    FORGET_PASSWORD_FAILED: 'Resetting password failed',
+    CREATE_REVIEW_FAILED: 'Creating review failed',
+    UPDATE_REVIEW_FAILED: 'Updating review failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -50,7 +62,15 @@ export const SUCCESS_MESSAGE = {
     UPDATE_USER_SUCCESS: 'Updating user successful',
     ACCOUNT_LOCKED: 'Account has been locked successfully',
     CREATE_STAFF_SUCCESS: 'Create Staff account successful',
-    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully'
+    ACCOUNT_UNLOCKED: 'Account has been unlocked successfully',
+    LOGIN_GOOGLE_SUCCESS: 'Login with Google successful',
+    CREATE_PACKAGE_SUCCESS: 'Package created successfully',
+    DELETE_PACKAGE_SUCCESS: 'Package deleted successfully',
+    UPDATE_PACKAGE_SUCCESS: 'Package updated successfully',
+    OTP_SENT: 'OTP has been sent successfully',
+    PASSWORD_RESET_SUCCESS: 'Password has been reset successfully',
+    CREATE_REVIEW_SUCCESS: 'Review created successfully',
+    UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
 }
 
 export const POST_STATUS = {
@@ -100,7 +120,7 @@ export const ORDER_STATUS_TRANSITION = {
     [ORDER_STATUS.CANCELLED]: [ORDER_STATUS.PENDING, ORDER_STATUS.PAID],
     [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.DELIVERED]: [ORDER_STATUS.DELIVERING],
-    [ORDER_STATUS.COMPLETED]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.PAID],
+    [ORDER_STATUS.COMPLETED]: [ORDER_STATUS.DELIVERED, ORDER_STATUS.PAID, ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.CUSTOMER_CANCELLED]: [ORDER_STATUS.CONFIRMED],
     [ORDER_STATUS.SELLER_CANCELLED]: [ORDER_STATUS.CONFIRMED],
 };
