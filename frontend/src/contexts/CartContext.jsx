@@ -2,13 +2,15 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getCartItems } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
 import { addCarts } from "@/features/marketplace/service";
+import { useUser } from "./UserContext";
 
 const CartCtx = createContext();
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
   const [refresh, setRefresh] = useState(0);
-
+  const [buyNowItem, setBuyNowItem] = useState(null);
+  const { user } = useUser();
   function getThumbnail(media) {
     // media là chuỗi JSON: [{ url: "image https://...", is_thumbnail: true }, ...]
     try {
@@ -21,27 +23,33 @@ export function CartProvider({ children }) {
   }
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
     const fetchData = async () => {
-      if (user.id) {
+      if (user) {
+        console.log(user.id);
         const data = await getCartItems(user.id);
         const cartItems = data.map((item) => ({
           ...item,
           items: item.items.map((it) => ({
             ...it,
-            selected: false,
+            selected: it.post_id === buyNowItem,
           })),
           selected: false,
         }));
         console.log(cartItems);
         setItems(cartItems);
+      } else {
+        setItems([]);
       }
     };
     fetchData();
-  }, [refresh]);
+  }, [refresh, user]);
 
   const addToCart = async (userId, postId) => {
-    await addCarts(userId, postId);
+    try {
+      await addCarts(userId, postId);
+    } catch (error) {
+      console.log(error);
+    }
     setRefresh((prev) => prev + 1);
   };
 
@@ -63,7 +71,7 @@ export function CartProvider({ children }) {
   const toggleGroupSelection = ({ seller_id, seller_contact_id }) => {
     setItems((prev) =>
       prev.map((p) =>
-        p.seller_id === seller_id && p.seller_contact_id === seller_contact_id
+        p.seller_id === seller_id && p.seller_contact.id === seller_contact_id
           ? {
               ...p,
               selected: !p.selected,
@@ -110,7 +118,7 @@ export function CartProvider({ children }) {
   const isGroupSelected = ({ seller_id, seller_contact_id }) => {
     const group = items.find(
       (p) =>
-        p.seller_id === seller_id && p.seller_contact_id === seller_contact_id
+        p.seller_id === seller_id && p.seller_contact.id === seller_contact_id
     );
     return group ? group.items.every((it) => it.selected) : false;
   };
@@ -141,6 +149,8 @@ export function CartProvider({ children }) {
     selectedTotal,
     isAllSelected,
     cartItemCount,
+    buyNowItem,
+    setBuyNowItem,
     isGroupSelected,
     toggleSelection,
     toggleAllSelection,

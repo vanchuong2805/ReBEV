@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button'
 import Frame from '../CardFrame'
+import ReviewModal from "@/features/profile/components/ReviewModal"
+import { de } from 'zod/v4/locales'
 
-export default function SuccessPurchases({ purchase, onView, onInvoice, onReview }) {
+export default function SuccessPurchases({ purchase, onView, onInvoice, onReview, detail }) {
+
   return (
     <Frame
       listing={purchase}
@@ -21,7 +24,7 @@ export default function SuccessPurchases({ purchase, onView, onInvoice, onReview
         >
           {purchase.contract_file ? 'Tải hợp đồng' : 'Chưa có hợp đồng'}
         </Button>,
-        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onReview?.(purchase)}>
+        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onReview?.(detail)}>
           Đánh giá
         </Button>,
       ]}

@@ -107,6 +107,7 @@ export default function CheckoutPage() {
       };
     });
     const orderData = { orders, paymentInfo };
+    console.log(orderData)
     const { payUrl } = await createOrder(orderData);
     console.log(payUrl);
     window.location.href = payUrl;

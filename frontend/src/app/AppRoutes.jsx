@@ -29,6 +29,7 @@ import ReportsStatistics from "@/features/admin/pages/ReportsStatistics.jsx";
 import ListingManagement from "@/features/admin/pages/ListingManagement.jsx";
 import SystemFeesManagement from "@/features/admin/pages/SystemFeesManagement.jsx";
 import TransactionManagement from "@/features/admin/pages/TransactionManagement.jsx";
+import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -52,6 +53,7 @@ export default function AppRoutes() {
           <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
+          <Route path={ROUTES.DEPOSIT} element={<DepositPage />} />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
