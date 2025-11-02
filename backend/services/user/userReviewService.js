@@ -31,9 +31,6 @@ const getByPostId = async (postId) => {
             association: 'user',
             attributes: ['display_name', 'avatar']
         }],
-        where: {
-            post_id: postId
-        },
         raw: true
     });
     return data;
