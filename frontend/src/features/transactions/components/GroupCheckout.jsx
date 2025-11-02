@@ -2,7 +2,6 @@ import CartItem from "@/features/cart/components/CartItem";
 import { useEffect, useState } from "react";
 import CheckoutItem from "./CheckoutItem";
 import { getAppointmentTimes, getDeliveryFees } from "../service";
-import { set } from "zod";
 
 function GroupCheckout({ groupItems, customerContact, setPaymentGroup }) {
   const { detail, ward_name, district_name, province_name } =
@@ -31,6 +30,7 @@ function GroupCheckout({ groupItems, customerContact, setPaymentGroup }) {
           weight,
         };
         const fee = await getDeliveryFees(info);
+
         setDeliveryFee(fee);
         const appointmentTimes = await getAppointmentTimes(info);
         setAppointmentTimes(
@@ -46,7 +46,7 @@ function GroupCheckout({ groupItems, customerContact, setPaymentGroup }) {
           },
         }));
       } catch (error) {
-        alert("Chưa có dịch vụ cho địa chỉ này.");
+        console.log(error);
       }
     };
     fetchDeliveryFee();

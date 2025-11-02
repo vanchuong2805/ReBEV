@@ -1,10 +1,7 @@
 import { ShoppingCart, CreditCard, MessageCircle, Heart } from "lucide-react";
-import { addCarts } from "../service";
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 import { useCart } from "@/contexts/CartContext";
-import { getPostById, getCategories } from "@/features/profile/service";
-import { order_detail } from "@/features/profile/components/purchases/MockPurchases";
-import { ca } from "zod/v4/locales";
+import { getCategories } from "@/features/profile/service";
 
 export default function ListingActions({
   listing,

@@ -54,23 +54,46 @@ export const getDeliveryFees = async ({
     items: [{ weight }],
     service_type_id: 2,
   });
-  const response = await axios.post(
-    `${DELIVERY_API_URL}/v2/shipping-order/fee`,
-    {
-      from_district_id: from_district_id,
-      to_district_id: to_district_id,
-      from_ward_code: from_ward_code,
-      to_ward_code: to_ward_code,
-      weight,
-      items: [{ weight }],
-      service_type_id: 2,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Token: import.meta.env.VITE_GHN_TOKEN,
+  let response = null;
+  try {
+    response = await axios.post(
+      `${DELIVERY_API_URL}/v2/shipping-order/fee`,
+      {
+        from_district_id: from_district_id,
+        to_district_id: to_district_id,
+        from_ward_code: from_ward_code,
+        to_ward_code: to_ward_code,
+        weight,
+        items: [{ weight }],
+        service_type_id: 2,
       },
-    }
-  );
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: import.meta.env.VITE_GHN_TOKEN,
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    response = await axios.post(
+      `${DELIVERY_API_URL}/v2/shipping-order/fee`,
+      {
+        from_district_id: from_district_id,
+        to_district_id: to_district_id,
+        from_ward_code: from_ward_code,
+        to_ward_code: to_ward_code,
+        weight,
+        items: [{ weight }],
+        service_type_id: 5,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: import.meta.env.VITE_GHN_TOKEN,
+        },
+      }
+    );
+  }
   return response.data.data.total;
 };

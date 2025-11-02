@@ -11,7 +11,6 @@ export default function Cart() {
     items,
     toggleAllSelection, // Hàm để chọn/bỏ chọn tất cả
     isAllSelected, // Boolean kiểm tra tất cả đã được chọn chưa
-    clearSelected, // Hàm xóa các item đã chọn
     selectedTotal, // Tổng tiền của các item đã chọn
   } = useCart();
 
@@ -54,13 +53,6 @@ export default function Cart() {
             <span className="flex-grow ml-4">
               Chọn tất cả ({items.length} sản phẩm)
             </span>
-            <button
-              onClick={clearSelected}
-              className="flex items-center text-red-500 hover:underline"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Xóa mục đã chọn
-            </button>
           </div>
 
           {/* Danh sách sản phẩm */}
