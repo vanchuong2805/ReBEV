@@ -51,8 +51,7 @@ export default {
     createOrderDetail,
     getByOrderId,
     getByPostId,
-    createReview,
-    updateReview,
     getRatingByPost,
     getById,
+    getRatingByPost
 };
