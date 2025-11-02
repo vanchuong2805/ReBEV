@@ -42,7 +42,7 @@ const handleCancelledStatus = async (order, t) => {
     // Restore post statuses
     const orderDetails = await orderDetailService.getByOrderId(order.id);
     for (const item of orderDetails) {
-        await postService.updateStatus(item.post_id, {status: POST_STATUS.APPROVED});
+        await postService.updateStatus(item.post_id, { status: POST_STATUS.APPROVED });
     }
     // Issue refund to customer
     await userService.deposit(order.customer_id, order.total_amount, { transaction: t });
@@ -115,19 +115,26 @@ const handleDeliveringStatus = async (order, t) => {
     await orderService.updateOrder(id, { delivery_code: deliveryInfo.data.order_code });
 };
 
-const handleDeliveredStatus = async (order, t) => {
-
-};
+const handleDeliveredStatus = async (order, t) => {};
 
 const handleCompletedStatus = async (order, t) => {
     const orderDetails = await orderDetailService.getByOrderId(order.id);
     for (const item of orderDetails) {
         const orderDetail = await complaintService.getByOrderDetailId(item.id);
-        if (!orderDetail || orderDetail.complaint_status === COMPLAINT_STATUS.REJECTED) {
+        if (!orderDetail) {
             // No complaint, proceed to mark post as SOLD
-            await postService.updateStatus(item.post_id, {status: POST_STATUS.SOLD}, { transaction: t });
+            await postService.updateStatus(
+                item.post_id,
+                {
+                    status:
+                        order.order_type === ORDER_TYPE.RETURN
+                            ? POST_STATUS.APPROVED
+                            : POST_STATUS.SOLD,
+                },
+                { transaction: t }
+            );
             const amount =
-                order.order_type === ORDER_TYPE.BUY
+                [ORDER_TYPE.BUY, ORDER_TYPE.RETURN].includes(order.order_type)
                     ? item.price - item.commission_amount
                     : item.deposit_amount;
             // Release payment to seller
@@ -136,7 +143,9 @@ const handleCompletedStatus = async (order, t) => {
                 {
                     receiver_id: order.seller_id,
                     amount,
-                    transaction_type: TRANSACTION_TYPE.RELEASE,
+                    transaction_type: (order.order_type === ORDER_TYPE.RETURN
+                        ? TRANSACTION_TYPE.REFUND
+                        : TRANSACTION_TYPE.RELEASE),
                     related_order_detail_id: item.id,
                     status: TRANSACTION_STATUS.SUCCESS,
                 },
@@ -149,10 +158,10 @@ const handleCompletedStatus = async (order, t) => {
 };
 
 const handleCustomerCancelledStatus = async (order, t) => {
-     // Restore post statuses
+    // Restore post statuses
     const orderDetails = await orderDetailService.getByOrderId(order.id);
     for (const item of orderDetails) {
-        await postService.updateStatus(item.post_id, {status: POST_STATUS.APPROVED});
+        await postService.updateStatus(item.post_id, { status: POST_STATUS.APPROVED });
     }
     // Issue refund to customer
     await userService.deposit(order.seller_id, order.total_amount, { transaction: t });
@@ -167,7 +176,7 @@ const handleCustomerCancelledStatus = async (order, t) => {
         },
         { transaction: t }
     );
-}
+};
 
 const mapStatusHandlers = {
     [ORDER_STATUS.CANCELLED]: handleCancelledStatus,
@@ -176,6 +185,7 @@ const mapStatusHandlers = {
     [ORDER_STATUS.DELIVERED]: handleDeliveredStatus,
     [ORDER_STATUS.CUSTOMER_CANCELLED]: handleCustomerCancelledStatus,
     [ORDER_STATUS.SELLER_CANCELLED]: handleCancelledStatus,
+    [ORDER_STATUS.RETURNED]: handleCompletedStatus,
 };
 
 const handleStatus = async (order, status, t) => {
@@ -188,12 +198,12 @@ const handleStatus = async (order, status, t) => {
 const getLatestStatus = async (orderId) => {
     const data = await order_status.findOne({
         where: {
-            order_id: orderId
+            order_id: orderId,
         },
         order: [['created_at', 'DESC']],
     });
     return data;
-}
+};
 
 export default {
     getAll,
@@ -201,7 +211,7 @@ export default {
     updateOrderStatus,
     getCurrentStatus,
     handleStatus,
-    getLatestStatus
+    getLatestStatus,
 };
 
 export { handleCompletedStatus };
