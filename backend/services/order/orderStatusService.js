@@ -3,6 +3,7 @@ import orderDetailService from './orderDetailService.js';
 import userService from '../user/userService.js';
 import postService from '../post/postService.js';
 import {
+    COMPLAINT_STATUS,
     ORDER_STATUS,
     ORDER_TYPE,
     POST_STATUS,
@@ -114,9 +115,7 @@ const handleDeliveringStatus = async (order, t) => {
     await orderService.updateOrder(id, { delivery_code: deliveryInfo.data.order_code });
 };
 
-const handleDeliveredStatus = async (order, t) => {
-
-};
+const handleDeliveredStatus = async (order, t) => {};
 
 const handleCompletedStatus = async (order, t) => {
     const orderDetails = await orderDetailService.getByOrderId(order.id);
@@ -124,9 +123,18 @@ const handleCompletedStatus = async (order, t) => {
         const orderDetail = await complaintService.getByOrderDetailId(item.id);
         if (!orderDetail) {
             // No complaint, proceed to mark post as SOLD
-            await postService.updateStatus(item.post_id, { status: POST_STATUS.SOLD }, { transaction: t });
+            await postService.updateStatus(
+                item.post_id,
+                {
+                    status:
+                        order.order_type === ORDER_TYPE.RETURN
+                            ? POST_STATUS.APPROVED
+                            : POST_STATUS.SOLD,
+                },
+                { transaction: t }
+            );
             const amount =
-                order.order_type === ORDER_TYPE.BUY
+                [ORDER_TYPE.BUY, ORDER_TYPE.RETURN].includes(order.order_type)
                     ? item.price - item.commission_amount
                     : item.deposit_amount;
             // Release payment to seller
@@ -135,7 +143,9 @@ const handleCompletedStatus = async (order, t) => {
                 {
                     receiver_id: order.seller_id,
                     amount,
-                    transaction_type: TRANSACTION_TYPE.RELEASE,
+                    transaction_type: (order.order_type === ORDER_TYPE.RETURN
+                        ? TRANSACTION_TYPE.REFUND
+                        : TRANSACTION_TYPE.RELEASE),
                     related_order_detail_id: item.id,
                     status: TRANSACTION_STATUS.SUCCESS,
                 },
@@ -166,7 +176,7 @@ const handleCustomerCancelledStatus = async (order, t) => {
         },
         { transaction: t }
     );
-}
+};
 
 const mapStatusHandlers = {
     [ORDER_STATUS.CANCELLED]: handleCancelledStatus,
@@ -175,6 +185,7 @@ const mapStatusHandlers = {
     [ORDER_STATUS.DELIVERED]: handleDeliveredStatus,
     [ORDER_STATUS.CUSTOMER_CANCELLED]: handleCustomerCancelledStatus,
     [ORDER_STATUS.SELLER_CANCELLED]: handleCancelledStatus,
+    [ORDER_STATUS.RETURNED]: handleCompletedStatus,
 };
 
 const handleStatus = async (order, status, t) => {
