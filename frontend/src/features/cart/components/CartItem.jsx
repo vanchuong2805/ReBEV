@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
-import { deleteCartItem } from "../service";
+
 const formatCurrency = (amount) => {
   return (amount || 0).toLocaleString("vi-VN", {
     style: "currency",
@@ -9,7 +9,7 @@ const formatCurrency = (amount) => {
 };
 
 export default function CartItem({ item }) {
-  const { toggleSelection } = useCart();
+  const { toggleSelection, deleteItem } = useCart();
   return (
     <div className="flex items-center p-4 border-b last:border-b-0">
       <input
@@ -42,7 +42,7 @@ export default function CartItem({ item }) {
           {formatCurrency(item.price)}
         </div>
         <button
-          onClick={() => deleteCartItem(item.post_id)}
+          onClick={() => deleteItem(item.post_id)}
           className="p-2 text-gray-500 hover:text-red-600"
         >
           <Trash2 className="w-5 h-5" />

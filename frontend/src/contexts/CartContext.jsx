@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getCartItems } from "@/features/cart/service.js";
+import { getCartItems, deleteCartItem } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
 import { addCarts } from "@/features/marketplace/service";
 import { useUser } from "./UserContext";
@@ -47,6 +47,16 @@ export function CartProvider({ children }) {
   const addToCart = async (userId, postId) => {
     try {
       await addCarts(userId, postId);
+    } catch (error) {
+      console.log(error);
+    }
+    setRefresh((prev) => prev + 1);
+  };
+
+  //xóa một sản phẩm khỏi giỏ hàng
+  const deleteItem = async (item_id) => {
+    try {
+      await deleteCartItem(item_id);
     } catch (error) {
       console.log(error);
     }
@@ -157,6 +167,7 @@ export function CartProvider({ children }) {
     clearSelected,
     toggleGroupSelection,
     addToCart,
+    deleteItem,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
