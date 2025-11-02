@@ -195,15 +195,7 @@ const handleStatus = async (order, status, t) => {
     }
 };
 
-const getLatestStatus = async (orderId) => {
-    const data = await order_status.findOne({
-        where: {
-            order_id: orderId,
-        },
-        order: [['created_at', 'DESC']],
-    });
-    return data;
-};
+
 
 export default {
     getAll,
@@ -211,7 +203,6 @@ export default {
     updateOrderStatus,
     getCurrentStatus,
     handleStatus,
-    getLatestStatus,
 };
 
 export { handleCompletedStatus };
