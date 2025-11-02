@@ -6,6 +6,11 @@ const getAll = async () => {
     return data;
 };
 
+const getById = async (id) => {
+    const data = await order_detail.findOne({ where: { id } });
+    return data;
+};
+
 const getByOrderId = async (orderId) => {
     const data = await order_detail.findAll({ where: { order_id: orderId } });
     return data;
@@ -46,5 +51,7 @@ export default {
     createOrderDetail,
     getByOrderId,
     getByPostId,
+    getRatingByPost,
+    getById,
     getRatingByPost
 };

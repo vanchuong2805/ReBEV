@@ -3,6 +3,7 @@ import models from '../../models/index.js';
 import { ORDER_STATUS } from '../../config/constants.js';
 const { user_reviews, order_detail } = models;
 import orderStatusService from '../order/orderStatusService.js';
+import { raw } from 'express';
 
 const getAll = async () => {
     const data = await user_reviews.findAll();
@@ -14,6 +15,23 @@ const getReview = async (reviewId) => {
         where: {
             id: reviewId
         }
+    });
+    return data;
+}
+
+const getByPostId = async (postId) => {
+    const data = await user_reviews.findOne({
+        include: [{
+            association: 'order_detail',
+            where: {
+                post_id: postId
+            },
+            attributes: []
+        }, {
+            association: 'user',
+            attributes: ['display_name', 'avatar']
+        }],
+        raw: true
     });
     return data;
 }
@@ -132,7 +150,8 @@ export default {
     getByOrderDetailId,
     createReview,
     updateReview,
-    deleteReview
+    deleteReview,
+    getByPostId
 };
 
 

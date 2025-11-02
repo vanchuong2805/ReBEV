@@ -3,72 +3,6 @@ import axios from "axios";
 
 // hooks/useUserPackages.js
 
-export function useUserPackages(initial) {
-  const [userPackages, setUserPackages] = useState(initial);
-  const [showAddPackage, setShowAddPackage] = useState(false);
-  const [newPackage, setNewPackage] = useState({
-    name: "",
-    privileges: [],
-    price: 0,
-  });
-
-  const startEdit = (id) =>
-    setUserPackages((prev) =>
-      prev.map((p) => ({ ...p, isEditing: p.id === id }))
-    );
-
-  const saveEdit = (id) =>
-    setUserPackages((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isEditing: false } : p))
-    );
-
-  const cancelEdit = (id) => saveEdit(id);
-
-  const changePrice = (id, price) =>
-    setUserPackages((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, price: parseFloat(price) || 0 } : p
-      )
-    );
-
-  const togglePrivilege = (label) =>
-    setNewPackage((prev) => ({
-      ...prev,
-      privileges: prev.privileges.includes(label)
-        ? prev.privileges.filter((x) => x !== label)
-        : [...prev.privileges, label],
-    }));
-
-  const add = () => {
-    if (!newPackage.name) return;
-    const pkg = {
-      id: Date.now(),
-      name: newPackage.name,
-      privileges: newPackage.privileges,
-      price: parseFloat(newPackage.price) || 0,
-      isEditing: false,
-    };
-    setUserPackages((prev) => [...prev, pkg]);
-    setNewPackage({ name: "", privileges: [], price: 0 });
-    setShowAddPackage(false);
-  };
-
-  return {
-    userPackages,
-    setUserPackages,
-    showAddPackage,
-    setShowAddPackage,
-    newPackage,
-    setNewPackage,
-    startEdit,
-    saveEdit,
-    cancelEdit,
-    changePrice,
-    togglePrivilege,
-    add,
-  };
-}
-
 const baseAPI = "https://rebev.up.railway.app/api";
 //---------------------------------------------------------
 // LOGOUT
@@ -207,6 +141,11 @@ export function useAllUsers() {
   return users;
 }
 
+export const fetchUserById = async (userId) => {
+  const res = await axios.get(`${baseAPI}/users/${userId}`);
+  return res.data;
+};
+
 export const fetchUsers = async () => {
   const res = await axios.get(baseAPI + "/users");
   return res.data;
@@ -291,10 +230,12 @@ export const createStaffAccount = async (staff) => {
 
 //POST-----------
 
-export const fetchPost = async () => {
-  const res = await axios.get(baseAPI + "/posts");
+export const fetchPost = async (searchKey) => {
+  const apiPost = baseAPI + "/posts" + (searchKey ? searchKey : "");
+  const res = await axios.get(apiPost);
   return res.data.data;
 };
+//"/posts?status=1&category_id=1&user_id=5&search=đời&page=2&limit=1"
 
 export const updatePostStatus = async (postId, newStatus) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
@@ -333,3 +274,9 @@ export const getOrders = async () => {
     throw err;
   }
 };
+
+export const fetchOrder = () => {
+  const res = axios.get(`${baseAPI}/orders`);
+  return res.data;
+};
+//.---

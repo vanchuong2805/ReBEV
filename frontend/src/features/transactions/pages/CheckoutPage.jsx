@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, Link, redirect } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder, getDeliveryFees } from "../service";
 import CheckoutBar from "../components/CheckoutBar";
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import GroupCheckout from "../components/GroupCheckout";
-import { from } from "@apollo/client";
 
 export default function CheckoutPage() {
   const { selectedTotal, selectedGroups } = useCart();
@@ -107,7 +106,7 @@ export default function CheckoutPage() {
       };
     });
     const orderData = { orders, paymentInfo };
-    console.log(orderData)
+    console.log(orderData);
     const { payUrl } = await createOrder(orderData);
     console.log(payUrl);
     window.location.href = payUrl;
