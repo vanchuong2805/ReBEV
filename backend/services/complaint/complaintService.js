@@ -68,8 +68,8 @@ const handleResolveComplaint = async (order_detail_id, t) => {
 
     const returnOrder = await orderService.createOrder(
         {
-            customer_id: order.seller_id,
-            seller_id: order.customer_id,
+            customer_id: order.customer_id,
+            seller_id: order.seller_id,
             order_type: ORDER_TYPE.RETURN,
             total_amount: order_detail.price,
             from_contact: order.to_contact,

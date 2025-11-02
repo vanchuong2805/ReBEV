@@ -141,7 +141,9 @@ const handleCompletedStatus = async (order, t) => {
             // Create transaction record
             await transactionService.createTransaction(
                 {
-                    receiver_id: order.seller_id,
+                    receiver_id: (order.order_type === ORDER_TYPE.RETURN
+                        ? order.customer_id
+                        : order.seller_id),
                     amount,
                     transaction_type: (order.order_type === ORDER_TYPE.RETURN
                         ? TRANSACTION_TYPE.REFUND
