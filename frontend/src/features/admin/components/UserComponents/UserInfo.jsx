@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import { Lock, Mail, Phone, Unlock, User } from "lucide-react";
+import { fetchPost, getFullPackage } from "../../service";
 export default function UserInfo({
   user,
   handleLockUser,
@@ -11,6 +12,16 @@ export default function UserInfo({
   getRoleColor,
   getStatusColor,
 }) {
+  const [packageList, setPackageList] = useState([]);
+  useEffect(() => {
+    getFullPackage().then(setPackageList);
+  }, []);
+
+  const [listings, setListings] = useState([]);
+  useEffect(() => {
+    fetchPost().then(setListings);
+  }, []);
+
   return (
     <>
       <Card key={user.id} className="p-6">
@@ -41,6 +52,11 @@ export default function UserInfo({
                 <Badge className={`${getRoleColor(user.role)} border-0`}>
                   {getRoleText(user.role)}
                 </Badge>
+                {user.package_id && (
+                  <Badge className={`purple border-0`}>
+                    {packageList.find((pkg) => pkg.id === user.package_id).name}
+                  </Badge>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -62,7 +78,11 @@ export default function UserInfo({
                   <div>
                     <span className="text-gray-500">Tin đăng:</span>
                     <span className="ml-1 font-medium text-blue-600">
-                      {user.totalListings || 0}
+                      {
+                        listings.filter(
+                          (listing) => listing.user_id === user.id
+                        ).length
+                      }
                     </span>
                   </div>
                   <div>
