@@ -2,6 +2,8 @@ import models from '../../models/index.js';
 import { Op, Sequelize, where } from 'sequelize';
 import { sequelize } from '../../models/index.js';
 import { POST_STATUS } from '../../config/constants.js';
+import { raw } from 'express';
+import userReviewService from '../user/userReviewService.js';
 const { posts } = models;
 const getPosts = async (filters = {}) => {
     // Use query to filter user, part of title / description, variation values, category, status,...
@@ -62,7 +64,10 @@ const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
         ...options,
+        raw: true,
     });
+    const review = await userReviewService.getByPostId(id);
+    data.review = review;
     return data;
 };
 
