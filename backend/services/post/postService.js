@@ -64,7 +64,6 @@ const getById = async (id, options) => {
     const data = await posts.findByPk(id, {
         include: ['post_details'],
         ...options,
-        raw: true,
     });
     const review = await userReviewService.getByPostId(id);
     data.review = review;
