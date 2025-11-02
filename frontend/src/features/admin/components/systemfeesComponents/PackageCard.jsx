@@ -53,6 +53,8 @@ export default function PackageCard({ pkg, onDelete, onEdit }) {
         </div>
       </div>
       {isEditing && <EditPackage pkg={pkg} onEdit={onEdit} />}
+
+      {pkg.is_deleted && "gói đã xóa"}
     </Card>
   );
 }

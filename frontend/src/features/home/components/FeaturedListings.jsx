@@ -2,7 +2,7 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getFeaturedProducts } from "../service"; 
+import { getFeaturedProducts } from "../service";
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 function currency(v) {
@@ -131,8 +131,9 @@ export default function FeaturedListings() {
                     }}
                   >
                     <Heart
-                      className={`w-5 h-5 fill-current ${isFavorite(it.id) ? "text-red-500" : "text-gray-400"
-                        }`}
+                      className={`w-5 h-5 fill-current ${
+                        isFavorite(it.id) ? "text-red-500" : "text-gray-400"
+                      }`}
                     />
                   </button>
                 </div>
@@ -168,10 +169,11 @@ export default function FeaturedListings() {
                   <button
                     key={p}
                     onClick={() => goToPage(p)}
-                    className={`px-3 py-1 text-sm font-medium rounded-md ${p === currentPage
+                    className={`px-3 py-1 text-sm font-medium rounded-md ${
+                      p === currentPage
                         ? "bg-[#007BFF] text-white shadow-md scale-105 transition"
                         : "bg-white text-gray-700 hover:bg-gray-100"
-                      }`}
+                    }`}
                   >
                     {p}
                   </button>
