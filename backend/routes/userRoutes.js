@@ -17,6 +17,7 @@ import logout from '../controllers/user/logoutController.js';
 import forgetPassword from '../controllers/user/forgetPasswordController.js';
 import getOTPPassword from '../controllers/user/getOTPController.js';
 import getByUser from '../controllers/complaint/getByUserController.js';
+import getTransactionByUser from '../controllers/transaction/getByUserController.js';
 
 const userRouter = express.Router();
 
@@ -43,5 +44,6 @@ userRouter.patch('/:user_id/lock-account', authMiddleware, authorize([1, 2]), lo
 userRouter.patch('/:user_id/unlock-account', authMiddleware, authorize([1, 2]), unLockAccount);
 userRouter.post('/logout', authMiddleware, logout);
 userRouter.get('/:id/complaints', authMiddleware, getByUser);
+userRouter.get('/:id/transactions', authMiddleware, getTransactionByUser);
 
 export default userRouter;
