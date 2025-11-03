@@ -66,7 +66,7 @@ const getById = async (id, options) => {
         ...options,
     });
     const review = await userReviewService.getByPostId(id);
-    data.review = review;
+    data.dataValues.review = review;
     return data;
 };
 
