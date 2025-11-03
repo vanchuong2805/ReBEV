@@ -3,7 +3,6 @@ import models from '../../models/index.js';
 import { ORDER_STATUS } from '../../config/constants.js';
 const { user_reviews, order_detail } = models;
 import orderStatusService from '../order/orderStatusService.js';
-import { raw } from 'express';
 
 const getAll = async () => {
     const data = await user_reviews.findAll();
@@ -31,7 +30,6 @@ const getByPostId = async (postId) => {
             association: 'user',
             attributes: ['display_name', 'avatar']
         }],
-        raw: true
     });
     return data;
 }
