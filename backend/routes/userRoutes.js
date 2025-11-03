@@ -16,10 +16,11 @@ import registerStaff from '../controllers/user/registerStaffController.js';
 import logout from '../controllers/user/logoutController.js';
 import forgetPassword from '../controllers/user/forgetPasswordController.js';
 import getOTPPassword from '../controllers/user/getOTPController.js';
+import getByUser from '../controllers/complaint/getByUserController.js';
 
 const userRouter = express.Router();
 
-/** 
+/**
  * @swagger
  * tags:
  *   name: Users
@@ -41,5 +42,6 @@ userRouter.get('/:id/posts', authMiddleware, getPosts);
 userRouter.patch('/:user_id/lock-account', authMiddleware, authorize([1, 2]), lockAccount);
 userRouter.patch('/:user_id/unlock-account', authMiddleware, authorize([1, 2]), unLockAccount);
 userRouter.post('/logout', authMiddleware, logout);
+userRouter.get('/:id/complaints', authMiddleware, getByUser);
 
 export default userRouter;
