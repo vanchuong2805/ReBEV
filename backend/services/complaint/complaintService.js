@@ -16,6 +16,13 @@ import userService from '../user/userService.js';
 
 const { complaints } = models;
 
+const getByUserId = async (userId) => {
+    const data = await complaints.findAll({
+        where: { user_id: userId },
+    });
+    return data;
+};
+
 const getByOrderDetailId = async (orderDetailId) => {
     const data = await complaints.findOne({ where: { order_detail_id: orderDetailId } });
     return data;
@@ -120,4 +127,5 @@ export default {
     handleStatus,
     getById,
     updateStatus,
+    getByUserId,
 };
