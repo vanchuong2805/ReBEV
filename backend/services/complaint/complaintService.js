@@ -18,6 +18,12 @@ const { complaints } = models;
 
 const getByUserId = async (userId) => {
     const data = await complaints.findAll({
+        include: [
+            {
+                association: 'order_detail',
+                include: ['post'],
+            },
+        ],
         where: { user_id: userId },
     });
     return data;
