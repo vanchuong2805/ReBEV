@@ -4,8 +4,7 @@ import router from './routes/index.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import './cronJobs/autoTransfer.js';
-
-
+import './cronJobs/autoCancelPackage.js';
 
 async function run() {
     dotenv.config();

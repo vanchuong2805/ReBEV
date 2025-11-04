@@ -47,7 +47,7 @@ const getOrdersDelivered = async () => {
     });
     ordersList = ordersList.filter(
         (order) =>
-            order.order_statuses[0].status === ORDER_STATUS.DELIVERED &&
+            order?.order_statuses[0]?.status === ORDER_STATUS.DELIVERED &&
             new Date(order.order_statuses[0].create_at).getTime() + 7 * 24 * 60 * 60 * 1000 <
                 new Date().getTime()
     );
