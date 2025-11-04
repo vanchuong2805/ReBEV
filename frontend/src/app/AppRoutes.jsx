@@ -30,6 +30,9 @@ import ListingManagement from "@/features/admin/pages/ListingManagement.jsx";
 import SystemFeesManagement from "@/features/admin/pages/SystemFeesManagement.jsx";
 import TransactionManagement from "@/features/admin/pages/TransactionManagement.jsx";
 import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
+import ForgotPhonePage from "@/features/auth/pages/ForgotPhonePage.jsx";
+import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
+import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -71,6 +74,9 @@ export default function AppRoutes() {
           <Route path="transactions" element={<TransactionManagement />} />
         </Route>
         <Route path={"chat"} element={<ChatPage />} />
+        <Route path={"forgot"} element={<ForgotPhonePage />} />
+        <Route path={"forgot/new"} element={<NewPasswordPage />} />
+        <Route path={"forgot/otp"} element={<OtpPage />} />
       </Routes>
     </>
   );

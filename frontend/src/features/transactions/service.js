@@ -1,15 +1,11 @@
 import axios from "axios";
+import api from "@/services/api";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 const DELIVERY_API_URL = import.meta.env.VITE_GHN_API;
 
 export const createOrder = async (orderData) => {
-  const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-    },
-  });
+  const response = await api.post(`/orders`, orderData);
   return response.data;
 };
 
@@ -38,6 +34,7 @@ export const getAppointmentTimes = async ({
   return response.data;
 };
 
+//test xong xóa clg
 export const getDeliveryFees = async ({
   from_district_id,
   to_district_id,

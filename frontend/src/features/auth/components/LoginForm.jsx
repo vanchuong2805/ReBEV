@@ -1,3 +1,4 @@
+// LoginForm.jsx
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
@@ -21,27 +22,22 @@ const LoginForm = () => {
     const newErrors = validateLogin({ phone, password });
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
-    // Call login API
+
     loginUser({ phone, password })
       .then((response) => {
-        console.log("Login successful:", response);
-        // Handle successful login (e.g., store token, redirect)
         login(response.user, response.accessToken);
         toast.success("Đăng nhập thành công!");
       })
       .catch((error) => {
         console.error("Login failed:", error);
-        // Handle login error (e.g., show error message)
         toast.error("Đăng nhập thất bại!");
       });
   };
 
   const handleGoogleLogin = async (response) => {
     try {
-      const { credential } = response; // Google ID Token
-      const data = await googleLogin(credential); // gọi API tới backend
-
-      // nếu BE trả về user + accessToken
+      const { credential } = response;
+      const data = await googleLogin(credential);
       login(data.user, data.token);
       toast.success("Đăng nhập Google thành công!");
     } catch (error) {
@@ -72,7 +68,7 @@ const LoginForm = () => {
           <FieldError message={errors.phone} />
         </div>
 
-        <div className="relative mb-8">
+        <div className="relative mb-2">
           <input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -91,6 +87,21 @@ const LoginForm = () => {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
           <FieldError message={errors.password} />
+        </div>
+
+        <div className="flex justify-end mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              // lưu số điện thoại để trang Forgot đọc được
+              // dùng sessionStorage cho chắc (tránh mất khi reload)
+              sessionStorage.setItem("fp_phone", phone || "");
+              window.open("/forgot", "_blank");
+            }}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Quên mật khẩu?
+          </button>
         </div>
 
         <Button
