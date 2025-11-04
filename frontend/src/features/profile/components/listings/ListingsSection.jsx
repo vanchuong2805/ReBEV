@@ -59,9 +59,9 @@ const ListingsSection = () => {
             : listing
         )
       )
-      console.log("✅ Ẩn tin thành công:", listingId)
+      console.log(" Ẩn tin thành công:", listingId)
     } catch (error) {
-      console.error("❌ Lỗi ẩn tin đăng:", error)
+      console.error(" Lỗi ẩn tin đăng:", error)
     }
   }
 
@@ -96,7 +96,7 @@ const ListingsSection = () => {
             <TabsTrigger value="sold" className="text-sm">Đã bán ({soldListings.length})</TabsTrigger>
             <TabsTrigger value="expired" className="text-sm">Tin ẩn ({expiredListings.length})</TabsTrigger>
             <TabsTrigger value="rejected" className="text-sm">Bị từ chối ({rejectedListings.length})</TabsTrigger>
-            <TabsTrigger value="canceled" className="text-sm">Tin huỷ ({canceledListings.length})</TabsTrigger> {/* ✅ mới */}
+            <TabsTrigger value="canceled" className="text-sm">Tin huỷ ({canceledListings.length})</TabsTrigger>
           </TabsList>
 
           {/* === ALL === */}
