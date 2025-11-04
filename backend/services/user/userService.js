@@ -249,4 +249,5 @@ export default {
     getUserRating,
     getUserRatingCount,
     getExpiredPackageUsers,
+    withdraw,
 };
