@@ -1,5 +1,4 @@
 import axios from "axios";
-import { order_detail } from "./components/purchases/MockPurchases";
 
 const GHN_API = import.meta.env.VITE_GHN_API;
 const TOKEN = import.meta.env.VITE_GHN_TOKEN;
@@ -152,7 +151,7 @@ export async function getCategories() {
 }
 export async function getOrderByCustomer() {
   const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/orders?type=customer`, {
+  const res = await axios.get(`${API_BASE_URL}/orders?type=customer&order_type=1&order_type=2`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -163,7 +162,7 @@ export async function getOrderByCustomer() {
 }
 export async function getOrderBySeller() {
   const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/orders?type=seller`, {
+  const res = await axios.get(`${API_BASE_URL}/orders?type=seller&order_type=1&order_type=2`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -200,4 +199,66 @@ export async function createReview(user_id, order_detail_id, rating, comment) {
   )
   console.log(res.data.error);
   return res.data;
+}
+export async function getOrderById(orderId) {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log(res.data);
+  return res.data;
+}
+export async function getUserById(userId) {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log(res.data);
+  return res.data;
+}
+
+
+export async function createComplaint({ order_detail_id, description, media }) {
+  const token = localStorage.getItem("accessToken")
+
+  try {
+    const res = await axios.post(
+      `${API_BASE_URL}/complaints`,
+      {
+        order_detail_id,
+        complaint_type: 0,
+        description,
+        media,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    console.log(" Complaint created:", res.data)
+    return res.data
+  } catch (err) {
+    console.error(" Error creating complaint:", err.response?.data || err.message)
+    throw err
+  }
+}
+export async function getComplaintByUserId(user_id) {
+  const token = localStorage.getItem("accessToken")
+  const res = await axios.get(`${API_BASE_URL}/users/${user_id}/complaints`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  console.log(" Complaints fetched:", res.data)
+  return res.data
 }

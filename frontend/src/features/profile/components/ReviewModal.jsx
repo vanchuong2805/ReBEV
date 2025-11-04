@@ -18,13 +18,13 @@ export default function ReviewModal({ open, onClose, purchase, onSubmit }) {
 
     try {
       const res = await createReview(user.id, purchase.id, rating, comment)
-      console.log("✅ Review đã gửi:", res)
+      console.log(" Review đã gửi:", res)
       alert("Cảm ơn bạn đã đánh giá!")
       setRating(0)
       setComment("")
       onClose()
     } catch (error) {
-      console.error("❌ Lỗi gửi đánh giá:", error)
+      console.error(" Lỗi gửi đánh giá:", error)
       alert("Gửi đánh giá thất bại!")
     }
   }

@@ -45,6 +45,7 @@ export default function ShopPage() {
         setActivePosts(activeRes)
         setSoldPosts(soldRes)
         setBases(baseRes)
+        console.log(" Dữ liệu Shop tải thành công", userRes)
       } catch (err) {
         console.error(" Lỗi tải dữ liệu Shop:", err)
       } finally {
@@ -52,6 +53,7 @@ export default function ShopPage() {
       }
     }
     fetchData()
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }, [sellerId])
 
   if (loading)
@@ -90,7 +92,27 @@ export default function ShopPage() {
             <h2 className="text-lg font-semibold">
               {seller.display_name || "Người bán"}
             </h2>
-            <div className="text-yellow-500 text-sm">⭐ 4.7 (12 đánh giá)</div>
+            <div className="flex items-center gap-1 mt-1">
+              {[...Array(5)].map((_, i) => (
+                <svg
+                  key={i}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill={i < Math.round(seller.total_rating / seller.rating_count) ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  className={`w-4 h-4 ${i < Math.round(seller.total_rating / seller.rating_count) ? "text-yellow-500" : "text-gray-300"}`}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.036 6.29a1 1 0 00.95.69h6.601c.969 0 1.371 1.24.588 1.81l-5.345 3.89a1 1 0 00-.364 1.118l2.036 6.29c.3.921-.755 1.688-1.54 1.118l-5.345-3.89a1 1 0 00-1.176 0l-5.345 3.89c-.785.57-1.84-.197-1.54-1.118l2.036-6.29a1 1 0 00-.364-1.118l-5.345-3.89c-.783-.57-.38-1.81.588-1.81h6.601a1 1 0 00.95-.69l2.036-6.29z" />
+                </svg>
+              ))}
+              <span className="text-[15px] font-medium text-gray-900 ml-1">
+                {(seller.total_rating / seller.rating_count).toFixed(1)}
+              </span>
+              <span className="text-sm text-gray-500 ml-1">
+                ({seller.rating_count})
+              </span>
+            </div>
+
           </div>
         </div>
 
@@ -100,8 +122,8 @@ export default function ShopPage() {
           <div className="flex border-b mb-5">
             <button
               className={`px-5 py-2 font-medium text-sm ${tab === "active"
-                  ? "border-b-2 border-orange-500 text-orange-600"
-                  : "text-gray-600"
+                ? "border-b-2 border-orange-500 text-orange-600"
+                : "text-gray-600"
                 }`}
               onClick={() => setTab("active")}
             >
@@ -109,8 +131,8 @@ export default function ShopPage() {
             </button>
             <button
               className={`px-5 py-2 font-medium text-sm ${tab === "sold"
-                  ? "border-b-2 border-orange-500 text-orange-600"
-                  : "text-gray-600"
+                ? "border-b-2 border-orange-500 text-orange-600"
+                : "text-gray-600"
                 }`}
               onClick={() => setTab("sold")}
             >
