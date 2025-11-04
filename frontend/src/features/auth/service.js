@@ -40,8 +40,11 @@ export const refreshToken = async () => {
   return response.data;
 };
 
-export const forgetPassword = async (phone) => {
-  const response = await api.post("/users/forget-password", { phone });
+export const forgetPassword = async ({ phone, newPassword }) => {
+  const response = await api.post("/users/forget-password", {
+    phone: String(phone).trim(),
+    newPassword: String(newPassword).trim(),
+  });
   return response.data;
 };
 
