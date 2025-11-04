@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/button'
 import Frame from '../CardFrame'
-import ReviewModal from "@/features/profile/components/ReviewModal"
-import { de } from 'zod/v4/locales'
 
-export default function SuccessPurchases({ purchase, onView, onInvoice, onReview, detail }) {
+export default function SuccessPurchases({ purchase, onView, onComplaint, onReview, detail, status }) {
+
 
   return (
     <Frame
@@ -12,21 +11,13 @@ export default function SuccessPurchases({ purchase, onView, onInvoice, onReview
       badgeText={`${purchase.status_vi || 'Hoàn tất'}${purchase.order_type_vi ? ` • ${purchase.order_type_vi}` : ''}`}
       note="Giao dịch đã hoàn tất thành công."
       actions={[
-        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onView?.(purchase)}>
-          Chi tiết
+        (status === 'DELIVERED' ) && <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onComplaint?.(detail)}>
+          Khiếu nại
         </Button>,
-        <Button
-          size="lg"
-          variant="outline"
-          className="h-10 w-full"
-          onClick={() => onInvoice?.(purchase)}
-          disabled={!purchase.contract_file}
-        >
-          {purchase.contract_file ? 'Tải hợp đồng' : 'Chưa có hợp đồng'}
+        (status === 'COMPLETED') && <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onReview?.(detail)}>
+          {detail.user_reviewes ? 'Xem Đánh giá' : 'Đánh giá'}
         </Button>,
-        <Button size="lg" variant="outline" className="h-10 w-full" onClick={() => onReview?.(detail)}>
-          Đánh giá
-        </Button>,
+       
       ]}
     />
   )

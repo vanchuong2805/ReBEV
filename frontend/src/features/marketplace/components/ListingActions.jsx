@@ -51,7 +51,7 @@ export default function ListingActions({
       await addToCart(user.id, listing.id);
       alert(`🛒 Đã thêm "${listing.title}" vào giỏ hàng thành công!`);
     } catch (error) {
-      console.error("❌ Lỗi khi thêm vào giỏ hàng:", error);
+      console.error(" Lỗi khi thêm vào giỏ hàng:", error);
       alert("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.");
     }
   };
@@ -73,7 +73,7 @@ export default function ListingActions({
                 <Star
                   key={i}
                   className={`w-4 h-4 ${
-                    i < listing.review.rating
+                    i < listing.review.rating_value
                       ? "text-yellow-400 fill-yellow-400"
                       : "text-gray-300"
                   }`}
@@ -84,7 +84,7 @@ export default function ListingActions({
               “{listing.review.comment || "Không có nội dung đánh giá."}”
             </p>
             <p className="text-xs text-gray-500 mt-2 text-right">
-              – {listing.review.reviewer_name || "Người mua"}
+               {listing.review?.user?.display_name || "Người mua"}
             </p>
           </div>
         ) : (
