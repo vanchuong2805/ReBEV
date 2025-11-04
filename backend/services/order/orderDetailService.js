@@ -45,6 +45,14 @@ const getRatingByPost = async (post_id) => {
     return data?.user_reviews;
 }
 
+const updateContractFile = async (id, contract_file, options) => {
+    const result = await order_detail.update(
+        { contract_file },
+        { where: { id }, ...options }
+    );
+    return result;
+};
+
 export default {
     getAll,
     createOrderDetails,
@@ -53,5 +61,6 @@ export default {
     getByPostId,
     getRatingByPost,
     getById,
-    getRatingByPost
+    getRatingByPost,
+    updateContractFile,
 };
