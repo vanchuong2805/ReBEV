@@ -1,4 +1,4 @@
-import userService from '../services/user/userService';
+import userService from '../services/user/userService.js';
 
 const verifySeller = async (req, res, next) => {
     try {
