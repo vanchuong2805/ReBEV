@@ -2,14 +2,14 @@ import axios from "axios";
 
 const GHN_API = import.meta.env.VITE_GHN_API;
 const TOKEN = import.meta.env.VITE_GHN_TOKEN;
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const headers = {
   "Content-Type": "application/json",
   Token: TOKEN,
 };
 
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
-
+//  GHN (Địa chỉ, Tỉnh/Huyện/Xã)
 export const fetchProvinces = async () => {
   const res = await axios.get(`${GHN_API}/master-data/province`, { headers });
   return res.data.data.filter(
@@ -37,26 +37,27 @@ export const fetchWards = async (district_id) => {
   return res.data.data;
 };
 
+//  CONTACT
+
 export const getContactByUserId = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/contacts/${id}`);
   return res.data;
 };
+
 export const createContact = async (contactData) => {
   const res = await axios.post(
     `${API_BASE_URL}/contacts/contact-details`,
     contactData,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }
+    { headers: { "Content-Type": "application/json" } }
   );
   return res.data;
 };
+
 export const deleteContact = async (id) => {
   const res = await axios.patch(`${API_BASE_URL}/contacts/${id}/delete`);
   return res.data;
 };
+
 export const updateContact = async (id, data) => {
   const res = await axios.put(
     `${API_BASE_URL}/contacts/update/contact-details`,
@@ -65,11 +66,12 @@ export const updateContact = async (id, data) => {
   );
   return res.data;
 };
+//  USER
 export const updateProfile = async (id, data) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.put(
     `${API_BASE_URL}/users/${id}/update`,
-    { ...data },
+    data,
     {
       headers: {
         "Content-Type": "application/json",
@@ -77,9 +79,9 @@ export const updateProfile = async (id, data) => {
       },
     }
   );
-  console.log(res.data);
   return res.data;
 };
+
 export const changePassword = async (id, oldPassword, newPassword) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.put(
@@ -92,16 +94,47 @@ export const changePassword = async (id, oldPassword, newPassword) => {
       },
     }
   );
-  console.log(res);
-  return res;
+  return res.data;
 };
-export const getPosts = async (filters = {}) => {
-  const res = await axios.get(`${API_BASE_URL}/posts`, {
-    params: filters,
-  });
 
+export const getUserById = async (userId) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
+//  POSTS
+export const getPosts = async (filters = {}) => {
+  const res = await axios.get(`${API_BASE_URL}/posts`, { params: filters });
   return res.data.data;
 };
+
+export const getPostById = async (postId) => {
+  const res = await axios.get(`${API_BASE_URL}/posts/${postId}`);
+  return res.data;
+};
+
+export const getPostsByUserId = async (userId) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}/posts`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
+export const getCategories = async () => {
+  const res = await axios.get(`${API_BASE_URL}/categories`);
+  return res.data;
+};
+
 export const updatePostVisibility = async (postId) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.patch(
@@ -114,64 +147,50 @@ export const updatePostVisibility = async (postId) => {
       },
     }
   );
-  console.log(res.data);
   return res.data;
 };
-export const getPostsByUserId = async (userId) => {
-  const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/users/${userId}/posts`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  console.log(res.data);
-  return res.data;
-};
-export const getFavoritesByUserId = async (userId) => {
-  const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/favorites/${userId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.data;
-};
-export async function getPostById(postId) {
-  const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/posts/${postId}`);
+//  ORDERS
 
-  return res.data;
-}
-export async function getCategories() {
-  const res = await axios.get(`${API_BASE_URL}/categories`);
-  console.log(res.data);
-  return res.data;
-}
-export async function getOrderByCustomer() {
+export const getOrderByCustomer = async () => {
   const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/orders?type=customer&order_type=1&order_type=2`, {
+  const res = await axios.get(
+    `${API_BASE_URL}/orders?type=customer&order_type=1&order_type=2`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
+
+export const getOrderBySeller = async () => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(
+    `${API_BASE_URL}/orders?type=seller&order_type=1&order_type=2`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
+
+export const getOrderById = async (orderId) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
-  console.log(res.data);
   return res.data;
-}
-export async function getOrderBySeller() {
-  const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/orders?type=seller&order_type=1&order_type=2`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  console.log(res.data);
-  return res.data;
-}
-export async function changeOrderStatus(orderId, status, description) {
+};
+
+export const changeOrderStatus = async (orderId, status, description) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.post(
     `${API_BASE_URL}/orders/${orderId}/status`,
@@ -184,8 +203,10 @@ export async function changeOrderStatus(orderId, status, description) {
     }
   );
   return res.data;
-}
-export async function createReview(user_id, order_detail_id, rating, comment) {
+};
+
+//  REVIEWS
+export const createReview = async (user_id, order_detail_id, rating, comment) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.post(
     `${API_BASE_URL}/order-details/${user_id}/review`,
@@ -196,69 +217,76 @@ export async function createReview(user_id, order_detail_id, rating, comment) {
         Authorization: `Bearer ${token}`,
       },
     }
-  )
-  console.log(res.data.error);
+  );
   return res.data;
-}
-export async function getOrderById(orderId) {
+};
+export const updateReview = async (review_id, rating, comment) => {
   const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/orders/${orderId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  console.log(res.data);
-  return res.data;
-}
-export async function getUserById(userId) {
-  const token = localStorage.getItem("accessToken");
-  const res = await axios.get(`${API_BASE_URL}/users/${userId}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  console.log(res.data);
-  return res.data;
-}
-
-
-export async function createComplaint({ order_detail_id, description, media }) {
-  const token = localStorage.getItem("accessToken")
-
-  try {
-    const res = await axios.post(
-      `${API_BASE_URL}/complaints`,
-      {
-        order_detail_id,
-        complaint_type: 0,
-        description,
-        media,
+  const res = await axios.put(
+    `${API_BASE_URL}/user-reviews/${review_id}/`,
+    { rating, comment },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
+    }
+  );
+  return res.data;
+};
+//  COMPLAINTS
+export const createComplaint = async ({ order_detail_id, description, media }) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.post(
+    `${API_BASE_URL}/complaints`,
+    {
+      order_detail_id,
+      complaint_type: 0,
+      description,
+      media,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
 
-    console.log(" Complaint created:", res.data)
-    return res.data
-  } catch (err) {
-    console.error(" Error creating complaint:", err.response?.data || err.message)
-    throw err
-  }
-}
-export async function getComplaintByUserId(user_id) {
-  const token = localStorage.getItem("accessToken")
+export const getComplaintByUserId = async (user_id) => {
+  const token = localStorage.getItem("accessToken");
   const res = await axios.get(`${API_BASE_URL}/users/${user_id}/complaints`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  })
-  console.log(" Complaints fetched:", res.data)
-  return res.data
-}
+  });
+  return res.data;
+};
+//  TRANSACTIONS
+export const getTransactionByUserId = async (user_id) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/users/${user_id}/transactions`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+export const createWithdraw = async (user_id, amount) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.post(
+    `${API_BASE_URL}/users/${user_id}/withdraw`,
+    {amount: Number(amount)},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};

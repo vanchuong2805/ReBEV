@@ -1,7 +1,7 @@
-import { ShoppingCart, CreditCard, MessageCircle, Heart, Star } from "lucide-react";
-import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
-import { useCart } from "@/contexts/CartContext";
-import { getCategories } from "@/features/profile/service";
+import { ShoppingCart, CreditCard, MessageCircle, Heart, Star } from "lucide-react"
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx"
+import { useCart } from "@/contexts/CartContext"
+import { getCategories } from "@/features/profile/service"
 
 export default function ListingActions({
   listing,
@@ -12,17 +12,17 @@ export default function ListingActions({
   handleHidePost,
   navigate,
 }) {
-  const { favoriteList, toggleFavorite } = useFavorite();
-  const isFav = favoriteList.some((f) => f.id === listing.id);
-  const { addToCart } = useCart();
+  const { favoriteList, toggleFavorite } = useFavorite()
+  const isFav = favoriteList.some((f) => f.id === listing.id)
+  const { addToCart } = useCart()
 
   const handleDeposit = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để mua hàng");
-      return;
+      alert("Bạn cần đăng nhập để mua hàng")
+      return
     }
-    const category = await getCategories();
-    const categoryInfo = category.find((cat) => cat.id === listing.category_id);
+    const category = await getCategories()
+    const categoryInfo = category.find((cat) => cat.id === listing.category_id)
 
     const orderData = {
       seller_id: listing.user_id,
@@ -38,25 +38,25 @@ export default function ListingActions({
           commission_amount: 0,
         },
       ],
-    };
-    navigate("/checkout/deposit", { state: { orderData } });
-  };
+    }
+    navigate("/checkout/deposit", { state: { orderData } })
+  }
 
   const handleAddToCart = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để thêm vào giỏ hàng");
-      return;
+      alert("Bạn cần đăng nhập để thêm vào giỏ hàng")
+      return
     }
     try {
-      await addToCart(user.id, listing.id);
-      alert(`🛒 Đã thêm "${listing.title}" vào giỏ hàng thành công!`);
+      await addToCart(user.id, listing.id)
+      alert(`Đã thêm "${listing.title}" vào giỏ hàng thành công!`)
     } catch (error) {
-      console.error(" Lỗi khi thêm vào giỏ hàng:", error);
-      alert("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.");
+      console.error("Lỗi khi thêm vào giỏ hàng:", error)
+      alert("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.")
     }
-  };
+  }
 
-  // === Nếu sản phẩm đã bán (status = 3) ===
+  // === SẢN PHẨM ĐÃ BÁN ===
   if (Number(listing.status) === 3) {
     return (
       <div className="flex flex-col gap-3 mt-4">
@@ -65,7 +65,6 @@ export default function ListingActions({
           Sản phẩm đã bán
         </div>
 
-        {/* Nếu có đánh giá thì hiển thị */}
         {listing.review ? (
           <div className="p-4 border rounded-xl bg-white shadow-sm">
             <div className="flex items-center mb-2">
@@ -84,7 +83,7 @@ export default function ListingActions({
               “{listing.review.comment || "Không có nội dung đánh giá."}”
             </p>
             <p className="text-xs text-gray-500 mt-2 text-right">
-               {listing.review?.user?.display_name || "Người mua"}
+              {listing.review?.user?.display_name || "Người mua"}
             </p>
           </div>
         ) : (
@@ -93,7 +92,23 @@ export default function ListingActions({
           </p>
         )}
       </div>
-    );
+    )
+  }
+
+  // === SẢN PHẨM ĐANG ĐƯỢC MUA (status = 7) ===
+  if (Number(listing.status) === 7) {
+    return (
+      <div className="flex flex-col gap-3 mt-4">
+        <div className="flex items-center justify-center w-full px-4 py-3 border border-yellow-500 rounded-xl bg-yellow-50 text-yellow-700 font-semibold shadow-sm">
+          <CreditCard className="w-5 h-5 mr-2 text-yellow-600" />
+          Sản phẩm đang được mua
+        </div>
+        <p className="text-sm text-gray-600 text-center italic">
+          Sản phẩm này đang được giao dịch với một người mua khác.  
+          Vui lòng quay lại sau!
+        </p>
+      </div>
+    )
   }
 
   // === CHỦ BÀI ĐĂNG ===
@@ -101,10 +116,8 @@ export default function ListingActions({
     return (
       <button
         onClick={() => {
-          handleHidePost(listing.id);
-          alert(
-            listing.is_hidden ? "Tin đã được hiển thị lại" : "Tin đã được ẩn"
-          );
+          handleHidePost(listing.id)
+          alert(listing.is_hidden ? "Tin đã được hiển thị lại" : "Tin đã được ẩn")
         }}
         className={`w-full px-4 py-3 mb-3 font-semibold text-white rounded-xl shadow-md transition 
         ${
@@ -115,13 +128,13 @@ export default function ListingActions({
       >
         {listing.is_hidden ? "Hiện tin" : "Ẩn tin"}
       </button>
-    );
+    )
   }
 
   // === NGƯỜI DÙNG THƯỜNG ===
   return (
     <div className="flex flex-col gap-3">
-      {/* MUA NGAY */}
+      {/* MUA NGAY / ĐẶT CỌC */}
       {categoryInfo?.id === 1 ? (
         <button
           onClick={() => handleDeposit()}
@@ -182,5 +195,5 @@ export default function ListingActions({
         {isFav ? "Đã yêu thích" : "Yêu thích"}
       </button>
     </div>
-  );
+  )
 }

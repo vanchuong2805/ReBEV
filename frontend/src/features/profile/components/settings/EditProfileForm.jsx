@@ -12,7 +12,7 @@ export default function EditProfileForm() {
   const [uploading, setUploading] = useState(false)
 
   const [form, setForm] = useState({
-    avatar: "/default-avatar.png",
+    avatar: "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg",
     display_name: "",
     phone: "",
     email: "",
@@ -21,7 +21,7 @@ export default function EditProfileForm() {
   useEffect(() => {
     if (user) {
       setForm({
-        avatar: user.avatar || "/default-avatar.png",
+        avatar: user.avatar || "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg",
         display_name: user.display_name || "",
         phone: user.phone || "",
         email: user.email || "",

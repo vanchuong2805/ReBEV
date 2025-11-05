@@ -47,8 +47,6 @@ const SidebarNav = () => {
           <Item path="favorites" icon={Heart} label="Quan tâm" />
           <Item path="settings" icon={Edit3} label="Chỉnh sửa" />
           <Item path="wallet" icon={Wallet} label="Ví ReBEV" />
-          <Item path="dashboard" icon={BarChart3} label="Thống kê" />
-          <Item path="logout" icon={LogOut} label="Đăng xuất" />
         </nav>
       </CardContent>
     </Card>
