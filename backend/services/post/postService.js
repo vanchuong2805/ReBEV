@@ -123,6 +123,10 @@ const changeVisibility = async (postId, isHidden, options = {}) => {
     return await posts.update({ is_hidden: isHidden }, { where: { id: postId }, ...options });
 };
 
+const updatePost = async (postId, data, options = {}) => {
+    return await posts.update(data, { where: { id: postId }, ...options });
+}
+
 export default {
     getPosts,
     getByCategoryId,
