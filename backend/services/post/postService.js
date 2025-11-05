@@ -72,20 +72,28 @@ const getById = async (id, options) => {
 
 const getCartItem = async (postId) => {
     const data = await posts.findOne({
-        include: [{
-            association: 'post_details',
-            where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
-        }, 'category', 'seller_contact'],
+        include: [
+            {
+                association: 'post_details',
+                where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
+            },
+            'category',
+            'seller_contact',
+        ],
         where: {
             id: postId,
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
         },
-        attributes: ['id', 'user_id', 'title', 'price', "media"],
+        attributes: ['id', 'user_id', 'title', 'price', 'media'],
     });
 
-    const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
+    const image =
+        data && data.media
+            ? JSON.parse(data.media).find((item) => item.is_thumbnail).url ||
+              JSON.parse(data.media).url
+            : null;
 
     if (data) data.media = image;
 
@@ -125,7 +133,7 @@ const changeVisibility = async (postId, isHidden, options = {}) => {
 
 const updatePost = async (postId, data, options = {}) => {
     return await posts.update(data, { where: { id: postId }, ...options });
-}
+};
 
 export default {
     getPosts,
@@ -137,5 +145,5 @@ export default {
     updateStatus,
     changeVisibility,
     getCartItem,
+    updatePost,
 };
-
