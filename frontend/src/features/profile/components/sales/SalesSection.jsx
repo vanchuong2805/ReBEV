@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { useUser } from '@/contexts/UserContext'
 import { getOrderBySeller, changeOrderStatus, getUserById } from '@/features/profile/service'
-import { MessageCircle,Store } from 'lucide-react'
+import { MessageCircle, Store } from 'lucide-react'
 
 import PendingSaleCard from '@/features/profile/components/sales/PendingSaleCard'
 import ProcessingSaleCard from '@/features/profile/components/sales/ProcessingSaleCard'
@@ -175,15 +175,19 @@ const SalesSection = () => {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-3 border-t bg-white">
-          <p className="text-sm text-gray-600">
-            {order.delivery_price === 0 ? "Tiền cọc: " : "Tổng tiền: "}
-            <span className="font-semibold text-gray-900">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t bg-white">
+          {/* Thông tin tiền */}
+          <div className="flex flex-col items-center sm:items-start space-y-1">
+            <p className="text-sm text-gray-500">
+              {order.delivery_price === 0 ? "Tiền cọc:" : "Tổng tiền:"}
+            </p>
+            <p className="text-xl font-semibold text-gray-900 tracking-wide">
               {(order.total_amount + order.delivery_price)?.toLocaleString("vi-VN")} ₫
-            </span>
-          </p>
+            </p>
+          </div>
 
-          <div className="flex items-center gap-2">
+          {/* Nút hành động */}
+          <div className="flex flex-wrap justify-center sm:justify-end gap-2">
             {s === "PAID" && (
               <>
                 <Button
@@ -249,12 +253,12 @@ const SalesSection = () => {
       <CardContent>
         <Tabs value={type} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-6 mb-6">
-            <TabsTrigger value="all" className="text-sm">Tất cả ({total})</TabsTrigger>
-            <TabsTrigger value="pending" className="text-sm">Chờ xác nhận ({pendingOrders.length})</TabsTrigger>
-            <TabsTrigger value="processing" className="text-sm">Đang xử lý ({processingOrders.length})</TabsTrigger>
-            <TabsTrigger value="shipping" className="text-sm">Đang vận chuyển ({shippingOrders.length})</TabsTrigger>
-            <TabsTrigger value="success" className="text-sm">Hoàn tất ({successOrders.length})</TabsTrigger>
-            <TabsTrigger value="canceled" className="text-sm">Đã huỷ ({canceledOrders.length})</TabsTrigger>
+            <TabsTrigger value="all" className="text-sm">Tất cả</TabsTrigger>
+            <TabsTrigger value="pending" className="text-sm">Chờ xác nhận </TabsTrigger>
+            <TabsTrigger value="processing" className="text-sm">Đang xử lý </TabsTrigger>
+            <TabsTrigger value="shipping" className="text-sm">Đang vận chuyển </TabsTrigger>
+            <TabsTrigger value="success" className="text-sm">Hoàn tất </TabsTrigger>
+            <TabsTrigger value="canceled" className="text-sm">Đã huỷ </TabsTrigger>
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
