@@ -9,6 +9,56 @@ import postService from '../../services/post/postService.js';
 import dayjs from 'dayjs';
 import momoService from '../../services/payment/momoService.js';
 
+/** 
+ * @swagger
+ * /orders:
+ *   post:
+ *     summary: Create a new order
+ *     description: Create a new order with the specified details
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         required: true
+ *         description: The order details
+ *         schema:
+ *           type: object
+ *           properties:
+ *             seller_id:
+ *               type: integer
+ *             order_type:
+ *               type: string
+ *               enum: [DEPOSIT, TRANSACTION]
+ *             from_contact_id:
+ *               type: integer
+ *             to_contact_id:
+ *               type: integer
+ *             delivery_price:
+ *               type: number
+ *               format: float
+ *             order_details:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   post_id:
+ *                     type: integer
+ *                   quantity:
+ *                     type: integer
+ *             total_amount:
+ *               type: number
+ *               format: float
+ *             redirectUrl:
+ *               type: string
+ *               format: uri
+ *     responses:
+ *       201:
+ *         description: Order created successfully
+ *       400:
+ *         description: Invalid request body
+ *       404:
+ *         description: User not found
+ */
+
 const createOrder = async (req, res) => {
     const t = await sequelize.transaction();
     try {
@@ -28,7 +78,6 @@ const createOrder = async (req, res) => {
                 delivery_price,
                 order_details,
                 total_amount,
-                weight,
             } = orderData;
             if (
                 !seller_id ||
@@ -39,8 +88,7 @@ const createOrder = async (req, res) => {
                 delivery_price < 0 ||
                 !order_details ||
                 order_details.length === 0 ||
-                !total_amount ||
-                weight === undefined
+                !total_amount
             ) {
                 await t.rollback();
                 return res.status(400).json({ error: 'Missing required fields of an order' });
@@ -85,7 +133,6 @@ const createOrder = async (req, res) => {
                 { transaction: t }
             );
 
-            newOrder.weight = weight;
             order_id += newOrder.id + '_';
             orderLists.push(newOrder);
             // Process each order detail

@@ -13,19 +13,19 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { FavoriteProvider } from "@/contexts/FavoritesContexts.jsx";
 
 createRoot(document.getElementById("root")).render(
-    <BrowserRouter>
-      <CartProvider>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <AuthDialogProvider>
-            <UserProvider>
-              <FavoriteProvider>
+  <BrowserRouter>
+    <AuthDialogProvider>
+      <UserProvider>
+        <CartProvider>
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <FavoriteProvider>
               <AppRoutes />
-              </FavoriteProvider>
-              <AuthOverlay />
-            </UserProvider>
-          </AuthDialogProvider>
-        </GoogleOAuthProvider>
-      </CartProvider>
-      <Toaster position="top-center" richColors closeButton />
-    </BrowserRouter>
+            </FavoriteProvider>
+            <AuthOverlay />
+          </GoogleOAuthProvider>
+        </CartProvider>
+      </UserProvider>
+    </AuthDialogProvider>
+    <Toaster position="top-center" richColors closeButton />
+  </BrowserRouter>
 );

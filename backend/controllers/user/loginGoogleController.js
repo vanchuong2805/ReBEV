@@ -3,29 +3,94 @@ import userService from '../../services/user/userService.js';
 import verifyGoogleToken from '../../services/auth/googleService.js';
 import { ERROR_MESSAGE } from '../../config/constants.js';
 import { SUCCESS_MESSAGE } from '../../config/constants.js';
+import jwtService from '../../services/auth/jwtService.js';
 
-/** 
+/**
  * @swagger
  * /api/users/login/google:
  *   post:
- *     summary: Login user with Google
- *     description: Login user with Google account
+ *     summary: Đăng nhập người dùng bằng Google
+ *     description: Cho phép người dùng đăng nhập bằng tài khoản Google. Nếu email chưa tồn tại trong hệ thống, tài khoản mới sẽ được tự động tạo.
+ *     tags: [Users]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - id_token
  *             properties:
  *               id_token:
  *                 type: string
+ *                 description: Mã ID token từ Google (JWT)
+ *                 example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjM5Zj..."
  *     responses:
  *       200:
- *         description: Login successful
+ *         description: Đăng nhập bằng Google thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Login with Google successful"
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 12
+ *                     display_name:
+ *                       type: string
+ *                       example: "Nguyen Van A"
+ *                     email:
+ *                       type: string
+ *                       example: "vana@gmail.com"
+ *                     role:
+ *                       type: integer
+ *                       example: 0
+ *                     avatar:
+ *                       type: string
+ *                       example: "https://lh3.googleusercontent.com/a/AEdFTp5..."
+ *                 token:
+ *                   type: string
+ *                   description: Mã JWT access token hợp lệ trong 1 giờ
+ *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *
  *       400:
- *         description: Invalid request
+ *         description: Dữ liệu yêu cầu không hợp lệ hoặc lỗi khi xác thực Google
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid Google token"
+ *
  *       403:
- *         description: Account locked
+ *         description: Tài khoản đã bị khóa, không thể đăng nhập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Account is locked"
+ *
+ *       500:
+ *         description: Lỗi máy chủ nội bộ khi đăng nhập bằng Google
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to login with Google"
  */
 
 const loginUserByGoogle = async (req, res) => {
@@ -45,7 +110,11 @@ const loginUserByGoogle = async (req, res) => {
             });
         }
 
-        const { email, name, picture } = googleUser;
+        const {
+            email,
+            name,
+            picture
+        } = googleUser;
 
         let user = await userService.getUserByEmail(email);
 
@@ -58,6 +127,7 @@ const loginUserByGoogle = async (req, res) => {
             });
 
             user.avatar = picture;
+
             await user.save();
 
         }
@@ -80,6 +150,15 @@ const loginUserByGoogle = async (req, res) => {
             display_name: user.display_name,
             role: user.role,
         }, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+
+        const refreshToken = await jwtService.createRefreshToken({ userId: user.id });
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.LOGIN_GOOGLE_SUCCESS,

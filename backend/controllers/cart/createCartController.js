@@ -3,36 +3,95 @@ import { ERROR_MESSAGE } from "../../config/constants.js";
 import { SUCCESS_MESSAGE } from "../../config/constants.js";
 import postService from "../../services/post/postService.js";
 
-/** 
+/**
  * @swagger
  * /api/carts/{user_id}:
  *   post:
- *     summary: Create a new cart item
+ *     summary: Add a post to the user's cart
+ *     description: Creates a new cart item for a given user and post. A user cannot add their own post to their cart, and duplicate cart items are not allowed.
  *     tags: [Carts]
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: The ID of the user
+ *         description: The ID of the user who is adding the item to their cart
  *         schema:
  *           type: integer
+ *           example: 12
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - post_id
  *             properties:
  *               post_id:
  *                 type: integer
  *                 description: The ID of the post to add to the cart
+ *                 example: 45
  *     responses:
  *       200:
  *         description: Cart item created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Create cart successfully"
+ *                 cart:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 101
+ *                     user_id:
+ *                       type: integer
+ *                       example: 12
+ *                     post_id:
+ *                       type: integer
+ *                       example: 45
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2025-10-31T13:45:00Z"
  *       400:
- *         description: Bad request
+ *         description: Bad request (validation errors or invalid data)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example:
+ *                     - "Cannot add your own post to cart"
+ *                     - "Cart item already exists"
  *       404:
  *         description: Post not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Post not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "CREATE_CART_FAIL - Unexpected server error"
  */
 
 const createCart = async (req, res) => {
@@ -47,7 +106,10 @@ const createCart = async (req, res) => {
             errors.push(ERROR_MESSAGE.CREATE_CART_FAIL);
         }
 
-        const existedCart = await cartService.findCartItem({ user_id, post_id });
+        const existedCart = await cartService.findCartItem({
+            user_id,
+            post_id
+        });
 
         if (existedCart) {
             errors.push(ERROR_MESSAGE.CART_ITEM_EXISTED);

@@ -2,6 +2,8 @@ import models from '../../models/index.js';
 import { Op, Sequelize, where } from 'sequelize';
 import { sequelize } from '../../models/index.js';
 import { POST_STATUS } from '../../config/constants.js';
+import { raw } from 'express';
+import userReviewService from '../user/userReviewService.js';
 const { posts } = models;
 const getPosts = async (filters = {}) => {
     // Use query to filter user, part of title / description, variation values, category, status,...
@@ -63,16 +65,19 @@ const getById = async (id, options) => {
         include: ['post_details'],
         ...options,
     });
+    const review = await userReviewService.getByPostId(id);
+    data.dataValues.review = review;
     return data;
 };
 
 const getCartItem = async (postId) => {
-    const data = await posts.findByPk(postId, {
+    const data = await posts.findOne({
         include: [{
             association: 'post_details',
             where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
         }, 'category', 'seller_contact'],
         where: {
+            id: postId,
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
@@ -82,7 +87,7 @@ const getCartItem = async (postId) => {
 
     const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
 
-    data.media = image;
+    if (data) data.media = image;
 
     return data;
 };
@@ -129,3 +134,4 @@ export default {
     changeVisibility,
     getCartItem,
 };
+

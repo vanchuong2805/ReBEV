@@ -56,6 +56,7 @@ export default function AppRoutes() {
           <Route path={ROUTES.POSTS} element={<PostPage />} />
           <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
           <Route path={ROUTES.CART} element={<CartPage />} />
+          <Route path={ROUTES.DEPOSIT} element={<DepositOrder />} />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
@@ -79,6 +80,9 @@ export default function AppRoutes() {
           </Route>
         </Route>
         <Route path={"chat"} element={<ChatPage />} />
+        <Route path={"forgot"} element={<ForgotPhonePage />} />
+        <Route path={"forgot/new"} element={<NewPasswordPage />} />
+        <Route path={"forgot/otp"} element={<OtpPage />} />
       </Routes>
     </>
   );

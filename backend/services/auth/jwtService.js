@@ -2,7 +2,9 @@ import jwt from 'jsonwebtoken';
 import redis from '../../config/redis.js';
 
 const createAccessToken = (payload) => {
-    return jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+    return jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+        expiresIn: process.env.JWT_LIFETIME || '1h',
+    });
 };
 
 const createRefreshToken = async (payload) => {

@@ -1,4 +1,3 @@
-import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -15,7 +14,7 @@ import {
   AlignRight,
 } from "lucide-react";
 
-// Component con ToolbarButton 
+// Component con ToolbarButton
 const ToolbarButton = ({ onClick, disabled, isActive, children }) => (
   <button
     type="button"
@@ -31,7 +30,7 @@ const ToolbarButton = ({ onClick, disabled, isActive, children }) => (
   </button>
 );
 
-// Thanh công cụ (Toolbar) 
+// Thanh công cụ (Toolbar)
 const MenuBar = ({ editor }) => {
   if (!editor) {
     return null;
@@ -68,7 +67,10 @@ const MenuBar = ({ editor }) => {
         <Pilcrow className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        onClick={() => {
+          editor.chain().focus().toggleBulletList().run(),
+            console.log(editor.getHTML());
+        }}
         isActive={editor.isActive("bulletList")}
       >
         <List className="w-5 h-5" />
@@ -123,8 +125,7 @@ export default function TiptapEditor({ content, onChange, placeholder }) {
     },
     editorProps: {
       attributes: {
-        class:
-          "prose max-w-none prose-sm sm:prose-base focus:outline-none prose-p:my-0",
+        class: "ProseMirror max-w-none focus:outline-none",
       },
     },
   });
@@ -132,7 +133,7 @@ export default function TiptapEditor({ content, onChange, placeholder }) {
   return (
     <div>
       <MenuBar editor={editor} />
-      <div className="border border-gray-300 rounded-b-md p-2 min-h-[150px]">
+      <div className="border border-gray-300 rounded-b-md p-2 min-h-[150px] [&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-6 [&_ol]:pl-6 [&_li]:my-1 [&_li::marker]:text-gray-700">
         <EditorContent editor={editor} placeholder={placeholder} />
       </div>
     </div>

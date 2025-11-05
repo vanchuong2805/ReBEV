@@ -6,6 +6,11 @@ const getAll = async () => {
     return data;
 };
 
+const getById = async (id) => {
+    const data = await order_detail.findOne({ where: { id } });
+    return data;
+};
+
 const getByOrderId = async (orderId) => {
     const data = await order_detail.findAll({ where: { order_id: orderId } });
     return data;
@@ -21,9 +26,41 @@ const createOrderDetail = async (data, options) => {
     return orderDetail;
 };
 
+const getByPostId = async (postId) => {
+    const data = await order_detail.findAll({ where: { post_id: postId } });
+    return data;
+};
+
+
+const getRatingByPost = async (post_id) => {
+    const data = await order_detail.findOne({
+        include: [{
+            association: "user_reviews",
+            required: true,
+        }],
+        where: {
+            post_id: post_id
+        }
+    })
+    return data?.user_reviews;
+}
+
+const updateContractFile = async (id, contract_file, options) => {
+    const result = await order_detail.update(
+        { contract_file },
+        { where: { id }, ...options }
+    );
+    return result;
+};
+
 export default {
     getAll,
     createOrderDetails,
     createOrderDetail,
     getByOrderId,
+    getByPostId,
+    getRatingByPost,
+    getById,
+    getRatingByPost,
+    updateContractFile,
 };

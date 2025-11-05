@@ -1,4 +1,27 @@
 import orderService from '../../services/order/orderService.js';
+
+/** 
+ * @swagger
+ * /orders/{id}:
+ *   get:
+ *     summary: Get order details
+ *     description: Retrieve the details of a specific order by ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the order to retrieve
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Order details retrieved successfully
+ *       404:
+ *         description: Order not found
+ *       403:
+ *         description: Forbidden
+ */
+
 const getOrder = async (req, res) => {
     try {
         const user = req.user;

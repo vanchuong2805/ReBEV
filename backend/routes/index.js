@@ -13,6 +13,11 @@ import authRouter from './authRoutes.js';
 import transactionRouter from './transactionRoutes.js';
 import favoritePostRouter from './favoritePostRoutes.js';
 import packageRoute from './packageRoutes.js';
+import orderDetailRoute from './orderDetailRoutes.js';
+import complaintRoute from './complaintRoute.js';
+import userReviewRoute from './userReviewRoutes.js';
+import statisticRoutes from './statisticRoutes.js';
+
 const router = express.Router();
 
 router.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -29,5 +34,8 @@ router.use('/auth', authRouter);
 router.use('/transactions', transactionRouter);
 router.use('/favorites', favoritePostRouter);
 router.use('/packages', packageRoute);
-
+router.use('/order-details', orderDetailRoute);
+router.use('/complaints', complaintRoute);
+router.use('/user-reviews', userReviewRoute);
+router.use('/statistics', statisticRoutes);
 export default router;
