@@ -29,6 +29,10 @@ import ReportsStatistics from "@/features/admin/pages/ReportsStatistics.jsx";
 import ListingManagement from "@/features/admin/pages/ListingManagement.jsx";
 import SystemFeesManagement from "@/features/admin/pages/SystemFeesManagement.jsx";
 import TransactionManagement from "@/features/admin/pages/TransactionManagement.jsx";
+import PurchaseOrder from "@/features/admin/pages/PurchaseOrder.jsx";
+import DepositOrder from "@/features/admin/pages/DepositOrder.jsx";
+import ComplaintOrder from "@/features/admin/pages/ComplaintOrder.jsx";
+import ReturnOrder from "@/features/admin/pages/ReturnOrder.jsx";
 
 export default function AppRoutes() {
   return (
@@ -66,7 +70,13 @@ export default function AppRoutes() {
           <Route index element={<ReportsStatistics />} />
           <Route path="listings" element={<ListingManagement />} />
           <Route path="fees" element={<SystemFeesManagement />} />
-          <Route path="transactions" element={<TransactionManagement />} />
+          <Route path="transactions" element={<TransactionManagement />}>
+            <Route index element={<PurchaseOrder />}></Route>
+            <Route path="purchase-orders" element={<PurchaseOrder />} />
+            <Route path="deposit-orders" element={<DepositOrder />} />
+            <Route path="complaint-orders" element={<ComplaintOrder />} />
+            <Route path="return-orders" element={<ReturnOrder />} />
+          </Route>
         </Route>
         <Route path={"chat"} element={<ChatPage />} />
       </Routes>
