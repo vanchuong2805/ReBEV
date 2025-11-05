@@ -29,6 +29,7 @@ const PurchasesSection = () => {
   const [loading, setLoading] = useState(true)
   const [showComplaint, setShowComplaint] = useState(false)
   const [complaints, setComplaints] = useState([])
+  const [reviewed, setReviewed] = useState(false)
 
   const navigate = useNavigate()
   const { user } = useUser()
@@ -45,7 +46,10 @@ const PurchasesSection = () => {
         const withSeller = await Promise.all(
           data.map(async (order) => {
             const seller = await getUserById(order.seller_id)
-            return { ...order, seller_info: seller }
+            const reviewed = order.order_details.some(
+              (detail) => detail.user_reviews && detail.user_reviews.length > 0
+            )
+            return { ...order, seller_info: seller, reviewed }
           })
         )
         const withSeller1 = await Promise.all(
@@ -72,9 +76,10 @@ const PurchasesSection = () => {
   }, [user])
 
   // === Mở modal đánh giá ===
-  const handleReview = (purchase) => {
+  const handleReview = (purchase, reviewed) => {
     setSelectedOrder(purchase)
     setShowReview(true)
+    setReviewed(reviewed)
   }
 
   // === Mở modal yêu cầu hoàn tiền ===
@@ -164,7 +169,7 @@ const PurchasesSection = () => {
           renderDetails(
             SuccessPurchases,
             {
-              ...(s === 'COMPLETED' ? { onReview: handleReview } : {}),
+              ...(s === 'COMPLETED'  ? { onReview: handleReview, reviewed: order.reviewed } : {}),
               ...(s === 'DELIVERED' ? { onComplaint: handleComplaint } : {}),
             }
           )
@@ -211,7 +216,7 @@ const PurchasesSection = () => {
               <TabsTrigger value="shipping">Đang vận chuyển </TabsTrigger>
               <TabsTrigger value="success">Hoàn tất </TabsTrigger>
               <TabsTrigger value="canceled">Đã huỷ </TabsTrigger>
-              <TabsTrigger value="refunded">hoàn tiền </TabsTrigger>
+              <TabsTrigger value="refunded">Hoàn tiền </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
@@ -293,6 +298,7 @@ const PurchasesSection = () => {
 
       {/* Modal đánh giá */}
       <ReviewModal
+        reviewed={reviewed}
         open={showReview}
         onClose={() => setShowReview(false)}
         purchase={selectedOrder}
