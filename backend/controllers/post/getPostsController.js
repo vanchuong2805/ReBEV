@@ -1,9 +1,7 @@
 import postService from '../../services/post/postService.js';
-// iUser_id=5&province_id=201&order_by=price&order_direction=ASC&is_deleted=false&is_hidden=false&variation_value_id=1&variation_value_id=11&min_price=200000&max_price=5000000
 /**
  * @swagger
- * path:
- *  /api/posts:
+ * /api/posts:
  *   get:
  *     summary: Get a list of posts
  *     tags:
@@ -39,45 +37,41 @@ import postService from '../../services/post/postService.js';
  *         name: limit
  *         schema:
  *           type: integer
- *      - in: query
+ *       - in: query
  *         name: min_price
  *         schema:
  *           type: integer
- *      - in: query
+ *       - in: query
  *         name: max_price
  *         schema:
  *           type: integer
- *      - in: query
- *         name: order_by    
+ *       - in: query
+ *         name: order_by
  *         schema:
  *           type: string
- *         enum:
- *           - price
- *           - create_at
- *      - in: query
+ *           enum: [price, create_at]
+ *       - in: query
  *         name: order_direction
  *         schema:
  *           type: string
- *         enum:
- *           - ASC
- *           - DESC
- *      - in: query
+ *           enum: [ASC, DESC]
+ *       - in: query
  *         name: is_deleted
  *         schema:
  *           type: boolean
- *      - in: query
+ *       - in: query
  *         name: is_hidden
  *         schema:
  *           type: boolean
- *      - in: query
+ *       - in: query
  *         name: iUser_id
- *         schema: 
+ *         schema:
  *           type: integer
- *      - in: query
+ *       - in: query
  *         name: province_id
  *         schema:
  *           type: integer
- *      - in: query
+ *       - in: query
  *         name: variation_value_id
  *         schema:
  *           type: integer
