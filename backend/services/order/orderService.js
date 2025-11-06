@@ -9,6 +9,10 @@ const getOrders = async (options, { page, limit }) => {
     const offset = (pageNum - 1) * pageSize;
     const total = await orders.count({ where: options });
 
+    const order = [];
+
+    order.push([Sequelize.literal('order_statuses.status'), 'DESC']);
+
     const ordersData = await orders.findAll({
         include: [
             {
@@ -37,6 +41,7 @@ const getOrders = async (options, { page, limit }) => {
         ],
         where: options,
         ...(pageSize ? { limit: pageSize, offset } : {}),
+        
     });
 
     const data = {
