@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 const ProfileHeader = () => {
   const { user, loading } = useUser()
 
-  // 🔹 Hiển thị khi đang tải
   if (loading) {
     return (
       <Card className="mb-8">
@@ -18,7 +17,6 @@ const ProfileHeader = () => {
     )
   }
 
-  // 🔹 Hiển thị khi chưa có user (chưa đăng nhập)
   if (!user) {
     return (
       <Card className="mb-8">
@@ -29,7 +27,6 @@ const ProfileHeader = () => {
     )
   }
 
-  // 🔹 Giao diện chính
   return (
     <Card className="mb-8">
       <CardContent className="p-8">

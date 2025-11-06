@@ -25,6 +25,7 @@ const ListingsSection = () => {
       try {
         if (!user?.id) return
         const data = await getPostsByUserId(user.id)
+        console.log('✅ Tin đăng đã tải:', data)
         setListings(data)
       } catch (error) {
         console.error('❌ Lỗi tải tin đăng:', error)
@@ -37,7 +38,7 @@ const ListingsSection = () => {
   const activeListings = listings.filter(l => (Number(l?.status) === 1 || Number(l?.status) === 7) && l?.is_hidden === false)
   const pendingListings = listings.filter(l => Number(l?.status) === 0 && l?.is_hidden === false)
   const soldListings = listings.filter(l => Number(l?.status) === 3 && l?.is_hidden === false)
-  const expiredListings = listings.filter(l => l?.is_hidden === true)
+  const expiredListings = listings.filter(l => Number(l?.status) === 1 && l?.is_hidden === true)
   const rejectedListings = listings.filter(l => Number(l?.status) === 2)
   const canceledListings = listings.filter(l => Number(l?.status) === 5)
 
