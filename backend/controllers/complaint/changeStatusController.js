@@ -1,7 +1,7 @@
-import { sequelize } from "../../models/index.js";
-import complaintService from "../../services/complaint/complaintService.js";
+import { sequelize } from '../../models/index.js';
+import complaintService from '../../services/complaint/complaintService.js';
 
-/** 
+/**
  * @swagger
  * api/complaints/{id}/status:
  *   put:
@@ -50,14 +50,13 @@ const changeStatus = async (req, res) => {
         if (!complaint) {
             return res.status(404).json({ error: 'Complaint not found' });
         }
-      
-        await complaintService.updateStatus(id, status, { transaction: t });
-        await complaintService.handleStatus(complaint.order_detail_id, status, t);
 
+        await complaintService.updateStatus(id, status, { transaction: t });
+        await complaintService.handleStatus(complaint.id, complaint.order_detail_id, status, t);
         await t.commit();
         return res.status(200).json({ message: 'Complaint status updated successfully' });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         if (t) await t.rollback();
         return res.status(500).json({ error: 'Internal server error' });
     }

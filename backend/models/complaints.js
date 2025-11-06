@@ -56,6 +56,7 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: true,
                 defaultValue: Sequelize.Sequelize.fn('getdate'),
             },
+            return_order_id: { type: DataTypes.INTEGER },
         },
         {
             sequelize,
