@@ -1,5 +1,4 @@
 import { Trash2 } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
 const formatCurrency = (amount) => {
   return (amount || 0).toLocaleString("vi-VN", {
     style: "currency",
