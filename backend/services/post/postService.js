@@ -21,9 +21,98 @@ const getPosts = async (filters = {}) => {
     }
     */
 
-    const { user_id, category_id, status, search, variation_value_ids, page, limit } = filters;
+    const {
+        user_id,
+        category_id,
+        status,
+        search,
+        variation_value_id,
+        page,
+        limit,
+        iUser_id,
+        province_id,
+        order_by,
+        order_direction,
+        is_deleted = false,
+        is_hidden = false,
+        max_price,
+        min_price,
+    } = filters;
+    let variationFilter = null;
+    if (variation_value_id) {
+        if (typeof variation_value_id === 'string') {
+            variationFilter = [variation_value_id];
+        } else {
+            variationFilter = variation_value_id;
+        }
+    }
 
-    const where = { is_deleted: false, is_hidden: false };
+    const where = { is_deleted, is_hidden };
+    const include = province_id
+        ? [
+              {
+                  association: 'seller_contact',
+                  attributes: [],
+              },
+              {
+                  association: 'base',
+                  attributes: [],
+              },
+          ]
+        : [];
+    include.push({
+        association: 'user',
+        attributes: [],
+        include: [
+            {
+                association: 'package',
+                attributes: [],
+            },
+        ],
+    });
+    if (variationFilter) {
+        include.push({
+            association: 'post_details',
+            attributes: [],
+        });
+    }
+
+    const order = [];
+
+    if (!order_by) {
+        order.push([Sequelize.literal('[user->package].[top]'), 'DESC']);
+    }
+    let orderBy = order_by;
+    let orderDirection = order_direction;
+    if (!['price', 'create_at'].includes(orderBy)) {
+        orderBy = 'create_at';
+    }
+
+    if (!['ASC', 'DESC'].includes(orderDirection)) {
+        orderDirection = 'DESC';
+    }
+
+    order.push([Sequelize.literal(orderBy), orderDirection]);
+    console.log(order);
+
+    if (province_id) {
+        where[Op.or] = [
+            { '$base.province_id$': province_id },
+            { '$seller_contact.province_id$': province_id },
+        ];
+    }
+
+    if (min_price) {
+        where.price = { ...(where.price || {}), [Op.gte]: min_price };
+    }
+
+    if (max_price) {
+        where.price = { ...(where.price || {}), [Op.lte]: max_price };
+    }
+
+    if (iUser_id) {
+        where.user_id = { [Op.ne]: iUser_id };
+    }
 
     if (user_id) {
         where.user_id = user_id;
@@ -45,17 +134,41 @@ const getPosts = async (filters = {}) => {
             `(title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch} OR description COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch})`
         );
     }
-
     const pageNum = parseInt(page) || 1;
     const pageSize = parseInt(limit) || null;
     const offset = (pageNum - 1) * pageSize;
 
     const data = await posts.findAll({
+        include,
         where,
         ...(pageSize ? { limit: pageSize, offset } : {}),
+        order,
+        attributes: [
+            'id',
+            'price',
+            'title',
+            'create_at',
+            [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
+        ],
+        group: [
+            'posts.id',
+            'posts.price',
+            'posts.title',
+            'posts.create_at',
+            '[user->package].[top]',
+        ],
+        ...(variationFilter
+            ? {
+                  having: Sequelize.literal(
+                      `COUNT(DISTINCT CASE WHEN post_details.variation_value_id IN (${variationFilter.join(
+                          ','
+                      )}) THEN post_details.variation_value_id END) = ${variationFilter.length}`
+                  ),
+              }
+            : {}),
     });
 
-    const total = await posts.count({ where });
+    const total = await posts.count({ include, where });
 
     return { data, pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null };
 };
