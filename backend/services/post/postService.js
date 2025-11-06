@@ -2,6 +2,8 @@ import models from '../../models/index.js';
 import { Op, Sequelize, where } from 'sequelize';
 import { sequelize } from '../../models/index.js';
 import { POST_STATUS } from '../../config/constants.js';
+import { raw } from 'express';
+import userReviewService from '../user/userReviewService.js';
 const { posts } = models;
 const getPosts = async (filters = {}) => {
     // Use query to filter user, part of title / description, variation values, category, status,...
@@ -63,25 +65,35 @@ const getById = async (id, options) => {
         include: ['post_details'],
         ...options,
     });
+    const review = await userReviewService.getByPostId(id);
+    data.dataValues.review = review;
     return data;
 };
 
 const getCartItem = async (postId) => {
     const data = await posts.findOne({
-        include: [{
-            association: 'post_details',
-            where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
-        }, 'category', 'seller_contact'],
+        include: [
+            {
+                association: 'post_details',
+                where: { variation_id: 13 }, // Assuming 13 is the variation_id for 'weight'
+            },
+            'category',
+            'seller_contact',
+        ],
         where: {
             id: postId,
             is_deleted: false,
             is_hidden: false,
             status: POST_STATUS.APPROVED,
         },
-        attributes: ['id', 'user_id', 'title', 'price', "media"],
+        attributes: ['id', 'user_id', 'title', 'price', 'media'],
     });
 
-    const image = data && data.media ? (JSON.parse(data.media).find(item => item.is_thumbnail).url || JSON.parse(data.media).url) : null;
+    const image =
+        data && data.media
+            ? JSON.parse(data.media).find((item) => item.is_thumbnail).url ||
+              JSON.parse(data.media).url
+            : null;
 
     if (data) data.media = image;
 
@@ -119,6 +131,10 @@ const changeVisibility = async (postId, isHidden, options = {}) => {
     return await posts.update({ is_hidden: isHidden }, { where: { id: postId }, ...options });
 };
 
+const updatePost = async (postId, data, options = {}) => {
+    return await posts.update(data, { where: { id: postId }, ...options });
+};
+
 export default {
     getPosts,
     getByCategoryId,
@@ -129,5 +145,5 @@ export default {
     updateStatus,
     changeVisibility,
     getCartItem,
+    updatePost,
 };
-

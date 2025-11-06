@@ -11,26 +11,6 @@ export default function RefundPurchaseCard({ purchase, onView, onSupport }) {
         purchase.status_note ||
         'Đơn hàng đã được yêu cầu hoàn tiền. Vui lòng chờ hệ thống xử lý giao dịch.'
       }
-      actions={[
-        <Button
-          key="view"
-          size="lg"
-          variant="outline"
-          className="h-10 w-full"
-          onClick={() => onView?.(purchase)}
-        >
-          Chi tiết
-        </Button>,
-        <Button
-          key="support"
-          size="lg"
-          variant="outline"
-          className="h-10 w-full text-orange-600 border-orange-200"
-          onClick={() => onSupport?.(purchase)}
-        >
-          Hỗ trợ
-        </Button>,
-      ]}
     />
   )
 }

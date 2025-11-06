@@ -5,6 +5,7 @@ import {
   subscribeMessages,
   sendMessage,
 } from "../lib/chatApi";
+import { fetchUsers } from "@/features/admin/service";
 
 export default function ChatWindow({ buyerAppId, sellerAppId }) {
   const [convKey, setConvKey] = useState("");
@@ -12,6 +13,17 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
   const [text, setText] = useState("");
   const unsubRef = useRef(null);
   const bottomRef = useRef(null);
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    fetchUsers().then((data) => {
+      setUsers(data);
+    });
+  }, []);
+
+  const getUserById = (id) => {
+    const nguoiDung = users.filter((user) => (user.id == id ? true : false))[0];
+    return nguoiDung;
+  };
 
   useEffect(() => {
     (async () => {
@@ -36,10 +48,11 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
   }
 
   return (
-    <div className="flex h-[70vh] min-h-[360px] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <header className="border-b border-gray-200 px-6 py-4 text-sm font-semibold text-gray-800">
-        Chat với #{sellerAppId}
-      </header>
+    //max-w-3xl
+    <div className="flex h-[90vh] min-h-[360px] w-full  flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      {/* <header className="border-b border-gray-200 px-6 py-4 text-sm font-semibold text-gray-800">
+        Chat với {getUserById(sellerAppId)?.display_name}
+      </header> */}
 
       <section className="flex-1 space-y-3 overflow-y-auto bg-gray-50 px-4 py-4 sm:px-6">
         {msgs.map((m) => {
@@ -62,7 +75,7 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
                     isMe ? "text-white/80 text-right" : "text-gray-500"
                   }`}
                 >
-                  {isMe ? "Bạn" : `Seller #${sellerAppId}`}
+                  {isMe ? "Bạn" : `${getUserById(sellerAppId)?.display_name}`}
                 </div>
                 <p className="text-sm">{m.content}</p>
                 <div

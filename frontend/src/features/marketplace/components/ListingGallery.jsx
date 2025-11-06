@@ -28,7 +28,7 @@ export default function ListingGallery({ listing, currentImageIndex, setCurrentI
   const prevImage = () => setCurrentImageIndex((i) => (i - 1 + listing.media.length) % listing.media.length);
 
   return (
-    <div className="overflow-hidden rounded-2xl shadow-md bg-white">
+    <div className="overflow-hidden rounded-xl shadow-md bg-white">
       <div
         className="relative flex items-center justify-center aspect-video transition-all duration-700"
         style={{

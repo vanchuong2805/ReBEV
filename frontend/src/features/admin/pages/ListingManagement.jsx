@@ -1,25 +1,37 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import TitlePage from "../components/TitlePage";
 import ListingsList from "../components/ListingComponents/ListingsList";
 import StatsCard from "../components/StatsCard";
 import FilterBar from "../components/FilterBar";
 import { fetchPost, updatePostStatus } from "../service";
 import { toast } from "sonner";
-
 const ListingManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [listings, setListings] = useState([]);
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    status: "",
+    category: "",
+  });
+
+  const [posts, setPosts] = useState([]);
+  const searchKey =
+    "?status=" +
+    filSearch.status +
+    "&category_id=" +
+    filSearch.category +
+    "&search=" +
+    filSearch.searchTerm;
+
   useEffect(() => {
-    fetchPost().then((data) => {
-      setListings(data.map((p) => ({ ...p, status: Number(p.status) })));
-    });
-  }, []);
+    fetchPost(searchKey).then((data) => setPosts(data));
+  }, [filSearch]);
+  console.log(filSearch);
 
   const refreshPost = async () => {
     const fresh = await fetchPost();
-    setListings(fresh.map((p) => ({ ...p, status: Number(p.status) })));
+    setPosts(fresh.map((p) => ({ ...p, status: Number(p.status) })));
   };
   // Handlers
   const handleApprove = async (id) => {
@@ -49,7 +61,7 @@ const ListingManagement = () => {
   const handleEdit = async (id) => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
-      
+
       await refreshPost();
       toast.success(`Đã chỉnh sửa tin đăng: ${id}`);
     } catch (err) {
@@ -62,55 +74,15 @@ const ListingManagement = () => {
     console.log("Viewing listing details:", id);
   };
 
-  // Filtered data (memo để tránh render lại không cần thiết)
-  const filteredListings = useMemo(() => {
-    const query = searchTerm.toLowerCase();
-    return listings.filter((listing) => {
-      const matchesSearch =
-        String(listing.id) === query ||
-        listing.title.toLowerCase().includes(query);
-
-      const matchesStatus =
-        statusFilter === "all"
-          ? true
-          : Number(listing.status) === Number(statusFilter);
-
-      const matchesCategory =
-        categoryFilter === "all" ? true : listing.category === categoryFilter;
-
-      return matchesSearch && matchesStatus && matchesCategory;
-    });
-  }, [listings, searchTerm, statusFilter, categoryFilter]);
-
   return (
     <div className="p-6">
       <TitlePage
         title="Quản lý tin đăng"
         description="Xem xét, phê duyệt và quản lý tin đăng của người dùng"
       />
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <StatsCard
-          number={listings.filter((l) => l.status === 0).length}
-          description="Chờ duyệt"
-          color={"yellow"}
-        />
-        <StatsCard
-          number={listings.filter((l) => l.status === 1).length}
-          description="Đã duyệt"
-          color={"green"}
-        />
-        <StatsCard
-          number={listings.filter((l) => l.status === 2).length}
-          description="Từ chối"
-          color={"red"}
-        />
-        <StatsCard
-          number={listings.length}
-          description="Tổng số tin"
-          color={"blue"}
-        />
-      </div>
+
       <FilterBar
+        setFilSearch={setFilSearch}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         searchPlaceholder="Tìm kiếm theo ID tin đăng, tiêu đề hoặc tên người dùng..."
@@ -120,10 +92,15 @@ const ListingManagement = () => {
             value: statusFilter,
             onChange: (v) => setStatusFilter(v === "all" ? "all" : Number(v)),
             options: [
-              { value: "all", label: "Tất cả trạng thái" },
+              { value: "", label: "Tất cả trạng thái" },
               { value: 0, label: "Chờ duyệt" },
               { value: 1, label: "Đã duyệt" },
               { value: 2, label: "Từ chối" },
+              { value: 3, label: "Hoàn tất giao dịch" },
+              { value: 4, label: "Đang trong quá trình hoàn tất" },
+              { value: 5, label: "Đã dừng lại" },
+              { value: 6, label: "Đang xác minh" },
+              { value: 7, label: "Đang giao dịch" },
             ],
           },
           {
@@ -131,15 +108,15 @@ const ListingManagement = () => {
             value: categoryFilter,
             onChange: setCategoryFilter,
             options: [
-              { value: "all", label: "Tất cả danh mục" },
-              { value: "Motorcycle", label: "Xe máy điện" },
-              { value: "Pin", label: "Pin xe máy điện" },
+              { value: "", label: "Tất cả danh mục" },
+              { value: 1, label: "Xe máy điện" },
+              { value: 2, label: "Pin xe máy điện" },
             ],
           },
         ]}
       />
       <ListingsList
-        listings={filteredListings}
+        listings={posts}
         onViewDetails={handleViewDetails}
         onApprove={handleApprove}
         onReject={handleReject}

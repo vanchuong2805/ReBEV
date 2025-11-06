@@ -2,21 +2,35 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import TransactionCard from "./TransactionCard"
-import { mockTransactions } from "./MockTransactions"
+import {getTransactionByUserId} from "@/features/profile/service"
+import { useEffect,useState } from "react"
+import { useUser } from '@/contexts/UserContext'
 
 export default function TransactionSection() {
-  const all = mockTransactions || []
+  const { user } = useUser()
+  const [all, setAll] = useState([])
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !user.id) return
+      const data = await getTransactionByUserId(user.id)
+      setAll(data)
+      console.log(" Transactions fetched in component:", data)
+    }
+    fetchData()
+  }, [])
+
   const filterByType = type => all.filter(t => t.transaction_type === type)
   const total = all.length
 
   const tabs = [
     { key: "all", label: "Tất cả", list: all },
-    { key: "purchase", label: "Thanh toán", list: filterByType(0) },
-    { key: "deposit", label: "Đặt cọc", list: filterByType(1) },
-    { key: "refund", label: "Hoàn tiền", list: filterByType(2) },
-    { key: "membership", label: "Thành viên", list: filterByType(3) },
-    { key: "release", label: "Giải ngân", list: filterByType(4) },
-    { key: "cashout", label: "Rút tiền", list: filterByType(5) },
+    { key: "buy", label: "Mua hàng", list: filterByType(1) },
+    { key: "deposit", label: "Đặt cọc", list: filterByType(2) },
+    { key: "package_fee", label: "Mua gói", list: filterByType(4) },
+    { key: "refund", label: "Hoàn tiền", list: filterByType(3) },
+    { key: "release", label: "Giải ngân", list: filterByType(5) },
+    { key: "cash_out", label: "Rút tiền", list: filterByType(6) },
   ]
 
   return (
@@ -33,7 +47,7 @@ export default function TransactionSection() {
           <TabsList className="grid w-full grid-cols-7 mb-6">
             {tabs.map(tab => (
               <TabsTrigger key={tab.key} value={tab.key}>
-                {tab.label} ({tab.list.length})
+                {tab.label}
               </TabsTrigger>
             ))}
           </TabsList>

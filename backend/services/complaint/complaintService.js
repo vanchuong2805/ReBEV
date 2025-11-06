@@ -16,6 +16,19 @@ import userService from '../user/userService.js';
 
 const { complaints } = models;
 
+const getByUserId = async (userId) => {
+    const data = await complaints.findAll({
+        include: [
+            {
+                association: 'order_detail',
+                include: ['post'],
+            },
+        ],
+        where: { user_id: userId },
+    });
+    return data;
+};
+
 const getByOrderDetailId = async (orderDetailId) => {
     const data = await complaints.findOne({ where: { order_detail_id: orderDetailId } });
     return data;
@@ -68,8 +81,8 @@ const handleResolveComplaint = async (order_detail_id, t) => {
 
     const returnOrder = await orderService.createOrder(
         {
-            customer_id: order.seller_id,
-            seller_id: order.customer_id,
+            customer_id: order.customer_id,
+            seller_id: order.seller_id,
             order_type: ORDER_TYPE.RETURN,
             total_amount: order_detail.price,
             from_contact: order.to_contact,
@@ -120,4 +133,5 @@ export default {
     handleStatus,
     getById,
     updateStatus,
+    getByUserId,
 };

@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
+import { useNavigate } from "react-router-dom";
 
 export default function EditPackage({ pkg, onEdit }) {
   const [formData, setFormData] = useState();
+  const navigate = useNavigate();
 
   const initialData = useMemo(() => {
     if (!pkg) return null;
@@ -36,6 +38,7 @@ export default function EditPackage({ pkg, onEdit }) {
 
   const handleReset = () => {
     setFormData(initialData);
+    navigate(0);
   };
 
   return (

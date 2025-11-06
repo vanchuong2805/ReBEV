@@ -17,7 +17,7 @@ const createPayment = async (paymentInfo) => {
         '&ipnUrl=' +
         paymentInfo.ipnUrl +
         '&orderId=' +
-        (paymentInfo.orderId) +
+        paymentInfo.orderId +
         '&orderInfo=' +
         paymentInfo.orderInfo +
         '&partnerCode=' +

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle, Clock, AlertTriangle, ArrowUpDown } from "lucide-react";
 import TitlePage from "../components/TitlePage";
 import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
@@ -9,10 +9,19 @@ import ComplaintsTable from "../components/TransactionComponents/ComplaintsTable
 import ComplaintDetailModal from "../components/TransactionComponents/ComplaintDetailModal";
 import SearchInput from "../components/SearchInput";
 import SortSelector from "../components/SortSelector";
+import { getOrders } from "../service";
 const TransactionManagement = () => {
   const [activeTab, setActiveTab] = useState("orders");
   const [selectedDeposit, setSelectedDeposit] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
+
+  const [oderss, setOrderss] = useState([]);
+  useEffect(() => {
+    getOrders().then((data) => {
+      setOrderss(data);
+    });
+  }, []);
+  console.log(oderss);
 
   // Filter states
   const [completedFilter, setCompletedFilter] = useState("all");
@@ -535,7 +544,7 @@ const TransactionManagement = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => setActiveTab(tab.id)} 
                   className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
                     isActive
                       ? "border-blue-500 text-blue-600"

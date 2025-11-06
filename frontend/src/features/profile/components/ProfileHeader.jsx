@@ -37,7 +37,7 @@ const ProfileHeader = () => {
           {/* Ảnh đại diện */}
           <div className="relative">
             <img
-              src={user.avatar || "/default-avatar.png"}
+              src={user.avatar || "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg"}
               alt="Profile"
               className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
             />

@@ -18,6 +18,22 @@ const getReview = async (reviewId) => {
     return data;
 }
 
+const getByPostId = async (postId) => {
+    const data = await user_reviews.findOne({
+        include: [{
+            association: 'order_detail',
+            where: {
+                post_id: postId
+            },
+            attributes: []
+        }, {
+            association: 'user',
+            attributes: ['display_name', 'avatar']
+        }],
+    });
+    return data;
+}
+
 const getByOrderDetailId = async (orderDetailId) => {
     const data = await user_reviews.findOne({
         where: {
@@ -132,7 +148,8 @@ export default {
     getByOrderDetailId,
     createReview,
     updateReview,
-    deleteReview
+    deleteReview,
+    getByPostId
 };
 
 

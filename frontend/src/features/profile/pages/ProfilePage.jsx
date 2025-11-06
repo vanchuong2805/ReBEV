@@ -1,27 +1,16 @@
 import React from "react"
 import { Outlet } from "react-router-dom"
 import ProfileHeader from "../components/ProfileHeader"
-import StatsGrid from "../components/StatsGrid"
 import SidebarNav from "../components/SidebarNav"
 
 const ProfilePage = () => {
 
-
-  const stats = {
-    totalListings: 8,
-    soldItems: 15,
-    purchases: 3,
-    earnings: "₫245,000,000",
-    saved: 12,
-    views: 1247,
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header và thống kê luôn cố định */}
         <ProfileHeader />
-        <StatsGrid stats={stats} />
 
         {/* Layout có sidebar bên trái */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

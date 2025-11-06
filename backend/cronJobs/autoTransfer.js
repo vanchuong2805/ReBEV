@@ -1,7 +1,5 @@
 import nodeCron from 'node-cron';
 
-import { Op } from 'sequelize';
-
 import { sequelize } from '../models/index.js';
 import orderService from '../services/order/orderService.js';
 import orderStatusService from '../services/order/orderStatusService.js';
