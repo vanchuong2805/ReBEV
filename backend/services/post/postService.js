@@ -79,6 +79,8 @@ const getPosts = async (filters = {}) => {
 
     const order = [];
 
+    order.push([Sequelize.literal('status'), 'ASC']);
+
     if (!order_by) {
         order.push([Sequelize.literal('[user->package].[top]'), 'DESC']);
     }
@@ -131,7 +133,7 @@ const getPosts = async (filters = {}) => {
         console.log(escapedSearch);
         // normal text search in title and description
         where[Op.and] = sequelize.literal(
-            `(title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch} OR description COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch})`
+            `(posts.title COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch} OR posts.description COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch})`
         );
     }
     const pageNum = parseInt(page) || 1;
@@ -148,6 +150,7 @@ const getPosts = async (filters = {}) => {
             'price',
             'title',
             'create_at',
+            'status',
             [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
         ],
         group: [
@@ -156,6 +159,7 @@ const getPosts = async (filters = {}) => {
             'posts.title',
             'posts.create_at',
             '[user->package].[top]',
+            'posts.status',
         ],
         ...(variationFilter
             ? {
