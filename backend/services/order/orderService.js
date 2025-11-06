@@ -16,11 +16,24 @@ const getOrders = async (options, { page, limit }) => {
                 separated: true,
                 limit: 1,
                 order: [['create_at', 'DESC']],
+                include: [{
+                    association: 'create_by_user',
+                    attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+                }],
             },
             {
                 association: 'order_details',
                 include: ['post', 'user_reviews'],
             },
+            {
+                association: 'customer',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+            {
+                association: 'seller',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+            
         ],
         where: options,
         ...(pageSize ? { limit: pageSize, offset } : {}),
