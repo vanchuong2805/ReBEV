@@ -1,5 +1,6 @@
 // LoginForm.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import FieldError from "./FieldError";
@@ -9,6 +10,7 @@ import { useUser } from "../../../contexts/UserContext";
 import { toast } from "sonner";
 import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff } from "lucide-react";
+import { redirectAfterLogin } from "../../../services/routeGuard";
 
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
@@ -16,6 +18,7 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useUser();
+  const navigate = useNavigate();
 
   const handlePhoneLogin = (e) => {
     e.preventDefault();
@@ -27,6 +30,8 @@ const LoginForm = () => {
       .then((response) => {
         login(response.user, response.accessToken);
         toast.success("Đăng nhập thành công!");
+        // Redirect dựa trên role
+        redirectAfterLogin(response.user, navigate);
       })
       .catch((error) => {
         console.error("Login failed:", error);
@@ -40,6 +45,8 @@ const LoginForm = () => {
       const data = await googleLogin(credential);
       login(data.user, data.token);
       toast.success("Đăng nhập Google thành công!");
+      // Redirect dựa trên role
+      redirectAfterLogin(data.user, navigate);
     } catch (error) {
       console.error("Google login failed:", error);
       toast.error("Đăng nhập Google thất bại!");

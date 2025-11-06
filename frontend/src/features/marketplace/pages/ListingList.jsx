@@ -1,10 +1,15 @@
 // src/features/home/pages/ListingList.jsx
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
-import { Heart, Search, Filter, MapPin } from "lucide-react";
+import {
+  useParams,
+  Link,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
+import { Heart, Filter, MapPin } from "lucide-react";
 import { getFeaturedProducts } from "@/features/home/service";
-import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
+import FilterSearch from "../components/FilterSearch";
 
 function currency(v) {
   return Number(v || 0).toLocaleString("vi-VN") + " ₫";
@@ -24,12 +29,15 @@ function getThumb(media) {
 export default function ListingList() {
   const location = useLocation();
   const { category } = useParams();
+  const [searchParams] = useSearchParams();
 
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Search + sort + favorites
-  const [searchTerm, setSearchTerm] = useState("");
+  // Lấy search từ URL query params
+  const searchFromUrl = searchParams.get("search") || "";
+
+  // Sort + favorites
   const [sortBy, setSortBy] = useState("newest");
   const [displayCount, setDisplayCount] = useState(10);
   const [favorites, setFavorites] = useState(() => {
@@ -37,20 +45,51 @@ export default function ListingList() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Price slider state (min/max từ dữ liệu)
-  const [priceMin, setPriceMin] = useState(0);
-  const [priceMax, setPriceMax] = useState(0);
-  const [priceRange, setPriceRange] = useState([0, 0]); // [min, max]
-  const SLIDER_STEP = 10000;
-
   const observerTarget = useRef(null);
 
-  // Fetch API
+  // Fetch API với filter params
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
-        const res = await getFeaturedProducts();
+
+        // Build query params từ URL
+        const queryParams = {};
+
+        // Category từ route hoặc từ searchParams
+        const categoryIds = searchParams
+          .get("categories")
+          ?.split(",")
+          .filter(Boolean)
+          .map(Number);
+        if (categoryIds && categoryIds.length > 0) {
+          queryParams.category_id = categoryIds[0]; // Backend chỉ nhận 1 category
+        } else if (category === "xe") {
+          queryParams.category_id = 1;
+        } else if (category === "pin") {
+          queryParams.category_id = 2;
+        }
+
+        // Search
+        if (searchFromUrl) {
+          queryParams.search = searchFromUrl;
+        }
+
+        // Brands
+        const brands = searchParams.get("brands")?.split(",").filter(Boolean);
+        if (brands && brands.length > 0) {
+          queryParams.brand = brands.join(",");
+        }
+
+        // Price range
+        const minPrice = searchParams.get("minPrice");
+        const maxPrice = searchParams.get("maxPrice");
+        if (minPrice) queryParams.minPrice = minPrice;
+        if (maxPrice) queryParams.maxPrice = maxPrice;
+
+        console.log("🔍 Fetching with params:", queryParams);
+
+        const res = await getFeaturedProducts(queryParams);
         const list = Array.isArray(res) ? res : res?.data || [];
 
         // Chỉ lấy Approved + chuẩn hóa field ảnh, ngày
@@ -59,13 +98,10 @@ export default function ListingList() {
           .map((p) => ({
             ...p,
             image: getThumb(p.media),
-            // normalize date key (API là create_at)
             created_at: p.create_at || p.created_at || null,
           }));
 
         setAllItems(approved);
-
-        // Tính min/max giá toàn bộ (theo category sau khi user đổi category thì ta tính lại ở useMemo)
       } catch (e) {
         console.error(e);
         setAllItems([]);
@@ -73,57 +109,20 @@ export default function ListingList() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [category, searchParams, searchFromUrl]);
 
-  // Lọc theo category từ URL
-  const baseItems = useMemo(() => {
-    if (category === "xe") return allItems.filter((x) => x.category_id === 1);
-    if (category === "pin") return allItems.filter((x) => x.category_id === 2);
-    return allItems;
-  }, [allItems, category]);
-
-  // Khởi tạo min/max giá mỗi khi baseItems đổi
-  useEffect(() => {
-    if (!baseItems.length) {
-      setPriceMin(0);
-      setPriceMax(0);
-      setPriceRange([0, 0]);
-      return;
-    }
-    const prices = baseItems.map((x) => Number(x.price) || 0);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    setPriceMin(min);
-    setPriceMax(max);
-    setPriceRange([min, max]);
-  }, [baseItems]);
-
-  // Lọc + sắp xếp
+  // Chỉ sort items từ BE, không lọc nữa (BE đã lọc rồi)
   const filteredItems = useMemo(() => {
-    let items = baseItems;
+    let items = [...allItems];
 
-    // search theo title
-    if (searchTerm.trim()) {
-      const q = searchTerm.toLowerCase();
-      items = items.filter((item) =>
-        (item.title || "").toLowerCase().includes(q)
-      );
-    }
-
-    // lọc theo slider giá
-    items = items.filter(
-      (item) =>
-        (item.price || 0) >= priceRange[0] && (item.price || 0) <= priceRange[1]
-    );
-
-    // sort
+    // Sort
     if (sortBy === "price-asc") {
-      items = [...items].sort((a, b) => (a.price || 0) - (b.price || 0));
+      items.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === "price-desc") {
-      items = [...items].sort((a, b) => (b.price || 0) - (a.price || 0));
+      items.sort((a, b) => (b.price || 0) - (a.price || 0));
     } else {
       // newest
-      items = [...items].sort(
+      items.sort(
         (a, b) =>
           new Date(b.created_at || 0).getTime() -
           new Date(a.created_at || 0).getTime()
@@ -131,7 +130,17 @@ export default function ListingList() {
     }
 
     return items;
-  }, [baseItems, searchTerm, priceRange, sortBy]);
+  }, [allItems, sortBy]);
+
+  // Calculate price range từ filtered items
+  const { priceMin, priceMax } = useMemo(() => {
+    if (filteredItems.length === 0) return { priceMin: 0, priceMax: 0 };
+    const prices = filteredItems.map((item) => Number(item.price) || 0);
+    return {
+      priceMin: Math.min(...prices),
+      priceMax: Math.max(...prices),
+    };
+  }, [filteredItems]);
 
   // Infinite scroll
   useEffect(() => {
@@ -204,64 +213,8 @@ export default function ListingList() {
 
       <div className="container px-4 py-6 mx-auto">
         <div className="flex gap-6">
-          {/* Sidebar */}
-          <aside className="hidden w-64 space-y-6 lg:block shrink-0">
-            {/* Search */}
-            <div className="p-4 bg-white border rounded-lg">
-              <h3 className="mb-3 text-sm font-semibold text-gray-900">
-                Tìm kiếm
-              </h3>
-              <div className="relative">
-                <Search className="absolute w-4 h-4 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
-                <input
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Nhập từ khóa..."
-                  className="w-full py-2 pr-3 text-sm border rounded-lg pl-9 focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Price Range Slider (kéo thả) */}
-            <div className="p-4 bg-white border rounded-lg">
-              <h3 className="mb-3 text-sm font-semibold text-gray-900">
-                Khoảng giá
-              </h3>
-
-              {priceMin === priceMax ? (
-                <p className="text-sm text-gray-500">
-                  Không có dữ liệu giá để lọc
-                </p>
-              ) : (
-                <>
-                  <Slider
-                    min={priceMin}
-                    max={priceMax}
-                    step={SLIDER_STEP}
-                    value={priceRange}
-                    onValueChange={setPriceRange} // trả về [min, max]
-                    className="w-full"
-                  />
-                  <div className="flex items-center justify-between mt-3 text-sm">
-                    <span>
-                      {(priceRange[0] || 0).toLocaleString("vi-VN")} ₫
-                    </span>
-                    <span>
-                      {(priceRange[1] || 0).toLocaleString("vi-VN")} ₫
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-3">
-                    <button
-                      className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
-                      onClick={() => setPriceRange([priceMin, priceMax])}
-                    >
-                      Đặt lại
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </aside>
+          {/* Filter Sidebar */}
+          <FilterSearch priceMin={priceMin} priceMax={priceMax} />
 
           {/* Main */}
           <div className="flex-1">
