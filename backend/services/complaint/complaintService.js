@@ -23,6 +23,10 @@ const getByUserId = async (userId) => {
                 association: 'order_detail',
                 include: ['post'],
             },
+            {
+                association: 'user',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            }
         ],
         where: { user_id: userId },
     });
@@ -132,6 +136,11 @@ const getById = async (id) => {
     const data = await complaints.findOne({ where: { id } });
     return data;
 };
+
+const getAll = async (filters) => {
+    const data = await complaints.findAll();
+    return data;
+}
 
 export default {
     getByOrderDetailId,

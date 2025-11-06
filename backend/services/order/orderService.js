@@ -86,6 +86,7 @@ const updateOrder = async (orderId, data, options = {}) => {
     return await orders.update(data, { where: { id: orderId }, ...options });
 };
 
+
 export default {
     getOrders,
     createOrder,
