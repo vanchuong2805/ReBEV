@@ -146,7 +146,11 @@ export default function ChatPage() {
                       }`}
                     >
                       {userInfo?.avatar ? (
-                        <img src={userInfo?.avatar} alt="avataNguoiDung" />
+                        <img
+                          src={userInfo?.avatar}
+                          alt="avataNguoiDung"
+                          className="w-full h-full object-cover rounded-xl"
+                        />
                       ) : (
                         initials
                       )}

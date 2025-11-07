@@ -111,9 +111,9 @@ export default function ListingCard({
               </div>
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>ID: {listing.id}</span>
-                <span>•</span>
-                <span>Category: {listing.category_id}</span>
+                <span>
+                  Category: {listing.category_id == 1 ? "Xe Máy Điện" : "Pin"}
+                </span>
                 <span>•</span>
                 <div className="flex items-center">
                   <Badge className={`purple border-0`}>

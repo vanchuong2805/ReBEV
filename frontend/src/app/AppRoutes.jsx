@@ -33,6 +33,9 @@ import PurchaseOrder from "@/features/admin/pages/PurchaseOrder.jsx";
 import DepositOrder from "@/features/admin/pages/DepositOrder.jsx";
 import ComplaintOrder from "@/features/admin/pages/ComplaintOrder.jsx";
 import ReturnOrder from "@/features/admin/pages/ReturnOrder.jsx";
+import ForgotPhonePage from "@/features/auth/pages/ForgotPhonePage.jsx";
+import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
+import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 
 export default function AppRoutes() {
   return (
