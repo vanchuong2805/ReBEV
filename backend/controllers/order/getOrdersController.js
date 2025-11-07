@@ -21,7 +21,6 @@ import { Op } from 'sequelize';
  *         schema:
  *           type: string
  *           enum: [1, 2, 3]
- *         description: Filter orders by order type [1: Buy, 2: Deposit, 3: Return]
  *       - in: query
  *         name: page
  *         schema:
