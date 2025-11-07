@@ -66,6 +66,28 @@ export const VN_PHONE_REGEX =
 export const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?`~]).{6,}$/;
 
+export function validateForgetPassword({ password, confirmPassword }) {
+  const errors = {};
+  // password
+  if (!password || password.trim() === "") {
+    errors.password = "Vui lòng nhập mật khẩu";
+  } else if (password.length < 6) {
+    errors.password = "Mật khẩu cần ít nhất 6 ký tự";
+  } else if (!PASSWORD_REGEX.test(password)) {
+    errors.password =
+      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt";
+  }
+
+  // confirmPassword
+  if (!confirmPassword || confirmPassword.trim() === "") {
+    errors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+  } else if (confirmPassword !== password) {
+    errors.confirmPassword = "Mật khẩu xác nhận không khớp";
+  }
+
+  return errors;
+}
+
 export function validateRegister(form = {}) {
   const errors = {};
   const password = String(form.password ?? "");

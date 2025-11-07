@@ -30,3 +30,7 @@ export const getPosts = async (filters = {}) => {
   })
   return res.data.data
 }
+export const getContactById = async (id) => {
+  const res = await axios.get(`${API_BASE_URL}/contacts/contact/${id}`)
+  return res.data
+}

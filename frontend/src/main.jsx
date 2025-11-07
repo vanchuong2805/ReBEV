@@ -14,18 +14,18 @@ import { FavoriteProvider } from "@/contexts/FavoritesContexts.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <UserProvider>
-      <CartProvider>
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-          <AuthDialogProvider>
+    <AuthDialogProvider>
+      <UserProvider>
+        <CartProvider>
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <FavoriteProvider>
               <AppRoutes />
             </FavoriteProvider>
             <AuthOverlay />
-          </AuthDialogProvider>
-        </GoogleOAuthProvider>
-      </CartProvider>
-    </UserProvider>
+          </GoogleOAuthProvider>
+        </CartProvider>
+      </UserProvider>
+    </AuthDialogProvider>
     <Toaster position="top-center" richColors closeButton />
   </BrowserRouter>
 );

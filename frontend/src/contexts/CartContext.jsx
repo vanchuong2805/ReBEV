@@ -1,5 +1,6 @@
+//src/contexts/CartContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { getCartItems } from "@/features/cart/service.js";
+import { getCartItems, deleteCartItem } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
 import { addCarts } from "@/features/marketplace/service";
 import { useUser } from "./UserContext";
@@ -42,11 +43,22 @@ export function CartProvider({ children }) {
       }
     };
     fetchData();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, user]);
 
   const addToCart = async (userId, postId) => {
     try {
       await addCarts(userId, postId);
+    } catch (error) {
+      console.log(error);
+    }
+    setRefresh((prev) => prev + 1);
+  };
+
+  //xóa một sản phẩm khỏi giỏ hàng
+  const deleteItem = async (item_id) => {
+    try {
+      await deleteCartItem(item_id);
     } catch (error) {
       console.log(error);
     }
@@ -90,11 +102,6 @@ export function CartProvider({ children }) {
         items: p.items.map((it) => ({ ...it, selected: isSelected })),
       }))
     );
-  };
-
-  // Hàm để xóa các sản phẩm ĐÃ ĐƯỢC CHỌN
-  const clearSelected = () => {
-    setItems((prev) => prev.filter((p) => !p.selected));
   };
 
   // Lấy ra danh sách các sản phẩm đã được chọn
@@ -154,9 +161,10 @@ export function CartProvider({ children }) {
     isGroupSelected,
     toggleSelection,
     toggleAllSelection,
-    clearSelected,
     toggleGroupSelection,
     addToCart,
+    deleteItem,
+    getThumbnail,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
@@ -8,6 +9,7 @@ import { validateRegister } from "../../../services/validations";
 import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff } from "lucide-react";
 import { useUser } from "../../../contexts/UserContext";
+import { redirectAfterLogin } from "../../../services/routeGuard";
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +23,7 @@ const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useUser();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,6 +71,9 @@ const RegisterForm = () => {
       login(data.user, data.accessToken);
 
       toast.success("Đăng nhập Google thành công!");
+
+      // Redirect dựa trên role
+      redirectAfterLogin(data.user, navigate);
     } catch (error) {
       console.error("Google login failed:", error);
       toast.error("Đăng nhập Google thất bại!");

@@ -22,7 +22,7 @@ export default function ListingSellerInfo({ seller, listing, baseInfo, postConta
       <div onClick={handleViewShop} className="pt-4 border-t cursor-pointer hover:bg-gray-50 rounded-lg p-3 transition">
         <div className="flex items-center gap-3">
           <img
-            src={seller.avatar || "/placeholder.jpg"}
+            src={seller.avatar || "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg"}
             alt={seller.display_name || "Seller"}
             className="object-cover w-12 h-12 rounded-full border border-gray-200"
           />

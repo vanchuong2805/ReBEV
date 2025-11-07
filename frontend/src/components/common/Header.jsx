@@ -32,7 +32,7 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useUser } from "@/contexts/UserContext";
 import {
   fetchDistricts,
@@ -46,6 +46,12 @@ import { getVariationValues } from "@/features/posts/service";
 const Header = () => {
   const { openLogin, openRegister } = useAuthDialog();
   const { user, logout } = useUser();
+  const { cartItemCount } = useCart();
+  const navigate = useNavigate();
+
+  // Search state - local state để quản lý input
+  const [localSearch, setLocalSearch] = useState("");
+
   // ====== LOCATION STATES ======
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -60,8 +66,6 @@ const Header = () => {
   const [wardLoading, setWardLoading] = useState(false);
   const [provError, setProvError] = useState(null);
   const [wardError, setWardError] = useState(null);
-
-  const { cartItemCount } = useCart();
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     (async () => {
@@ -208,7 +212,9 @@ const Header = () => {
                     <div className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50">
                       <span className="flex items-center gap-2 font-medium text-gray-800">
                         <Zap size={18} className="text-[#007BFF]" />
-                        <Link to={"/marketplace/xe"}>Xe máy điện cũ</Link>
+                        <Link to={"/marketplace/all?categories=1"}>
+                          Xe máy điện cũ
+                        </Link>
                       </span>
                       <ChevronRight size={16} className="text-gray-400" />
                     </div>
@@ -239,7 +245,9 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/xe?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
+                                    to={`/marketplace/all?categories=1&${name.toLowerCase()}=${encodeURIComponent(
+                                      item.value
+                                    )}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -260,7 +268,9 @@ const Header = () => {
                     <div className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50">
                       <span className="flex items-center gap-2 font-medium text-gray-800">
                         <Battery size={18} className="text-[#007BFF]" />
-                        <Link to={"/marketplace/pin"}>Pin EV cũ</Link>
+                        <Link to={"/marketplace/all?categories=2"}>
+                          Pin EV cũ
+                        </Link>
                       </span>
                       <ChevronRight size={16} className="text-gray-400" />
                     </div>
@@ -281,25 +291,28 @@ const Header = () => {
                       <p className="text-sm text-gray-400">Đang tải...</p>
                     ) : (
                       <div className="grid grid-cols-4 gap-8 max-h-[400px] overflow-y-auto pr-2">
-                        {Object.entries(groups?.pin || {}).map(([name, group]) =>
-                          group?.data ? (
-                            <div key={name}>
-                              <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
-                                {group.icon} {name}
-                              </p>
-                              <div className="flex flex-col gap-1">
-                                {group.data.map((item) => (
-                                  <Link
-                                    key={item.id}
-                                    to={`/marketplace/pin?${name.toLowerCase()}=${encodeURIComponent(item.value)}`}
-                                    className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
-                                  >
-                                    {item.value}
-                                  </Link>
-                                ))}
+                        {Object.entries(groups?.pin || {}).map(
+                          ([name, group]) =>
+                            group?.data ? (
+                              <div key={name}>
+                                <p className="font-semibold text-gray-800 mb-3 text-[15px] flex items-center gap-2">
+                                  {group.icon} {name}
+                                </p>
+                                <div className="flex flex-col gap-1">
+                                  {group.data.map((item) => (
+                                    <Link
+                                      key={item.id}
+                                      to={`/marketplace/all?categories=2&${name.toLowerCase()}=${encodeURIComponent(
+                                        item.value
+                                      )}`}
+                                      className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
+                                    >
+                                      {item.value}
+                                    </Link>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ) : null
+                            ) : null
                         )}
                       </div>
                     )}
@@ -309,14 +322,31 @@ const Header = () => {
             </DropdownMenu>
           </div>
 
-          {/* ===== Search + Location (phần này giữ nguyên, chỉ đổi lấy GHN API) ===== */}
+          {/* ===== Search + Location ===== */}
           <div className="flex-1 max-w-3xl mx-4">
-            <div className="flex items-center w-full gap-2 px-2 py-1 bg-white shadow-md rounded-xl">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                console.log("🔎 Submitting search:", localSearch);
+                // Chuyển sang trang marketplace/all với search query trong URL
+                const searchQuery = localSearch.trim();
+                if (searchQuery) {
+                  navigate(
+                    `/marketplace/all?search=${encodeURIComponent(searchQuery)}`
+                  );
+                } else {
+                  navigate("/marketplace/all");
+                }
+              }}
+              className="flex items-center w-full gap-2 px-2 py-1 bg-white shadow-md rounded-xl"
+            >
               <div className="relative flex-1">
                 <Search className="absolute w-5 h-5 text-gray-400 -translate-y-1/2 left-3 top-1/2" />
                 <Input
                   type="search"
                   placeholder="Tìm xe điện, pin..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
                   className="h-12 pl-10 pr-4 text-gray-700 border-0 rounded-md focus-visible:ring-0 placeholder:text-gray-400"
                 />
               </div>
@@ -333,11 +363,11 @@ const Header = () => {
                     <span className="font-medium text-gray-700">
                       {selectedProvince
                         ? provinces.find(
-                          (p) => p.ProvinceID === Number(selectedProvince)
-                        )?.ProvinceName
+                            (p) => p.ProvinceID === Number(selectedProvince)
+                          )?.ProvinceName
                         : provLoading
-                          ? "Đang tải khu vực..."
-                          : "Chọn khu vực"}
+                        ? "Đang tải khu vực..."
+                        : "Chọn khu vực"}
                     </span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </Button>
@@ -395,8 +425,8 @@ const Header = () => {
                           {!selectedProvince
                             ? "Chọn tỉnh trước"
                             : districtLoading
-                              ? "Đang tải..."
-                              : "-- Chọn quận --"}
+                            ? "Đang tải..."
+                            : "-- Chọn quận --"}
                         </option>
                         {districts.map((d) => (
                           <option key={d.DistrictID} value={d.DistrictID}>
@@ -421,8 +451,8 @@ const Header = () => {
                           {!selectedDistrict
                             ? "Chọn quận trước"
                             : wardLoading
-                              ? "Đang tải..."
-                              : "-- Chọn xã --"}
+                            ? "Đang tải..."
+                            : "-- Chọn xã --"}
                         </option>
                         {wards.map((w) => (
                           <option key={w.WardCode} value={w.WardCode}>
@@ -448,10 +478,13 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button className="h-10 px-5 bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold rounded-lg shadow-sm">
+              <Button
+                type="submit"
+                className="h-10 px-5 bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold rounded-lg shadow-sm"
+              >
                 Tìm kiếm
               </Button>
-            </div>
+            </form>
           </div>
           {/* User actions */}
           {user ? (

@@ -3,6 +3,9 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { fetchUsers } from "../../service";
+import StatsCard from "../StatsCard";
 
 export default function ListingCard({
   listing,
@@ -10,6 +13,16 @@ export default function ListingCard({
   onApprove,
   onReject,
 }) {
+  const [users, setUsers] = useState([]);
+  useEffect(() => {
+    fetchUsers().then(setUsers);
+  }, []);
+
+  const getUserById = (userId) => {
+    const user = users.find((user) => user.id === userId);
+    return user ? user.display_name : "Unknown User";
+  };
+
   const STATUS = { PENDING: 0, APPROVED: 1, REJECTED: 2 };
 
   const media = JSON.parse(listing.media || "[]");
@@ -33,12 +46,22 @@ export default function ListingCard({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 1:
+      case 1: // Đã Duyệt
         return "bg-green-100 text-green-800";
-      case 0:
+      case 0: // Chờ Duyệt
         return "bg-yellow-100 text-yellow-800";
-      case 2:
+      case 2: // Từ Chối
         return "bg-red-100 text-red-800";
+      case 3: // Đã Bán
+        return "bg-blue-100 text-blue-800";
+      case 4: // Đã Đặt Cọc
+        return "bg-purple-100 text-purple-800";
+      case 5: // Đã Hủy
+        return "bg-gray-200 text-gray-800";
+      case 6: // Verify
+        return "bg-indigo-100 text-indigo-800";
+      case 7: // RESERVED
+        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -47,15 +70,26 @@ export default function ListingCard({
   const getStatusText = (status) => {
     switch (status) {
       case 1:
-        return "Đã duyệt";
+        return "Đã Duyệt";
       case 0:
-        return "Chờ duyệt";
+        return "Chờ Duyệt";
       case 2:
-        return "Từ chối";
+        return "Từ Chối";
+      case 3:
+        return "Hoàn tất giao dịch";
+      case 4:
+        return "Đang trong quá trình hoàn tất";
+      case 5:
+        return "Đã dừng lại";
+      case 6:
+        return "Đang xác minh";
+      case 7:
+        return "Giữ chỗ / tạm thời";
       default:
         return status;
     }
   };
+
   return (
     <Card className="p-6">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -77,11 +111,17 @@ export default function ListingCard({
               </div>
 
               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                <span>ID: {listing.id}</span>
+                <span>
+                  Category: {listing.category_id == 1 ? "Xe Máy Điện" : "Pin"}
+                </span>
                 <span>•</span>
-                <span>Category: {listing.category_id}</span>
-                <span>•</span>
-                <div className="flex items-center">Đã xác nhận chưa</div>
+                <div className="flex items-center">
+                  <Badge className={`purple border-0`}>
+                    <div className="flex items-center space-x-1">
+                      <span>{"Đã xác nhận"}</span>
+                    </div>
+                  </Badge>
+                </div>
               </div>
             </div>
 
@@ -96,8 +136,7 @@ export default function ListingCard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div>
               <p className="text-sm text-gray-500">Người bán</p>
-              <p className="font-medium">{listing.user_id} Ten Nguoi Ban</p>
-              <p className="text-xs text-gray-400">{listing.user_id}</p>
+              <p className="font-medium">{getUserById(listing.user_id)}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Giá</p>

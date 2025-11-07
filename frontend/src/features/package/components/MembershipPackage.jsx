@@ -1,129 +1,219 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react"
 import {
   CheckCircle2,
-  Star,
-  Crown,
-  Diamond,
   ArrowRight,
-  Sparkles
-} from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { getPackage } from '../service'
+  Zap,
+  TrendingUp
+} from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { getPackage, createRegisterPackage } from "../service"
+import { useUser } from "@/contexts/UserContext"
+import { useNavigate } from "react-router-dom"
 
-const iconById = {
-  basic: Star,
-  vip1: Crown,
-  vip2: Diamond
-}
+const cardAccents = [
+  { bg: "bg-white", accent: "border-gray-200", hover: "hover:border-gray-300" },
+  { bg: "bg-gradient-to-br from-slate-50 to-white", accent: "border-slate-200", hover: "hover:border-slate-300" },
+  { bg: "bg-gradient-to-br from-blue-50/40 to-white", accent: "border-blue-100", hover: "hover:border-blue-200" }
+]
 
-const formatPrice = v => {
-  if (v === 0) return 'Miễn phí'
-  return v.toLocaleString('vi-VN') + 'đ'
-}
-
-const MembershipPackage = () => {
-  const [selectedPlan, setSelectedPlan] = useState('vip1')
+export default function MembershipPackage() {
+  const [selectedPlan, setSelectedPlan] = useState(null)
   const [packages, setPackages] = useState([])
+  const [loading, setLoading] = useState(false)
+  const { user, setUser } = useUser()
+  const navigate = useNavigate()
 
+  // 🔹 Lấy danh sách gói và sắp xếp theo giá tăng dần
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         const data = await getPackage()
-        setPackages(data)
-        console.log(' Gói đã tải:', data)
+        const activePackages = data
+          .filter((pkg) => pkg.is_deleted === false)
+          .sort((a, b) => a.price - b.price)
+        setPackages(activePackages)
+        console.log("Gói đã tải:", activePackages)
       } catch (error) {
-        console.error(' Lỗi tải gói:', error)
+        console.error("Lỗi tải gói:", error)
       }
     }
     fetchPackages()
   }, [])
 
-  const currentPlan = packages.find(p => p.id === selectedPlan)
+  const currentPlan = packages.find((p) => p.id === selectedPlan)
 
-  const handleChoose = () => {
-    console.log('Chọn gói:', currentPlan)
+  // 🔹 Xử lý chọn gói
+  const handleChoose = async () => {
+    if (!user) {
+      alert("Vui lòng đăng nhập trước khi nâng cấp gói!")
+      navigate("/login")
+      return
+    }
+
+    if (!currentPlan) {
+      alert("Vui lòng chọn gói thành viên!")
+      return
+    }
+
+    try {
+      setLoading(true)
+      console.log("Chọn gói:", currentPlan, "cho user:", user.id)
+
+      const data = await createRegisterPackage(user.id, currentPlan.id)
+      console.log("Yêu cầu thanh toán đã tạo:", data)
+
+      // ✅ Cập nhật user trong localStorage trước khi chuyển hướng
+      const updatedUser = { ...user, package_id: currentPlan.id }
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+      if (setUser) setUser(updatedUser)
+
+      if (data.payUrl) {
+        window.location.href = data.payUrl
+      } else {
+        alert("Không tìm thấy đường dẫn thanh toán. Vui lòng thử lại.")
+      }
+    } catch (error) {
+      console.error("Lỗi khi chọn gói:", error)
+      alert("Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50'>
-      <div className='container mx-auto px-4 py-12 max-w-7xl'>
-        <div className='text-center mb-12'>
-          <h2 className='text-4xl font-bold text-gray-900 mb-4'>
-            Chọn gói thành viên phù hợp
-          </h2>
-          <p className='text-xl text-gray-600 max-w-3xl mx-auto'>
-            Các gói thành viên dành cho người bán xe điện và pin – giúp tin đăng nổi bật và tiếp cận nhiều khách hàng hơn
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-20 max-w-6xl">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-gray-900 mb-4 tracking-tight">
+            Chọn gói thành viên
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            Nâng cấp tài khoản để tin đăng nổi bật hơn và tiếp cận nhiều khách hàng hơn
           </p>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-8 mb-12'>
-          {packages.map(pkg => {
-            const Icon = iconById[pkg.id] ?? Star
+        {/* Package Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {packages.map((pkg, index) => {
             const isSelected = selectedPlan === pkg.id
-            const isPopular = pkg.id === 'vip1'
+            const style = cardAccents[index % cardAccents.length]
+
             return (
               <Card
                 key={pkg.id}
-                className={`relative transition-all duration-300 cursor-pointer ${
-                  isSelected ? 'ring-2 ring-red-500 shadow-xl scale-105' : 'hover:shadow-lg'
-                } ${isPopular ? 'border-red-300' : ''}`}
+                className={`relative flex flex-col justify-between min-h-[470px] transition-all duration-300 cursor-pointer
+                  ${style.bg} border-2 ${
+                    isSelected
+                      ? "border-blue-600 shadow-xl shadow-blue-100"
+                      : `${style.accent} ${style.hover} hover:shadow-lg`
+                  }`}
                 onClick={() => setSelectedPlan(pkg.id)}
               >
-                {isPopular && (
-                  <div className='absolute -top-4 left-1/2 -translate-x-1/2'>
-                    <Badge className='bg-red-600 text-white px-4 py-1 rounded-full flex items-center'>
-                      <Sparkles className='w-3 h-3 mr-1' />
-                      Phổ biến
-                    </Badge>
+                {/* Selected Badge */}
+                {isSelected && (
+                  <div
+                    className="absolute -top-3 left-1/2 -translate-x-1/2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md cursor-default select-none">
+                      Đã chọn
+                    </span>
                   </div>
                 )}
 
-                <CardHeader className='text-center pb-4'>
-                  <div className='w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center'>
-                    <Icon className='w-8 h-8 text-white' />
-                  </div>
-                  <CardTitle className='text-2xl font-bold'>{pkg.name}</CardTitle>
-
-                  <div className='mt-4'>
-                    <span className='text-3xl font-bold text-gray-900'>
-                      {formatPrice(pkg.price)}
-                    </span>
-                    {pkg.duration && pkg.duration !== 0 && (
-                      <span className='text-gray-600'> / {pkg.duration} ngày</span>
-                    )}
-                  </div>
-                  <p className='text-gray-600 mt-3'>{pkg.description}</p>
+                <CardHeader className="text-center pb-6 pt-8">
+                  <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+                    {pkg.name}
+                  </CardTitle>
+                  <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 px-2">
+                    {pkg.description}
+                  </p>
                 </CardHeader>
 
-                <CardContent className='pt-2'>
-                  <div className='flex flex-wrap gap-2 justify-center'>
-                    <Badge variant={pkg.highlight ? 'default' : 'secondary'}>
-                      Highlight {pkg.highlight && <CheckCircle2 className='w-4 h-4 ml-1' />}
-                    </Badge>
-                    <Badge variant={pkg.top ? 'default' : 'secondary'}>
-                      Top trang chủ {pkg.top && <CheckCircle2 className='w-4 h-4 ml-1' />}
-                    </Badge>
+                <CardContent className="pt-0 flex flex-col justify-between h-full">
+                  {/* Pricing + Features */}
+                  <div>
+                    {/* Pricing */}
+                    <div className="text-center mb-6 pb-6 border-b border-gray-100">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold text-gray-900">
+                          {pkg.price === 0
+                            ? "Miễn phí"
+                            : pkg.price.toLocaleString("vi-VN")}
+                        </span>
+                        {pkg.price > 0 && (
+                          <span className="text-lg text-gray-500">đ</span>
+                        )}
+                      </div>
+                      {pkg.duration && pkg.duration !== 0 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {pkg.duration} ngày
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Features */}
+                    <div className="space-y-3 mb-6 min-h-[70px]">
+                      {pkg.highlight && (
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Zap className="w-3 h-3 text-blue-600" />
+                          </div>
+                          <span>Tin đăng nổi bật</span>
+                        </div>
+                      )}
+                      {pkg.top && (
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                            <TrendingUp className="w-3 h-3 text-amber-600" />
+                          </div>
+                          <span>Hiển thị trang chủ</span>
+                        </div>
+                      )}
+                      {!pkg.highlight && !pkg.top && (
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                            <CheckCircle2 className="w-3 h-3 text-gray-400" />
+                          </div>
+                          <span>Đăng tin thường</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Action Button */}
                   <Button
-                    className={`w-full mt-6 ${
-                      isSelected ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700'
-                    }`}
                     onClick={handleChoose}
+                    disabled={loading}
+                    className={`w-full h-11 font-medium rounded-lg transition-all duration-200 mt-auto
+                      ${
+                        isSelected
+                          ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+                          : "bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300"
+                      }`}
                   >
-                    {isSelected ? 'Nâng cấp ngay' : 'Chọn gói này'}
-                    <ArrowRight className='w-4 h-4 ml-2' />
+                    {loading
+                      ? "Đang xử lý..."
+                      : isSelected
+                      ? "Nâng cấp ngay"
+                      : "Chọn gói"}
+                    {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
                   </Button>
                 </CardContent>
               </Card>
             )
           })}
         </div>
+
+        {/* Trust Section */}
+        <div className="mt-16 text-center">
+          <p className="text-sm text-gray-500">
+            Thanh toán an toàn • Hỗ trợ 24/7 • Hoàn tiền nếu không hài lòng
+          </p>
+        </div>
       </div>
     </div>
   )
 }
-
-export default MembershipPackage

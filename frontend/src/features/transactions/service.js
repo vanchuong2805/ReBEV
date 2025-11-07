@@ -1,15 +1,11 @@
 import axios from "axios";
+import api from "@/services/api";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 const DELIVERY_API_URL = import.meta.env.VITE_GHN_API;
 
 export const createOrder = async (orderData) => {
-  const response = await axios.post(`${API_BASE_URL}/orders`, orderData, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-    },
-  });
+  const response = await api.post(`/orders`, orderData);
   return response.data;
 };
 
@@ -38,6 +34,7 @@ export const getAppointmentTimes = async ({
   return response.data;
 };
 
+//test xong xóa clg
 export const getDeliveryFees = async ({
   from_district_id,
   to_district_id,
@@ -54,23 +51,46 @@ export const getDeliveryFees = async ({
     items: [{ weight }],
     service_type_id: 2,
   });
-  const response = await axios.post(
-    `${DELIVERY_API_URL}/v2/shipping-order/fee`,
-    {
-      from_district_id: from_district_id,
-      to_district_id: to_district_id,
-      from_ward_code: from_ward_code,
-      to_ward_code: to_ward_code,
-      weight,
-      items: [{ weight }],
-      service_type_id: 2,
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Token: import.meta.env.VITE_GHN_TOKEN,
+  let response = null;
+  try {
+    response = await axios.post(
+      `${DELIVERY_API_URL}/v2/shipping-order/fee`,
+      {
+        from_district_id: from_district_id,
+        to_district_id: to_district_id,
+        from_ward_code: from_ward_code,
+        to_ward_code: to_ward_code,
+        weight,
+        items: [{ weight }],
+        service_type_id: 2,
       },
-    }
-  );
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: import.meta.env.VITE_GHN_TOKEN,
+        },
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    response = await axios.post(
+      `${DELIVERY_API_URL}/v2/shipping-order/fee`,
+      {
+        from_district_id: from_district_id,
+        to_district_id: to_district_id,
+        from_ward_code: from_ward_code,
+        to_ward_code: to_ward_code,
+        weight,
+        items: [{ weight }],
+        service_type_id: 5,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Token: import.meta.env.VITE_GHN_TOKEN,
+        },
+      }
+    );
+  }
   return response.data.data.total;
 };

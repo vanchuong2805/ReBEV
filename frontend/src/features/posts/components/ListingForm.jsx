@@ -74,7 +74,7 @@ export default function ListingForm({ onSubmit }) {
 
       {/* Form bài đăng */}
       <Form
-        key={category} // ✅ remount khi đổi danh mục để reset state bên trong
+        key={category} // remount khi đổi danh mục để reset state bên trong
         categoryId={Number(category)}
         requireBase={requireBase}
         onSubmit={handleSubmit}
