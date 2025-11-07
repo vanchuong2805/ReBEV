@@ -54,10 +54,10 @@ export default function UserInfo({
                 </Badge>
                 {user.package_id && (
                   <Badge className={`purple border-0`}>
-                    {
-                      packageList.find((pkg) => pkg.id === user.package_id)
-                        ?.name
-                    }
+                    {1 === 1
+                      ? packageList.find((pkg) => pkg.id === user.package_id)
+                          ?.name
+                      : ""}
                   </Badge>
                 )}
               </div>

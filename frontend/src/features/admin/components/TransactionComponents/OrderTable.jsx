@@ -80,7 +80,12 @@ export default function OrderTable({ allOrders }) {
         );
     }
   };
-
+  const formatDate = (isoString) => {
+    return new Date(isoString).toLocaleString("vi-VN", {
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+  };
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -120,10 +125,10 @@ export default function OrderTable({ allOrders }) {
                   {item.id}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.customer_id}
+                  {item.customer.display_name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.seller_id}
+                  {item.seller.display_name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {item.total_amount.toLocaleString("vi-VN") + " VND"}
@@ -133,11 +138,11 @@ export default function OrderTable({ allOrders }) {
                   {item.order_statuses[0].status.toUpperCase()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.order_statuses[0].create_at}
+                  {formatDate(item.order_statuses[0].create_at)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {item.order_statuses[0].create_by
-                    ? item.order_statuses[0].create_by
+                  {item.order_statuses[0].create_by_user?.display_name
+                    ? item.order_statuses[0].create_by_user?.display_name
                     : "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

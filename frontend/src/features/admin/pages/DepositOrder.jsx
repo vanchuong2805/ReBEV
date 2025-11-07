@@ -91,7 +91,7 @@ export default function DepositOrder() {
       />
 
       {/* Orders List */}
-      <DepositOrdersTable orders={filteredDepositOrders} />
+      <DepositOrdersTable />
 
       {/* Deposit Detail Modal - chỉ hiển thị khi không có actionType */}
       {selectedDeposit && !selectedDeposit.actionType && (

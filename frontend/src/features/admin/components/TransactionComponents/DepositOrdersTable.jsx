@@ -175,9 +175,11 @@ export default function DepositOrdersTable() {
 
                   <td
                     className="px-3 py-2 text-xs text-gray-900 hidden md:table-cell truncate"
-                    title={st?.create_by || "N/A"}
+                    title={st?.create_by_user?.display_name || "N/A"}
                   >
-                    {st?.create_by || "N/A"}
+                    {st?.create_by_user?.display_name
+                      ? st?.create_by_user?.display_name
+                      : "N/A"}
                   </td>
 
                   <td className="px-3 py-2 hidden md:table-cell">
