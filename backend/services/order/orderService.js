@@ -9,6 +9,10 @@ const getOrders = async (options, { page, limit }) => {
     const offset = (pageNum - 1) * pageSize;
     const total = await orders.count({ where: options });
 
+    const order = [];
+
+    order.push([Sequelize.literal('order_statuses.status'), 'DESC']);
+
     const ordersData = await orders.findAll({
         include: [
             {
@@ -16,14 +20,28 @@ const getOrders = async (options, { page, limit }) => {
                 separated: true,
                 limit: 1,
                 order: [['create_at', 'DESC']],
+                include: [{
+                    association: 'create_by_user',
+                    attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+                }],
             },
             {
                 association: 'order_details',
                 include: ['post', 'user_reviews'],
             },
+            {
+                association: 'customer',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+            {
+                association: 'seller',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+            
         ],
         where: options,
         ...(pageSize ? { limit: pageSize, offset } : {}),
+        
     });
 
     const data = {
@@ -72,6 +90,7 @@ const createOrder = async (orderData, options) => {
 const updateOrder = async (orderId, data, options = {}) => {
     return await orders.update(data, { where: { id: orderId }, ...options });
 };
+
 
 export default {
     getOrders,

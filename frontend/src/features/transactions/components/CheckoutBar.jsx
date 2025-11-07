@@ -17,10 +17,10 @@ export default function CheckoutBar({
   const total = subtotal + shipping;
 
   return (
-    <div className="w-full border-t bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
-      <div className="w-11/12 max-w-6xl mx-auto md:w-4/5">
+    <div className="container mx-auto mb-6 overflow-hidden bg-white border border-gray-200 shadow-md rounded-xl">
+      <div className="px-6 py-5">
         {/* hàng tổng quan (giống Shopee) */}
-        <div className="flex items-center justify-center gap-2 py-4">
+        <div className="flex items-center justify-center gap-2">
           {/* Trái: ghi chú điều khoản */}
           <p className="flex-shrink-0 text-[13px] text-gray-600">
             Nhấn <span className="font-medium">“Đặt hàng”</span> đồng nghĩa với

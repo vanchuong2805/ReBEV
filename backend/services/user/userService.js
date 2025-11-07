@@ -230,6 +230,13 @@ const getUserRatingCount = async (user_id) => {
     return { count, totalRating };
 };
 
+const getPublicInfo = async (user_id) => {
+    const data = await users.findByPk(user_id, {
+        attributes: ['id', 'display_name', 'email', 'phone', 'avatar', 'role'],
+    });
+    return data;
+}
+
 export default {
     getUsers,
     getUser,
@@ -243,6 +250,7 @@ export default {
     updatePassword,
     checkPassword,
     updatePackage,
+    getPublicInfo,
     lockAccount,
     unLockAccount,
     is_locked,

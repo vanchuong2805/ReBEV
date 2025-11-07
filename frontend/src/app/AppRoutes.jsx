@@ -36,6 +36,7 @@ import ReturnOrder from "@/features/admin/pages/ReturnOrder.jsx";
 import ForgotPhonePage from "@/features/auth/pages/ForgotPhonePage.jsx";
 import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
 import OtpPage from "@/features/auth/pages/OtpPage.jsx";
+import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -54,6 +55,7 @@ export default function AppRoutes() {
             <Route path="wallet" element={<WalletSection />} />
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
+            <Route path="returns/:orderId" element={<ReturnOrderDetailPage />} />
           </Route>
           <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.POSTS} element={<PostPage />} />

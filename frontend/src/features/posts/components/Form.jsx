@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import TiptapEditor from "@/components/common/TiptapEditor";
 import { MyInput } from "./MyInput";
-import {
-  getVariationValues,
-  basesService,  
-} from "@/features/posts/service";
+import { getVariationValues, basesService } from "@/features/posts/service";
 import { useVariationGraph } from "@/hooks/posts/useVariations";
 import { usePostForm } from "@/hooks/posts/usePostForm";
 import { toast } from "sonner";
@@ -177,7 +174,7 @@ export default function Form({
           };
         }
 
-        // 4) không phải option -> custom_value
+        // 4)  custom_value
         //    nếu là "Trọng lượng"  -> đổi sang gram
         const isWeight = variation_id === 13 || label.includes("trọng lượng");
         if (isWeight) {
@@ -225,13 +222,13 @@ export default function Form({
     });
 
     // reset text fields + thumbnail index
-    setTitle("");
-    setPrice("");
-    setDescription("");
-    setSelectedByVar({});
-    setBaseId("");
-    setCoverImageIndex(0);
-    setSellerContactId("");
+    // setTitle("");
+    // setPrice("");
+    // setDescription("");
+    // setSelectedByVar({});
+    // setBaseId("");
+    // setCoverImageIndex(0);
+    // setSellerContactId("");
   }
 
   // chỉ render variations có tiêu đề hợp lệ (đúng category)

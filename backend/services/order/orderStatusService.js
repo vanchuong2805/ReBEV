@@ -133,21 +133,22 @@ const handleCompletedStatus = async (order, t) => {
                 },
                 { transaction: t }
             );
-            const amount =
-                [ORDER_TYPE.BUY, ORDER_TYPE.RETURN].includes(order.order_type)
-                    ? item.price - item.commission_amount
-                    : item.deposit_amount;
+            const amount = [ORDER_TYPE.BUY, ORDER_TYPE.RETURN].includes(order.order_type)
+                ? item.price - item.commission_amount
+                : item.deposit_amount;
             // Release payment to seller
             // Create transaction record
             await transactionService.createTransaction(
                 {
-                    receiver_id: (order.order_type === ORDER_TYPE.RETURN
-                        ? order.customer_id
-                        : order.seller_id),
+                    receiver_id:
+                        order.order_type === ORDER_TYPE.RETURN
+                            ? order.customer_id
+                            : order.seller_id,
                     amount,
-                    transaction_type: (order.order_type === ORDER_TYPE.RETURN
-                        ? TRANSACTION_TYPE.REFUND
-                        : TRANSACTION_TYPE.RELEASE),
+                    transaction_type:
+                        order.order_type === ORDER_TYPE.RETURN
+                            ? TRANSACTION_TYPE.REFUND
+                            : TRANSACTION_TYPE.RELEASE,
                     related_order_detail_id: item.id,
                     status: TRANSACTION_STATUS.SUCCESS,
                 },
@@ -197,6 +198,12 @@ const handleStatus = async (order, status, t) => {
     }
 };
 
+const getByOrderId = async (orderId) => {
+    const statuses = await order_status.findAll({
+        where: { order_id: orderId },
+    });
+    return statuses;
+};
 
 export default {
     getAll,
@@ -204,6 +211,7 @@ export default {
     updateOrderStatus,
     getCurrentStatus,
     handleStatus,
+    getByOrderId,
 };
 
 export { handleCompletedStatus };

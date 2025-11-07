@@ -1,6 +1,10 @@
-import complaintService from "../../services/complaint/complaintService.js";
+import complaintService from '../../services/complaint/complaintService.js';
+import orderDetailService from '../../services/order/orderDetailService.js';
+import orderService from '../../services/order/orderService.js';
+import orderStatusService from '../../services/order/orderStatusService.js';
+import userService from '../../services/user/userService.js';
 
-/** 
+/**
  * @swagger
  * /api/users/{id}/complaints:
  *   get:
@@ -30,11 +34,20 @@ const getByUser = async (req, res) => {
             return res.status(403).json({ message: 'Forbidden' });
         }
         const complaints = await complaintService.getByUserId(id);
+        for (let complaint of complaints) {
+            const order_status = await orderStatusService.getByOrderId(complaint.return_order_id);
+            const orderDetail = await orderDetailService.getById(complaint.order_detail_id);
+            const order = await orderService.getById(orderDetail.order_id);
+            const seller = await userService.getPublicInfo(order.seller_id);
+            complaint.dataValues.order_status = order_status;
+            complaint.dataValues.seller = seller;
+            console.log(order);
+        }
         res.status(200).json(complaints);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
 export default getByUser;

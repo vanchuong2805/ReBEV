@@ -58,7 +58,10 @@ export default function Cart() {
           {/* Danh sách sản phẩm */}
           <div>
             {items.map((item) => (
-              <GroupCart key={crypto.randomUUID()} groupItems={item} />
+              <GroupCart
+                key={`${item.seller_id}-${item.seller_contact.id}`}
+                groupItems={item}
+              />
             ))}
           </div>
         </div>

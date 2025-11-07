@@ -46,11 +46,11 @@ export default function OrderProductList({ posts = [], order, navigate, type }) 
             </div>
             <div className="text-right">
               <p className="text-sm text-[#007BFF] font-medium">
-                {money(order.order_details?.[i]?.price)}
+                {(type === "refund")
+                  ? money(post.price)
+                  : money(order.order_details?.[i]?.price)}
               </p>
-              {type === "refund" && (
-                <p className="text-xs text-red-500 mt-1">Hoàn tiền đang xử lý</p>
-              )}
+             
             </div>
           </div>
         ))}

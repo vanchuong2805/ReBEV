@@ -1,3 +1,4 @@
+//src/contexts/CartContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getCartItems, deleteCartItem } from "@/features/cart/service.js";
 import PromotionBanner from "@/features/home/components/PromotionBanner";
@@ -42,6 +43,7 @@ export function CartProvider({ children }) {
       }
     };
     fetchData();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh, user]);
 
   const addToCart = async (userId, postId) => {
@@ -102,11 +104,6 @@ export function CartProvider({ children }) {
     );
   };
 
-  // Hàm để xóa các sản phẩm ĐÃ ĐƯỢC CHỌN
-  const clearSelected = () => {
-    setItems((prev) => prev.filter((p) => !p.selected));
-  };
-
   // Lấy ra danh sách các sản phẩm đã được chọn
   const selectedGroups = useMemo(() => {
     const groups = items.filter((p) => p.items.some((it) => it.selected));
@@ -164,10 +161,10 @@ export function CartProvider({ children }) {
     isGroupSelected,
     toggleSelection,
     toggleAllSelection,
-    clearSelected,
     toggleGroupSelection,
     addToCart,
     deleteItem,
+    getThumbnail,
   };
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;
