@@ -33,7 +33,6 @@ export default function OrderDetailPage() {
               const postRes = await getPostById(id)
               const sellerRes = await getUserById(postRes.user_id)
 
-              // ✅ Parse media an toàn
               let thumbnailUrl = "/placeholder.png"
               try {
                 const parsed =
@@ -58,7 +57,7 @@ export default function OrderDetailPage() {
           )
 
           setPosts(postDataList)
-          console.log("✅ Dữ liệu bài đăng:", postDataList)
+          console.log(" Dữ liệu bài đăng:", order)
         }
       } catch (err) {
         console.error("❌ Lỗi tải dữ liệu đơn hàng:", err)
@@ -125,7 +124,7 @@ export default function OrderDetailPage() {
     >
       {/* === Thanh tiến trình === */}
       <Card className="p-8 bg-white shadow-sm">
-        <OrderProgress progressIndex={progressIndex} isCanceled={isCanceled} />
+        <OrderProgress progressIndex={progressIndex} isCanceled={isCanceled} type="normal" />
       </Card>
 
       {/* === Địa chỉ + Timeline === */}
@@ -137,7 +136,7 @@ export default function OrderDetailPage() {
       </Card>
 
       {/* === Danh sách sản phẩm + Tổng tiền === */}
-      <OrderProductList posts={posts} order={order} navigate={navigate} />
+      <OrderProductList posts={posts} order={order} navigate={navigate} type="normal" />
       <OrderSummary order={order} />
     </OrderLayout>
   )
