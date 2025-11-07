@@ -9,12 +9,12 @@ import {
   LogOut,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-
+import { useUser } from "@/contexts/UserContext";
 import { ROUTES } from "@/constants/routes";
-import { logoutAdmin } from "../service";
 
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
+  const { logout } = useUser();
 
   const menuItems = [
     {
@@ -105,10 +105,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       <div className="border-t border-slate-700 mt-6">
         <button
           onClick={() => {
-            logoutAdmin();
+            logout(); 
             navigate("/");
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
           }}
           className="w-full flex items-center px-4 py-3 text-left transition-colors hover:bg-slate-700 hover:text-white"
         >

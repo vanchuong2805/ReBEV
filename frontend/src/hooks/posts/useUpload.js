@@ -3,7 +3,11 @@ export const useUpload = () => {
 
   async function upload(file) {
     const isVideo = file.type.startsWith("video/");
-    const endpoint = isVideo ? "video" : "image";
+    const isImage = file.type.startsWith("image/");
+
+    let endpoint = "raw";
+    if (isVideo) endpoint = "video";
+    if (isImage) endpoint = "image";
 
     const fd = new FormData();
     fd.append("file", file);
