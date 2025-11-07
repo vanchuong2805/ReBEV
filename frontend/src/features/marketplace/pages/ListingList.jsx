@@ -82,26 +82,34 @@ export default function ListingList() {
         }
 
         // Price range
-        const minPrice = searchParams.get("minPrice");
-        const maxPrice = searchParams.get("maxPrice");
-        if (minPrice) queryParams.minPrice = minPrice;
-        if (maxPrice) queryParams.maxPrice = maxPrice;
+        const minPrice = searchParams.get("min_price");
+        const maxPrice = searchParams.get("max_price");
+        if (minPrice) queryParams.min_price = minPrice;
+        if (maxPrice) queryParams.max_price = maxPrice;
+
+        // Status - chỉ lấy approved
+        queryParams.status = 1;
+
+        // iUser_id - BE sẽ loại bỏ posts của user này
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        if (user?.id) {
+          queryParams.iUser_id = user.id;
+        }
 
         console.log("🔍 Fetching with params:", queryParams);
 
         const res = await getFeaturedProducts(queryParams);
         const list = Array.isArray(res) ? res : res?.data || [];
 
-        // Chỉ lấy Approved + chuẩn hóa field ảnh, ngày
-        const approved = list
-          .filter((p) => p?.status === 1)
-          .map((p) => ({
-            ...p,
-            image: getThumb(p.media),
-            created_at: p.create_at || p.created_at || null,
-          }));
+        // BE đã filter status và loại posts của user rồi, chỉ cần chuẩn hóa field
+        const normalized = list.map((p) => ({
+          ...p,
+          image: getThumb(p.media),
+          created_at: p.create_at || p.created_at || null,
+        }));
 
-        setAllItems(approved);
+        setAllItems(normalized);
       } catch (e) {
         console.error(e);
         setAllItems([]);

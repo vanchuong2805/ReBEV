@@ -167,8 +167,8 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     setParam("batteryConditions", filters.batteryConditions);
 
     if (priceRange[0] !== priceMin || priceRange[1] !== priceMax) {
-      params.set("minPrice", priceRange[0]);
-      params.set("maxPrice", priceRange[1]);
+      params.set("min_price", priceRange[0]);
+      params.set("max_price", priceRange[1]);
     }
 
     setSearchParams(params);

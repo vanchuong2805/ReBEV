@@ -43,12 +43,25 @@ export const redirectAfterLogin = (user, navigate, intendedRoute = null) => {
  * @returns {boolean}
  */
 export const canAccessRoute = (userRole, route) => {
-  // Admin có thể truy cập mọi route
+  // Admin chỉ có thể truy cập /admin routes
   if (userRole === ROLES.ADMIN) {
+    // Admin không được vào member routes
+    const memberOnlyRoutes = [
+      "/profile",
+      "/posts",
+      "/cart",
+      "/checkout",
+      "/upgrade",
+    ];
+    const isMemberRoute = memberOnlyRoutes.some((r) => route.startsWith(r));
+    if (isMemberRoute) {
+      return false;
+    }
+    // Admin có thể vào admin routes và public routes
     return true;
   }
 
-  // Staff chỉ có thể truy cập /staff và các route công khai
+  // Staff không thể truy cập /admin
   if (userRole === ROLES.STAFF) {
     return !route.startsWith("/admin");
   }
