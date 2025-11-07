@@ -13,7 +13,7 @@ export default function ComplaintModal({ open, onClose, purchase }) {
   const [images, setImages] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const { upload } = useUpload() 
+  const { upload } = useUpload()
 
   // === Upload ảnh thật lên Cloudinary ===
   const handleImageChange = async (e) => {
@@ -29,7 +29,7 @@ export default function ComplaintModal({ open, onClose, purchase }) {
           continue
         }
         const data = await upload(file)
-        uploaded.push({ url: data.url.split(" ")[1] }) 
+        uploaded.push({ url: data.url.split(" ")[1] })
       }
       setImages((prev) => [...prev, ...uploaded])
       alert(" Tải ảnh lên thành công!")
@@ -56,7 +56,7 @@ export default function ComplaintModal({ open, onClose, purchase }) {
       await createComplaint({
         order_detail_id: purchase.id,
         description,
-        media: images, 
+        media: images,
       })
       onClose()
       setDescription("")
