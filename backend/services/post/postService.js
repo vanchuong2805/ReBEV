@@ -62,7 +62,7 @@ const getPosts = async (filters = {}) => {
         : [];
     include.push({
         association: 'user',
-        attributes: [],
+        attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
         include: [
             {
                 association: 'package',
@@ -164,6 +164,11 @@ const getPosts = async (filters = {}) => {
             'posts.status',
             'posts.base_id',
             'posts.seller_contact_id',
+            'user.id',
+            'user.display_name',
+            'user.email',
+            'user.phone',
+            'user.avatar',
         ],
         ...(variationFilter
             ? {
