@@ -54,7 +54,7 @@ export default function UserInfo({
                 </Badge>
                 {user.package_id && (
                   <Badge className={`purple border-0`}>
-                    {1 === 1
+                    {0 === 0
                       ? packageList.find((pkg) => pkg.id === user.package_id)
                           ?.name
                       : ""}
