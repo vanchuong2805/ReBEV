@@ -69,6 +69,10 @@ const getOrders = async (options) => {
                         association: 'user_reviews',
                         attributes: ['id', 'rating_value', 'comment'],
                     },
+                    {
+                        association: 'complaints',
+                        attributes: ['id'],
+                    }
                 ],
                 attributes: ['id', 'contract_file'],
             },
