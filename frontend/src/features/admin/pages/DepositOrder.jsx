@@ -2,105 +2,57 @@ import React, { useState } from "react";
 import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
 import DepositOrdersTable from "../components/TransactionComponents/DepositOrdersTable";
 import DepositDetailModal from "../components/TransactionComponents/DepositDetailModal";
+import FilterBar from "../components/FilterBar";
+import { ArrowUpDown } from "lucide-react";
+import SortSelector from "../components/SortSelector";
 
 export default function DepositOrder() {
-  const [depositFilter, setDepositFilter] = useState("all");
-  const [selectedDeposit, setSelectedDeposit] = useState(null);
-
-  const depositStatusOptions = [
+  const orderSortOptions = [
     { value: "all", label: "Tất cả" },
     { value: "pending", label: "Chờ xử lý" },
     { value: "seller_cancelled", label: "Bên bán hủy" },
     { value: "buyer_cancelled", label: "Bên mua hủy" },
     { value: "completed", label: "Giao dịch thành công" },
   ];
-  const [depositOrders, setDepositOrders] = useState([
-    {
-      id: "DEP-001",
-      productName: "Xe máy điện Honda",
-      buyerName: "Trần Văn E",
-      sellerName: "Nguyễn Thị F",
-      depositAmount: 5000000,
-      totalAmount: 50000000,
-      status: "pending",
-      depositDate: "2024-10-11",
-      appointmentDate: "2024-10-15",
-      depositPdf: "/contracts/DEP-001.pdf",
-    },
-    {
-      id: "DEP-002",
-      productName: "Pin xe máy điện Lithium",
-      buyerName: "Hoàng Văn G",
-      sellerName: "Võ Thị H",
-      depositAmount: 1000000,
-      totalAmount: 10000000,
-      status: "seller_cancelled",
-      depositDate: "2024-10-09",
-      appointmentDate: "2024-10-13",
-      depositPdf: "/contracts/DEP-002.pdf",
-    },
-  ]);
-  const filteredDepositOrders = depositOrders.filter(
-    (order) => depositFilter === "all" || order.status === depositFilter
-  );
-  const handleDepositStatusChange = (depositId, newStatus) => {
-    console.log(depositId + newStatus);
-  };
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { color: "bg-yellow-100 text-yellow-800", text: "Chờ xử lý" },
-      completed: { color: "bg-green-100 text-green-800", text: "Hoàn thành" },
-      seller_cancelled: {
-        color: "bg-red-100 text-red-800",
-        text: "Bên bán hủy",
-      },
-      buyer_cancelled: {
-        color: "bg-orange-100 text-orange-800",
-        text: "Bên mua hủy",
-      },
-      cancelled: {
-        color: "bg-red-100 text-red-800",
-        text: "Đã hủy",
-      },
-      approved: { color: "bg-green-100 text-green-800", text: "Đồng ý" },
-      rejected: { color: "bg-red-100 text-red-800", text: "Từ chối" },
-    };
-
-    const config = statusConfig[status] || {
-      color: "bg-gray-100 text-gray-800",
-      text: status,
-    };
-    return (
-      <span
-        className={`px-2 py-1 text-xs font-medium rounded-full ${config.color}`}
-      >
-        {config.text}
-      </span>
-    );
-  };
+  const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
 
   return (
     <div className="space-y-4">
       {/* Filter */}
-      <FilterTransaction
-        id="deposit-filter"
-        label="Lọc theo trạng thái:"
-        value={depositFilter}
-        onChange={setDepositFilter}
-        options={depositStatusOptions}
-      />
 
+      <FilterBar
+        selects={[
+          {
+            key: "status",
+            value: "",
+            options: [
+              { value: "", label: "Tất cả trạng thái" },
+              { value: 0, label: "Chờ duyệt" },
+              { value: 1, label: "Đã duyệt" },
+              { value: 2, label: "Từ chối" },
+              { value: 3, label: "Hoàn tất giao dịch" },
+              { value: 4, label: "Đang trong quá trình hoàn tất" },
+              { value: 5, label: "Đã dừng lại" },
+              { value: 6, label: "Đang xác minh" },
+              { value: 7, label: "Đang giao dịch" },
+            ],
+          },
+        ]}
+      ></FilterBar>
+      <div className="flex flex-wrap gap-4 justify-between">
+        <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
+        {/* Sort Selector */}
+        <div className="flex items-center">
+          <ArrowUpDown size={16} className="mr-2 text-gray-500" />
+          <SortSelector
+            value={orderSortOption}
+            onChange={setOrderSortOption}
+            options={orderSortOptions}
+          />
+        </div>
+      </div>
       {/* Orders List */}
       <DepositOrdersTable />
-
-      {/* Deposit Detail Modal - chỉ hiển thị khi không có actionType */}
-      {selectedDeposit && !selectedDeposit.actionType && (
-        <DepositDetailModal
-          deposit={selectedDeposit}
-          onClose={() => setSelectedDeposit(null)}
-          onChangeStatus={(id, status) => handleDepositStatusChange(id, status)}
-        />
-      )}
     </div>
   );
 }

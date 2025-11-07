@@ -230,10 +230,6 @@ export const getOrders = async (type) => {
   }
 };
 
-export const fetchOrder = () => {
-  const res = axios.get(`${baseAPI}/orders`);
-  return res.data;
-};
 //.---
 // Update contractFile
 // https://rebev.up.railway.app/api/order-details/:id/contract
@@ -251,4 +247,23 @@ export const updateContractFile = async (id, url) => {
     }
   );
   return res.data;
+};
+
+//Static Page
+
+export const getStaticPage = async (year) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/statistics?year=${year}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    });
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
 };

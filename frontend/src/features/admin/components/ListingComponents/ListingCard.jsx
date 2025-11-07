@@ -136,7 +136,9 @@ export default function ListingCard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div>
               <p className="text-sm text-gray-500">Người bán</p>
-              <p className="font-medium">{getUserById(listing.user_id)}</p>
+              <p className="font-medium">
+                {getUserById(listing.seller_contact_id)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Giá</p>
