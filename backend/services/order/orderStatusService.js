@@ -118,7 +118,7 @@ const handleDeliveringStatus = async (order, t) => {
     // Randomly generate a delivery code for demonstration purposes
     const deliveryCode = `DEL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
-    await orderService.updateOrder(id, { delivery_code: deliveryCode });
+    await orderService.updateOrder(order.id, { delivery_code: deliveryCode });
 };
 
 const handleDeliveredStatus = async (order, t) => {};
