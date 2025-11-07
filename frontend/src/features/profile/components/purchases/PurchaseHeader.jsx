@@ -11,6 +11,11 @@ export default function PurchaseHeader({ seller }) {
 
   return (
     <div className="flex items-center gap-3 mb-4 pb-4 border-b">
+      <span className="text-lg font-semibold text-gray-800"><img
+        src={seller.avatar || "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg"}
+        alt="Profile"
+        className="w-8 h-8 rounded-full border object-cover"
+      /></span>
       <span className="font-medium text-gray-900">
         Người bán: {seller.display_name || "Ẩn danh"}
       </span>
