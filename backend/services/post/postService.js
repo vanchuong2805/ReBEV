@@ -151,6 +151,8 @@ const getPosts = async (filters = {}) => {
             'title',
             'create_at',
             'status',
+            'base_id',
+            'seller_contact_id',
             [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
         ],
         group: [
@@ -160,6 +162,8 @@ const getPosts = async (filters = {}) => {
             'posts.create_at',
             '[user->package].[top]',
             'posts.status',
+            'posts.base_id',
+            'posts.seller_contact_id',
         ],
         ...(variationFilter
             ? {
