@@ -17,6 +17,7 @@ const getStatistics = async (year) => {
     const totalPosts = await posts.count();
 
     const totalTransactions = await transactions.count();
+
     const transactionsByYear = await transactions.findAll({
         where: Sequelize.literal(`[transactions].[create_at] BETWEEN '${startDate}' AND '${endDate}'`),
         include: [
@@ -78,7 +79,14 @@ const getStatistics = async (year) => {
 
     });
     const revenue = await transactions.findAll({
-        where: Sequelize.literal(`[transactions].[transaction_type] in (${TRANSACTION_TYPE.PACKAGE_FEE}, ${TRANSACTION_TYPE.RELEASE})`),
+        where: {
+            [Op.and]: [
+                Sequelize.literal(`[transactions].[transaction_type] IN (${TRANSACTION_TYPE.PACKAGE_FEE}, ${TRANSACTION_TYPE.RELEASE})`),
+                {
+                    status: 0
+                }
+            ]
+        },
 
         include: [
             {
