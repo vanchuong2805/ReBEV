@@ -2,14 +2,14 @@ import React from "react";
 import { Routes, Route } from "react-router";
 import NotFound from "../features/404Page/NotFound.jsx";
 import { ROUTES } from "../constants/routes.js";
+import { ROLES } from "../constants/roles.js";
+import ProtectedRoute from "@/components/common/ProtectedRoute.jsx";
 import Home from "@/features/home/pages/Home";
 import ProfilePage from "@/features/profile/pages/ProfilePage.jsx";
 import PackagePage from "@/features/package/pages/PackagePage.jsx";
 import CartPage from "@/features/cart/pages/Cart.jsx";
 import CheckoutPage from "@/features/transactions/pages/CheckoutPage.jsx";
 import PostPage from "@/features/posts/pages/MyListingPage.jsx";
-import PaymentFail from "@/features/transactions/pages/PaymentFail.jsx";
-import PaymentSuccess from "@/features/transactions/pages/PaymentSuccess.jsx";
 import HomeLayout from "./layouts/HomeLayout.jsx";
 import ListingDetail from "@/features/marketplace/pages/ListingDetail.jsx";
 import OrderDetailPage from "@/features/profile/components/order/OrderDetailPage.jsx";
@@ -43,9 +43,19 @@ export default function AppRoutes() {
     <>
       <Routes>
         <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
+
+        {/* Guest và Member Routes */}
         <Route element={<HomeLayout />}>
           <Route path={ROUTES.HOME} element={<Home />} />
-          <Route path={ROUTES.PROFILE} element={<ProfilePage />}>
+
+          <Route
+            path={ROUTES.PROFILE}
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER, ROLES.STAFF]}>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          >
             <Route path="listings" element={<ListingsSection />} />
             <Route path="purchases" element={<PurchasesSection />} />
             <Route path="sales" element={<SalesSection />} />
@@ -57,11 +67,53 @@ export default function AppRoutes() {
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
             <Route path="returns/:orderId" element={<ReturnOrderDetailPage />} />
           </Route>
-          <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
-          <Route path={ROUTES.POSTS} element={<PostPage />} />
-          <Route path={ROUTES.UPGRADE} element={<PackagePage />} />
-          <Route path={ROUTES.CART} element={<CartPage />} />
-          <Route path={ROUTES.DEPOSIT} element={<DepositOrder />} />
+
+          {/* Posts - CHỈ route này cần package */}
+          <Route
+            path={ROUTES.POSTS}
+            element={
+              <ProtectedRoute
+                allowedRoles={[ROLES.MEMBER]}
+                requiresPackage={true}
+              >
+                <PostPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Các route khác - KHÔNG cần package */}
+          <Route
+            path={ROUTES.CHECKOUT}
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER]}>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.UPGRADE}
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER]}>
+                <PackagePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.CART}
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER]}>
+                <CartPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path={ROUTES.DEPOSIT}
+            element={
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER]}>
+                <DepositPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
           <Route
             path="/marketplace/listing/:listingId"
@@ -69,9 +121,16 @@ export default function AppRoutes() {
           />
           <Route path={`/shop/:sellerId`} element={<ShopPage />} />
         </Route>
-        <Route path={ROUTES.SUCCESS} element={<PaymentSuccess />} />
-        <Route path={ROUTES.FAIL} element={<PaymentFail />} />
-        <Route path={ROUTES.ADMIN.DASHBOARD} element={<AdminDashboard />}>
+
+        {/* Admin-only routes - Member không được vào */}
+        <Route
+          path={ROUTES.ADMIN.DASHBOARD}
+          element={
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        >
           <Route path="users" element={<UserManagement />} />
           <Route index element={<ReportsStatistics />} />
           <Route path="listings" element={<ListingManagement />} />

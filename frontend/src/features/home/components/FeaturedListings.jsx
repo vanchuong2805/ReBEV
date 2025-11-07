@@ -32,17 +32,21 @@ export default function FeaturedListings() {
     setLoading(true);
     (async () => {
       try {
-        // Tạo pagination object cho BE: { page: 1, limit: 10 }
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+
         const pagination = {
           page,
           limit,
-          ...(searchQuery && { search: searchQuery }), // Thêm search nếu có
+          status: 1,
+          ...(searchQuery && { search: searchQuery }),
+          ...(user?.id && { iUser_id: user.id }),
         };
 
         const res = await getFeaturedProducts(pagination);
 
-        // BE trả về: { data: [...], pagination: { page, limit, total } }
         setItems(res.data || []);
+
         const calculatedTotalPages = res.pagination
           ? Math.ceil(res.pagination.total / res.pagination.limit)
           : 1;
@@ -55,7 +59,7 @@ export default function FeaturedListings() {
         setLoading(false);
       }
     })();
-  }, [page, limit, searchQuery]); // Re-fetch khi page, limit, hoặc searchQuery thay đổi
+  }, [page, limit, searchQuery]);
 
   const goToPage = (nextPage) => {
     const np = Math.min(Math.max(nextPage, 1), totalPages);
@@ -76,19 +80,14 @@ export default function FeaturedListings() {
 
     // Thêm trang 1
     range.push(1);
-
-    // Thêm ... nếu cần
     if (left > 2) range.push("...");
 
     // Thêm các trang ở giữa
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) range.push(i);
     }
-
-    // Thêm ... nếu cần
     if (right < totalPages - 1) range.push("...");
 
-    // Thêm trang cuối
     if (totalPages > 1) range.push(totalPages);
 
     return range;
