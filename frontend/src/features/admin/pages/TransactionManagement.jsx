@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CheckCircle, Clock, AlertTriangle, ArrowUpDown } from "lucide-react";
+import { CheckCircle, Clock, AlertTriangle, ArrowUpDown, RotateCcw } from "lucide-react";
 import TitlePage from "../components/TitlePage";
 import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
 import OrderTable from "../components/TransactionComponents/OrderTable";
@@ -54,6 +54,7 @@ const TransactionManagement = () => {
     { id: "purchase-orders", label: "Đơn Mua", icon: CheckCircle },
     { id: "deposit-orders", label: "Đơn đặt cọc", icon: Clock },
     { id: "complaint-orders", label: "Đơn khiếu nại", icon: AlertTriangle },
+    { id: "return-orders", label: "Trả hàng", icon: RotateCcw },
   ];
 
   const complaintStatusOptions = [

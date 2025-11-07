@@ -7,7 +7,7 @@ import TitlePage from "../components/TitlePage";
 import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
 import reportService from "../functions/reportService";
-import { fetchPost, fetchUsers } from "../service";
+import { fetchPost, fetchUsers, getStaticPage } from "../service";
 const ReportsStatistics = () => {
   const [stats] = useState(statsData);
   const [selectedYear, setSelectedYear] = useState("2025");
@@ -31,6 +31,20 @@ const ReportsStatistics = () => {
   useEffect(() => {
     fetchUsers().then((data) => setUsers(data));
   }, []);
+
+  const [data, setData] = useState({});
+  useEffect(() => {
+    const getDataStatic = async () => {
+      const data = await getStaticPage(selectedYear);
+      setData(data.data);
+    };
+    getDataStatic();
+  }, [selectedYear]);
+
+  console.log(
+    data.revenue?.reduce((sum, item) => sum + item.transaction_sum, 0)
+  );
+
   return (
     <div className="p-6">
       {/* Title and Description */}
@@ -42,25 +56,27 @@ const ReportsStatistics = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCards
           title="Tổng người dùng"
-          number={users.filter((user) => user.role == 0).length}
+          number={data.totalUsers}
           icon={<Users className="h-6 w-6 text-blue-600" />}
         />
 
         <StatsCards
           title="Tổng bài đăng"
-          number={number_Listing.toLocaleString()}
+          number={data.totalPosts}
           icon={<BarChart3 className="h-6 w-6 text-green-600" />}
         />
 
         <StatsCards
           title="Giao dịch"
-          number={stats.totalTransactions.toLocaleString()}
+          number={data.totalTransactions}
           icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
         />
 
         <StatsCards
-          title="Tổng doanh thu"
-          number={`$${stats.totalRevenue.toLocaleString()}`}
+          title="Tổng doanh thu (VNĐ)"
+          number={`${data.revenue
+            ?.reduce((sum, item) => sum + item.transaction_sum, 0)
+            .toLocaleString()} `}
           icon={<DollarSign className="h-6 w-6 text-purple-600" />}
         />
       </div>
@@ -76,7 +92,12 @@ const ReportsStatistics = () => {
         <Card className="p-4">
           <div className="h-80">
             <BarChartComponent
-              data={monthlyData.map((item) => item.revenue)}
+              data={data.monthlyRevenues?.map((month) =>
+                month.reduce(
+                  (sum, transaction) => sum + transaction.transaction_sum,
+                  0
+                )
+              )}
               title="Doanh thu theo tháng (VND)"
               color="rgba(53, 162, 235, 0.8)"
               year={selectedYear}
@@ -87,7 +108,7 @@ const ReportsStatistics = () => {
         <Card className="p-4">
           <div className="h-80">
             <BarChartComponent
-              data={monthlyData.map((item) => item.transactions)}
+              data={data.monthlyTransactions}
               title="Số lượng giao dịch theo tháng"
               color="rgba(255, 99, 132, 0.8)"
               year={selectedYear}

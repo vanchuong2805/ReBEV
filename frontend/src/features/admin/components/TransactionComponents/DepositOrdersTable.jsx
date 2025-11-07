@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getOrders, updateContractFile } from "../../service";
 import { useUpload } from "@/hooks/posts/useUpload";
+import { Button } from "@/components/ui/button";
 
 export default function DepositOrdersTable() {
   const { upload } = useUpload();
@@ -126,7 +127,7 @@ export default function DepositOrdersTable() {
                 <th
                   key={i}
                   className={[
-                    "px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider",
+                    "px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
                     // Ẩn bớt cột trên màn hình nhỏ cho thoáng
                     h === "Người Xác Nhận" || h === "Hợp Đồng"
                       ? "hidden md:table-cell"
@@ -147,17 +148,17 @@ export default function DepositOrdersTable() {
                   <td className="px-3 py-2 text-sm text-gray-900">{item.id}</td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 truncate"
-                    title={String(item.customer_id)}
+                    className="px-3 py-2 break-words text-sm text-gray-900"
+                    title={String(item.customer.display_name)}
                   >
-                    {item.customer_id}
+                    {item.customer.display_name}
                   </td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 truncate"
+                    className="px-3 py-2 break-words text-sm text-gray-900"
                     title={String(item.seller_id)}
                   >
-                    {item.seller_id}
+                    {item.seller.display_name}
                   </td>
 
                   <td className="px-3 py-2 text-sm text-gray-900">
@@ -174,7 +175,7 @@ export default function DepositOrdersTable() {
                   </td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 hidden md:table-cell truncate"
+                    className="px-3 py-2 break-words text-sm text-gray-900"
                     title={st?.create_by_user?.display_name || "N/A"}
                   >
                     {st?.create_by_user?.display_name
@@ -213,18 +214,30 @@ export default function DepositOrdersTable() {
                     </button>
                   </td>
 
-                  <td className="px-3 py-2">
-                    {st?.status?.toUpperCase() === "PAID" && (
-                      <div className="flex flex-col gap-1">
-                        <button className="bg-orange-600 text-white px-2 py-1 text-xs rounded-md hover:bg-orange-700">
+                  <td className="px-3 py-3">
+                    {st?.status?.toUpperCase() === "CONFIRMED" && (
+                      <div className="flex flex-col gap-1 ">
+                        <Button
+                          className={
+                            "bg-orange-600 text-white hover:bg-orange-700 px-2 py-1"
+                          }
+                        >
                           Bên mua hủy
-                        </button>
-                        <button className="bg-red-600 text-white px-2 py-1 text-xs rounded-md hover:bg-red-700">
+                        </Button>
+                        <Button
+                          className={
+                            "bg-red-600 text-white hover:bg-red-700 px-2 py-1"
+                          }
+                        >
                           Bên bán hủy
-                        </button>
-                        <button className="bg-green-600 text-white px-2 py-1 text-xs rounded-md hover:bg-green-700">
-                          Thành công
-                        </button>
+                        </Button>
+                        <Button
+                          className={
+                            "bg-green-600 text-white hover:bg-green-700 px-2 py-1"
+                          }
+                        >
+                          Thành công{" "}
+                        </Button>
                       </div>
                     )}
                   </td>

@@ -73,7 +73,7 @@ const ListingManagement = () => {
     // điều hướng / mở modal
     console.log("Viewing listing details:", id);
   };
-
+  console.log(posts);
   return (
     <div className="p-6">
       <TitlePage
