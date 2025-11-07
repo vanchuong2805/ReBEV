@@ -47,12 +47,20 @@ export default function AppRoutes() {
 
         {/* Guest và Member Routes */}
         <Route element={<HomeLayout />}>
-          <Route path={ROUTES.HOME} element={<Home />} />
+          {/* Home - Chặn Admin và Staff */}
+          <Route
+            path={ROUTES.HOME}
+            element={
+              <ProtectedRoute denyRoles={[ROLES.ADMIN, ROLES.STAFF]}>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path={ROUTES.PROFILE}
             element={
-              <ProtectedRoute allowedRoles={[ROLES.MEMBER, ROLES.STAFF]}>
+              <ProtectedRoute allowedRoles={[ROLES.MEMBER]}>
                 <ProfilePage />
               </ProtectedRoute>
             }
