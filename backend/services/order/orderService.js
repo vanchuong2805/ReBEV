@@ -81,7 +81,7 @@ const getOrders = async (options) => {
                 attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
             },
         ],
-        attributes: ['id', 'total_amount', 'delivery_price'],
+        attributes: ['id', 'total_amount', 'delivery_price', 'order_type'],
         where: {
             ...where,
             ...(order_status ? { '$order_statuses.status$': order_status } : {}),
@@ -94,7 +94,8 @@ const getOrders = async (options) => {
                 Sequelize.literal(`
                 CASE
                     WHEN order_statuses.status = '${priority}' THEN 0
-                    ELSE 1
+                    WHEN order_statuses.status = '${ORDER_STATUS.CONFIRMED}' THEN 1
+                    ELSE 4
                 END`),
                 'ASC',
             ],
