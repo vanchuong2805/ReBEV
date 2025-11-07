@@ -13,6 +13,9 @@ import {
 import transactionService from '../transaction/transactionService.js';
 import complaintService from '../complaint/complaintService.js';
 import orderService from './orderService.js';
+import postDetailService from '../post/postDetailService.js';
+import deliveryService from '../delivery/deliveryService.js';
+const { Sequelize } = models;
 const { order_status } = models;
 
 const getAll = async () => {
