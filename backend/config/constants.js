@@ -49,6 +49,7 @@ export const ERROR_MESSAGE = {
     UPDATE_REVIEW_FAILED: 'Updating review failed',
     REVIEW_NOT_FOUND: 'Review not found',
     DELETE_REVIEW_FAILED: 'Deleting review failed',
+    CATEGORY_NOT_FOUND: 'Category not found',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -74,6 +75,7 @@ export const SUCCESS_MESSAGE = {
     CREATE_REVIEW_SUCCESS: 'Review created successfully',
     UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
     DELETE_REVIEW_SUCCESS: 'Review deleted successfully',
+    CATEGORY_UPDATED_SUCCESSFULLY: 'Category updated successfully',
 }
 
 export const POST_STATUS = {

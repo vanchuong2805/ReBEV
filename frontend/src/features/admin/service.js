@@ -1,30 +1,9 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
 
 // hooks/useUserPackages.js
 
-const baseAPI = "https://rebev.up.railway.app/api";
+const baseAPI = import.meta.env.VITE_BASE_URL;
 //---------------------------------------------------------
-// LOGOUT
-
-export const logoutAdmin = async () => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
-  try {
-    const res = await axios.post(
-      `${baseAPI}/users/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    console.log("Logout successful:", res.data);
-    localStorage.removeItem("token"); // Xóa token khỏi localStorage
-  } catch (err) {
-    console.error("Error logging out:", err.response?.data || err.message);
-  }
-};
 
 // GET FULL PACKAGE
 
@@ -122,25 +101,6 @@ export const updatePackage = async (packages) => {
 
 // GET all users
 
-export function useAllUsers() {
-  const [users, setUsers] = useState([]);
-  async function getUsersWithAxios() {
-    try {
-      const res = await axios.get("https://rebev.up.railway.app/api/users");
-      setUsers(res.data); // cập nhật state
-      console.log(res.data);
-    } catch (err) {
-      console.error("Axios error:", err.response?.data ?? err.message);
-    }
-  }
-
-  useEffect(() => {
-    getUsersWithAxios();
-  }, []);
-
-  return users;
-}
-
 export const fetchUserById = async (userId) => {
   const res = await axios.get(`${baseAPI}/users/${userId}`);
   return res.data;
@@ -148,14 +108,6 @@ export const fetchUserById = async (userId) => {
 
 export const fetchUsers = async () => {
   const res = await axios.get(baseAPI + "/users");
-  return res.data;
-};
-
-export const createUser = async (userData) => {
-  const res = await axios.post(
-    "https://rebev.up.railway.app/api/users",
-    userData
-  );
   return res.data;
 };
 
@@ -258,10 +210,51 @@ export const updatePostStatus = async (postId, newStatus) => {
   }
 };
 //-----------------------------------------
-export const getOrders = async () => {
+export const getOrders = async (type) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
-    const res = await axios.get(`${baseAPI}/orders`, {
+    const res = await axios.get(
+      `${baseAPI}/orders?page=1&limit=20&order_type=${type}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+//.---
+// Update contractFile
+// https://rebev.up.railway.app/api/order-details/:id/contract
+export const updateContractFile = async (id, url) => {
+  const token = localStorage.getItem("accessToken");
+
+  const res = await axios.patch(
+    `${baseAPI}/order-details/${id}/contract`,
+    { contract_file: url },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    }
+  );
+  return res.data;
+};
+
+//Static Page
+
+export const getStaticPage = async (year) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/statistics?year=${year}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`, // thêm token vào header
@@ -274,9 +267,3 @@ export const getOrders = async () => {
     throw err;
   }
 };
-
-export const fetchOrder = () => {
-  const res = axios.get(`${baseAPI}/orders`);
-  return res.data;
-};
-//.---

@@ -14,8 +14,6 @@ const ListingManagement = () => {
     status: "",
     category: "",
   });
-
-  const [posts, setPosts] = useState([]);
   const searchKey =
     "?status=" +
     filSearch.status +
@@ -23,6 +21,8 @@ const ListingManagement = () => {
     filSearch.category +
     "&search=" +
     filSearch.searchTerm;
+
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     fetchPost(searchKey).then((data) => setPosts(data));
@@ -73,7 +73,7 @@ const ListingManagement = () => {
     // điều hướng / mở modal
     console.log("Viewing listing details:", id);
   };
-
+  console.log(posts);
   return (
     <div className="p-6">
       <TitlePage

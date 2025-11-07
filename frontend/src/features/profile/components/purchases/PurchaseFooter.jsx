@@ -18,14 +18,13 @@ export default function PurchaseFooter({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-4 border-t bg-gradient-to-r from-white to-[#f9fbff]">
-      {/* 💰 Thông tin tiền */}
+      {/* Thông tin tiền */}
       <div className="text-center sm:text-left space-y-1">
         <p className="text-sm text-gray-500">{totalLabel}</p>
         <p className="text-xl font-semibold text-gray-900">{displayPrice} ₫</p>
       </div>
 
-
-      {/* ⚙️ Các nút hành động */}
+      {/* Các nút hành động */}
       <div className="flex flex-wrap justify-center sm:justify-end gap-2">
         {status === "PAID" && (
           <Button

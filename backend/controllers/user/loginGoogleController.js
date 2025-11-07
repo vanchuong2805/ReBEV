@@ -168,6 +168,11 @@ const loginUserByGoogle = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 avatar: user.avatar,
+                phone: user.phone,
+                package_id: user.package_id,
+                package_start: user.package_start,
+
+
             },
             token: accessToken,
         });

@@ -13,12 +13,11 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
   const [comment, setComment] = useState("")
   const { user } = useUser()
 
-  // 🟡 Khi mở modal, nếu đã có review thì load dữ liệu cũ
   useEffect(() => {
     const fetchOldReview = async () => {
-      if (open && reviewed && purchase?.post_id) {
+      if (open && reviewed && purchase?.id) {
         try {
-          const res = await getPostById(purchase.post_id)
+          const res = await getPostById(purchase.id)
           if (res?.review) {
             setRating(res.review.rating_value || 0)
             setComment(res.review.comment || "")
@@ -29,7 +28,6 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
           console.error("Lỗi lấy review cũ:", error)
         }
       } else if (open && !reviewed) {
-        // Reset form khi mở modal mới
         setRating(0)
         setComment("")
       }
@@ -37,28 +35,27 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
     fetchOldReview()
   }, [open, reviewed, purchase])
 
-  // 🟢 Gửi review mới
   const handleSubmit = async () => {
     try {
       const res = await createReview(user.id, purchase.id, rating, comment)
-      console.log("✅ Review mới:", res)
+      console.log(" Review mới:", res)
       alert("Cảm ơn bạn đã đánh giá!")
       onClose()
     } catch (error) {
-      console.error("❌ Lỗi gửi đánh giá:", error)
+      console.error(" Lỗi gửi đánh giá:", error)
       alert("Gửi đánh giá thất bại!")
     }
   }
 
-  // 🔵 Cập nhật review cũ
+
   const handleSubmitReviewed = async () => {
     try {
       const res = await updateReview(idReview, rating, comment)
-      console.log("🔄 Review cập nhật:", res)
+      console.log(" Review cập nhật:", res)
       alert("Cập nhật đánh giá thành công!")
       onClose()
     } catch (error) {
-      console.error("❌ Lỗi cập nhật:", error)
+      console.error(" Lỗi cập nhật:", error)
       alert("Cập nhật đánh giá thất bại!")
     }
   }

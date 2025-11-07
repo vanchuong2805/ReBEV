@@ -118,6 +118,8 @@ function initModels(sequelize) {
   users.hasMany(posts, { as: "moderated_posts", foreignKey: "moderator" });
   complaints.belongsTo(users, { as: "moderator_user", foreignKey: "moderator" });
   users.hasMany(complaints, { as: "moderated_complaints", foreignKey: "moderator" });
+  orders.hasMany(complaints, { as: "complaints", foreignKey: "return_order_id" });
+  complaints.belongsTo(orders, { as: "return_order", foreignKey: "return_order_id" });
   return {
     bases,
     cart_items,

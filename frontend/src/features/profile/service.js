@@ -149,6 +149,31 @@ export const updatePostVisibility = async (postId) => {
   );
   return res.data;
 };
+export const updatePostById = async (postId, data) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.patch(
+    `${API_BASE_URL}/posts/${postId}`,
+    data,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+}
+ export const changePostById = async (postId,status) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.patch(`${API_BASE_URL}/posts/${postId}/status`, { status }, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
 //  ORDERS
 
 export const getOrderByCustomer = async () => {

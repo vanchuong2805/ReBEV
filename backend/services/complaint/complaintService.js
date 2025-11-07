@@ -23,6 +23,10 @@ const getByUserId = async (userId) => {
                 association: 'order_detail',
                 include: ['post'],
             },
+            {
+                association: 'user',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            }
         ],
         where: { user_id: userId },
     });
@@ -39,6 +43,11 @@ const createComplaint = async (data, options = {}) => {
     return complaint;
 };
 
+const updateComplaint = async (id, data, options = {}) => {
+    const result = await complaints.update(data, { where: { id }, ...options });
+    return result;
+};
+
 const updateStatus = async (id, status, options = {}) => {
     const result = await complaints.update(
         { complaint_status: status },
@@ -47,7 +56,7 @@ const updateStatus = async (id, status, options = {}) => {
     return result;
 };
 
-const handleCancelComplaint = async (order_detail_id, t) => {
+const handleCancelComplaint = async (complaint_id, order_detail_id, t) => {
     const order_detail = await orderDetailService.getById(order_detail_id);
     const order = await orderService.getById(order_detail.order_id);
     // sold posts
@@ -74,7 +83,7 @@ const handleCancelComplaint = async (order_detail_id, t) => {
     );
 };
 
-const handleResolveComplaint = async (order_detail_id, t) => {
+const handleResolveComplaint = async (complaint_id, order_detail_id, t) => {
     // Currently no specific action needed when complaint is resolved
     const order_detail = await orderDetailService.getById(order_detail_id);
     const order = await orderService.getById(order_detail.order_id);
@@ -87,7 +96,7 @@ const handleResolveComplaint = async (order_detail_id, t) => {
             total_amount: order_detail.price,
             from_contact: order.to_contact,
             to_contact: order.from_contact,
-            delivery_price: order.delivery_price,
+            delivery_price: 0,
         },
         { transaction: t }
     );
@@ -107,6 +116,7 @@ const handleResolveComplaint = async (order_detail_id, t) => {
         { order_id: returnOrder.id, status: ORDER_STATUS.PENDING },
         { transaction: t }
     );
+    await updateComplaint(complaint_id, { return_order_id: returnOrder.id }, { transaction: t });
 };
 
 const mapStatusHandlers = {
@@ -115,10 +125,10 @@ const mapStatusHandlers = {
     [COMPLAINT_STATUS.RESOLVED]: handleResolveComplaint,
 };
 
-const handleStatus = async (order_detail_id, status, t) => {
+const handleStatus = async (complaint_id, order_detail_id, status, t) => {
     const handler = mapStatusHandlers[status];
     if (handler) {
-        await handler(order_detail_id, t);
+        await handler(complaint_id, order_detail_id, t);
     }
 };
 
@@ -127,6 +137,11 @@ const getById = async (id) => {
     return data;
 };
 
+const getAll = async (filters) => {
+    const data = await complaints.findAll();
+    return data;
+}
+
 export default {
     getByOrderDetailId,
     createComplaint,
@@ -134,4 +149,5 @@ export default {
     getById,
     updateStatus,
     getByUserId,
+    updateComplaint,
 };

@@ -10,7 +10,23 @@ const getById = async (id) => {
     return data;
 };
 
+const updateRate = async (id, rate) => {
+    const category = await categories.findByPk(id);
+
+    if (!category) throw new Error('Category not found');
+
+    if (category.is_deposit) {
+        category.deposit_rate = rate;
+    } else {
+        category.commission_rate = rate;
+    }
+    await category.save();
+    return category;
+}
+
+
 export default {
     getAll,
     getById,
+    updateRate
 };
