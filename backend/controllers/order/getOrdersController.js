@@ -2,6 +2,7 @@ import orderService from '../../services/order/orderService.js';
 import { ORDER_TYPE, ROLE } from '../../config/constants.js';
 import { Op } from 'sequelize';
 
+//page=1&limit=25&order_type=1&priority=DELIVERED&order_status=PENDING
 /**
  * @swagger
  * /orders:
@@ -31,6 +32,18 @@ import { Op } from 'sequelize';
  *      schema:
  *        type: integer
  *      description: The number of orders to retrieve per page
+ *    - in: query
+ *      name: order_status
+ *      schema:
+ *        type: string
+ *        enum: [PENDING, DELIVERED, CANCELLED, ...]
+ *      description: Filter orders by order status
+ *    - in: query
+ *      name: priority
+ *      schema:
+ *        type: string
+ *        enum: [PENDING, DELIVERED, CANCELLED,...]
+ *      description: Filter orders by priority
  *    responses:
  *      200:
  *        description: A list of orders
@@ -46,10 +59,11 @@ import { Op } from 'sequelize';
 
 const getOrders = async (req, res) => {
     try {
-        const options = {};
-        const order_types = req.query.order_type;
+        const options = req.query ? { ...req.query } : {};
+        console.log(options)
         const user = req.user;
-        const { type, page, limit } = req.query;
+        const { type } = req.query;
+        console.log(type)
         if (user.role === ROLE.MEMBER) {
             if (type) {
                 if (type === 'customer') {
@@ -61,19 +75,12 @@ const getOrders = async (req, res) => {
                 return res.status(403).json({ message: 'Forbidden' });
             }
         }
-        if (order_types) {
-            console.log(order_types);
-            if (Array.isArray(order_types)) {
-                options.order_type = { [Op.in]: order_types };
-            } else {
-                options.order_type = order_types;
-            }
-        }
-        const orders = await orderService.getOrders(options, { page, limit });
+        
+        const orders = await orderService.getOrders(options);
         res.status(200).json(orders);
     } catch (error) {
         console.error('Error fetching orders:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: error.message || 'Internal Server Error' });
     }
 };
 export default getOrders;
