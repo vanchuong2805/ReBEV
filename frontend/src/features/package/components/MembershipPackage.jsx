@@ -11,12 +11,6 @@ import { getPackage, createRegisterPackage } from "../service"
 import { useUser } from "@/contexts/UserContext"
 import { useNavigate } from "react-router-dom"
 
-const formatPrice = (v) => {
-  if (v === 0) return "Miễn phí"
-  return v.toLocaleString("vi-VN") + "đ"
-}
-
-// Design hiện đại với màu tối giản
 const cardAccents = [
   { bg: "bg-white", accent: "border-gray-200", hover: "hover:border-gray-300" },
   { bg: "bg-gradient-to-br from-slate-50 to-white", accent: "border-slate-200", hover: "hover:border-slate-300" },
@@ -27,14 +21,17 @@ export default function MembershipPackage() {
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(false)
-  const { user } = useUser()
+  const { user, setUser } = useUser()
   const navigate = useNavigate()
 
+  // 🔹 Lấy danh sách gói và sắp xếp theo giá tăng dần
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         const data = await getPackage()
-        const activePackages = data.filter((pkg) => pkg.is_deleted === false)
+        const activePackages = data
+          .filter((pkg) => pkg.is_deleted === false)
+          .sort((a, b) => a.price - b.price)
         setPackages(activePackages)
         console.log("Gói đã tải:", activePackages)
       } catch (error) {
@@ -46,6 +43,7 @@ export default function MembershipPackage() {
 
   const currentPlan = packages.find((p) => p.id === selectedPlan)
 
+  // 🔹 Xử lý chọn gói
   const handleChoose = async () => {
     if (!user) {
       alert("Vui lòng đăng nhập trước khi nâng cấp gói!")
@@ -61,8 +59,15 @@ export default function MembershipPackage() {
     try {
       setLoading(true)
       console.log("Chọn gói:", currentPlan, "cho user:", user.id)
+
       const data = await createRegisterPackage(user.id, currentPlan.id)
       console.log("Yêu cầu thanh toán đã tạo:", data)
+
+      // ✅ Cập nhật user trong localStorage trước khi chuyển hướng
+      const updatedUser = { ...user, package_id: currentPlan.id }
+      localStorage.setItem("user", JSON.stringify(updatedUser))
+      if (setUser) setUser(updatedUser)
+
       if (data.payUrl) {
         window.location.href = data.payUrl
       } else {
@@ -98,14 +103,21 @@ export default function MembershipPackage() {
             return (
               <Card
                 key={pkg.id}
-                className={`relative transition-all duration-300 cursor-pointer
-                  ${style.bg} border-2 ${isSelected ? "border-blue-600 shadow-xl shadow-blue-100" : `${style.accent} ${style.hover} hover:shadow-lg`}`}
+                className={`relative flex flex-col justify-between min-h-[470px] transition-all duration-300 cursor-pointer
+                  ${style.bg} border-2 ${
+                    isSelected
+                      ? "border-blue-600 shadow-xl shadow-blue-100"
+                      : `${style.accent} ${style.hover} hover:shadow-lg`
+                  }`}
                 onClick={() => setSelectedPlan(pkg.id)}
               >
                 {/* Selected Badge */}
                 {isSelected && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md">
+                  <div
+                    className="absolute -top-3 left-1/2 -translate-x-1/2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span className="bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md cursor-default select-none">
                       Đã chọn
                     </span>
                   </div>
@@ -120,60 +132,67 @@ export default function MembershipPackage() {
                   </p>
                 </CardHeader>
 
-                <CardContent className="pt-0">
-                  {/* Pricing */}
-                  <div className="text-center mb-6 pb-6 border-b border-gray-100">
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold text-gray-900">
-                        {pkg.price === 0 ? "Miễn phí" : pkg.price.toLocaleString("vi-VN")}
-                      </span>
-                      {pkg.price > 0 && (
-                        <span className="text-lg text-gray-500">đ</span>
+                <CardContent className="pt-0 flex flex-col justify-between h-full">
+                  {/* Pricing + Features */}
+                  <div>
+                    {/* Pricing */}
+                    <div className="text-center mb-6 pb-6 border-b border-gray-100">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold text-gray-900">
+                          {pkg.price === 0
+                            ? "Miễn phí"
+                            : pkg.price.toLocaleString("vi-VN")}
+                        </span>
+                        {pkg.price > 0 && (
+                          <span className="text-lg text-gray-500">đ</span>
+                        )}
+                      </div>
+                      {pkg.duration && pkg.duration !== 0 && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          {pkg.duration} ngày
+                        </p>
                       )}
                     </div>
-                    {pkg.duration && pkg.duration !== 0 && (
-                      <p className="text-sm text-gray-500 mt-1">
-                        {pkg.duration} ngày
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Features */}
-                  <div className="space-y-3 mb-6">
-                    {pkg.highlight && (
-                      <div className="flex items-center gap-3 text-sm text-gray-700">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Zap className="w-3 h-3 text-blue-600" />
+                    {/* Features */}
+                    <div className="space-y-3 mb-6 min-h-[70px]">
+                      {pkg.highlight && (
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                            <Zap className="w-3 h-3 text-blue-600" />
+                          </div>
+                          <span>Tin đăng nổi bật</span>
                         </div>
-                        <span>Tin đăng nổi bật</span>
-                      </div>
-                    )}
-                    {pkg.top && (
-                      <div className="flex items-center gap-3 text-sm text-gray-700">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
-                          <TrendingUp className="w-3 h-3 text-amber-600" />
+                      )}
+                      {pkg.top && (
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                            <TrendingUp className="w-3 h-3 text-amber-600" />
+                          </div>
+                          <span>Hiển thị trang chủ</span>
                         </div>
-                        <span>Hiển thị trang chủ</span>
-                      </div>
-                    )}
-                    {!pkg.highlight && !pkg.top && (
-                      <div className="flex items-center gap-3 text-sm text-gray-500">
-                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
-                          <CheckCircle2 className="w-3 h-3 text-gray-400" />
+                      )}
+                      {!pkg.highlight && !pkg.top && (
+                        <div className="flex items-center gap-3 text-sm text-gray-500">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                            <CheckCircle2 className="w-3 h-3 text-gray-400" />
+                          </div>
+                          <span>Đăng tin thường</span>
                         </div>
-                        <span>Đăng tin thường</span>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   {/* Action Button */}
                   <Button
                     onClick={handleChoose}
                     disabled={loading}
-                    className={`w-full h-11 font-medium rounded-lg transition-all duration-200
-                      ${isSelected
-                        ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
-                        : "bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300"}`}
+                    className={`w-full h-11 font-medium rounded-lg transition-all duration-200 mt-auto
+                      ${
+                        isSelected
+                          ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
+                          : "bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300"
+                      }`}
                   >
                     {loading
                       ? "Đang xử lý..."
