@@ -6,7 +6,7 @@ import { Star } from "lucide-react"
 import { useUser } from "@/contexts/UserContext"
 import { createReview, updateReview, getPostById } from "@/features/profile/service"
 
-export default function ReviewModal({ reviewed, open, onClose, purchase }) {
+export default function ReviewModal({ reviewed, open, onClose,purchase }) {
   const [rating, setRating] = useState(0)
   const [hover, setHover] = useState(0)
   const [idReview, setIdReview] = useState(null)
@@ -17,7 +17,7 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
     const fetchOldReview = async () => {
       if (open && reviewed && purchase?.id) {
         try {
-          const res = await getPostById(purchase.id)
+          const res = await getPostById(purchase.post.id)
           if (res?.review) {
             setRating(res.review.rating_value || 0)
             setComment(res.review.comment || "")
@@ -42,6 +42,7 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
       alert("Cảm ơn bạn đã đánh giá!")
       onClose()
     } catch (error) {
+      console.error(" Lỗi gửi đánh giá:", purchase)
       console.error(" Lỗi gửi đánh giá:", error)
       alert("Gửi đánh giá thất bại!")
     }
