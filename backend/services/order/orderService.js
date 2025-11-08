@@ -72,9 +72,9 @@ const getOrders = async (options) => {
                     {
                         association: 'complaints',
                         attributes: ['id'],
-                    }
+                    },
                 ],
-                attributes: ['id', 'contract_file'],
+                attributes: ['id', 'contract_file', 'appointment_time'],
             },
             {
                 association: 'customer',
@@ -132,17 +132,20 @@ const getOrdersDelivered = async () => {
         (order) =>
             order?.order_statuses[0]?.status === ORDER_STATUS.DELIVERED &&
             new Date(order.order_statuses[0].create_at).getTime() + 7 * 24 * 60 * 60 * 1000 <
-            new Date().getTime()
+                new Date().getTime()
     );
     return ordersList;
 };
 
 const getById = async (id) => {
     const order = await orders.findByPk(id, {
-        include: [{
-            association: 'order_details',
-            include: ['post', 'user_reviews'],
-        }, 'order_statuses'],
+        include: [
+            {
+                association: 'order_details',
+                include: ['post', 'user_reviews'],
+            },
+            'order_statuses',
+        ],
     });
     return order;
 };
