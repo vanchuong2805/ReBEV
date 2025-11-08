@@ -3,6 +3,7 @@ import createReview from '../controllers/review/createReviewController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import authorize from '../middlewares/authorize.js';
 import uploadContractFileController from '../controllers/order/uploadContractFileController.js';
+import updateAppointmentTime from '../controllers/order/updateAppointmentController.js';
 import { ROLE } from '../config/constants.js';
 
 const orderDetailRoute = express.Router();
@@ -14,5 +15,11 @@ orderDetailRoute.patch(
     authorize([ROLE.ADMIN, ROLE.STAFF]),
     uploadContractFileController
 );
+orderDetailRoute.put(
+    '/:orderId/appointmentTime',
+    authMiddleware,
+    updateAppointmentTime
+);
+
 
 export default orderDetailRoute;
