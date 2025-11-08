@@ -35,12 +35,16 @@ export default function FeaturedListings() {
         const userRaw = localStorage.getItem("user");
         const user = userRaw ? JSON.parse(userRaw) : null;
 
+        // Lấy province_id từ URL
+        const provinceId = searchParams.get("province_id");
+
         const pagination = {
           page,
           limit,
           status: 1,
           ...(searchQuery && { search: searchQuery }),
           ...(user?.id && { iUser_id: user.id }),
+          ...(provinceId && { province_id: provinceId }),
         };
 
         const res = await getFeaturedProducts(pagination);
@@ -59,7 +63,7 @@ export default function FeaturedListings() {
         setLoading(false);
       }
     })();
-  }, [page, limit, searchQuery]);
+  }, [page, limit, searchQuery, searchParams]); // Re-fetch khi province thay đổi
 
   const goToPage = (nextPage) => {
     const np = Math.min(Math.max(nextPage, 1), totalPages);

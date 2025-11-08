@@ -112,7 +112,7 @@ export default function CheckoutPage() {
         post_id: item.post_id,
         price: item.price,
         deposit_amount: item.price * item.deposit_rate,
-        commission_amount: item.commission_rate * item.price,
+        commission_amount: item.commission_rate * item.price / 100,
         appointment_time,
       }));
       return {

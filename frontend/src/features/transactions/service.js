@@ -42,15 +42,6 @@ export const getDeliveryFees = async ({
   to_ward_code,
   weight,
 }) => {
-  console.log({
-    from_district_id: from_district_id,
-    to_district_id: to_district_id,
-    from_ward_code: from_ward_code,
-    to_ward_code: to_ward_code,
-    weight,
-    items: [{ weight }],
-    service_type_id: 2,
-  });
   let response = null;
   try {
     response = await axios.post(
