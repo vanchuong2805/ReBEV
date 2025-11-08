@@ -11,9 +11,9 @@ export default function OrderProgress({ progressIndex = 0, isCanceled = false, t
 
   //  Các bước cho đơn hoàn tiền
   const returnSteps = [
-    { label: "Chờ duyệt hoàn", icon: Clock },
-    { label: "Đang hoàn tiền", icon: RefreshCcw },
-    { label: "Hoàn tất hoàn tiền", icon: CheckCircle },
+    { label: "Chờ lấy hàng", icon: Clock },
+    { label: "Đang trả hàng", icon: RefreshCcw },
+    { label: "Hoàn tất ", icon: CheckCircle },
   ]
 
   //  Chọn bộ step theo loại đơn
