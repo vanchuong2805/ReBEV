@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { getPostById, updatePostById } from "@/features/profile/service"
+import TiptapEditor from "@/components/common/TiptapEditor"
 
 export default function EditListingModal({ open, onClose, listing, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -15,6 +20,7 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(false)
 
+  // 🔄 Load dữ liệu khi mở modal
   useEffect(() => {
     const fetchPost = async () => {
       if (!listing?.id) return
@@ -27,41 +33,43 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
           price: data.price || 0,
         })
       } catch (error) {
-        console.error(" Lỗi khi tải bài viết:", error)
+        console.error("❌ Lỗi khi tải bài viết:", error)
       } finally {
         setLoadingData(false)
       }
     }
-
     if (open) fetchPost()
   }, [open, listing])
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "price" ? Number(value) : value,
-    }))
-  }
+  // 🧠 Thay đổi dữ liệu form
+  const handleChange = (field, value) =>
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
+  // 💾 Lưu dữ liệu
   const handleSubmit = async () => {
+    if (!formData.title.trim()) {
+      alert("Vui lòng nhập tiêu đề bài viết!")
+      return
+    }
+    if (formData.price < 50000) {
+      alert("Giá phải lớn hơn hoặc bằng 50.000₫!")
+      return
+    }
+
     try {
       setLoading(true)
-
       const updatedData = {
         title: formData.title.trim(),
-        description: formData.description.trim(),
+        description: formData.description,
         price: Number(formData.price),
       }
 
       await updatePostById(listing.id, updatedData)
-
       onUpdate({ ...listing, ...updatedData })
-
-      alert(" Cập nhật bài viết thành công!")
+      alert("✅ Cập nhật bài viết thành công!")
       onClose()
     } catch (error) {
-      console.error(" Lỗi khi cập nhật bài viết:", error)
+      console.error("❌ Lỗi khi cập nhật bài viết:", error)
       alert("Cập nhật thất bại! Vui lòng thử lại.")
     } finally {
       setLoading(false)
@@ -70,53 +78,80 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Chỉnh sửa bài viết</DialogTitle>
+      <DialogContent className="max-w-3xl rounded-2xl shadow-md border border-gray-200 p-6 bg-white">
+        {/* Header */}
+        <DialogHeader className="mb-6">
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            Chỉnh sửa bài viết
+          </DialogTitle>
+          <p className="text-sm text-gray-500">
+            Cập nhật thông tin bài đăng của bạn bên dưới.
+          </p>
         </DialogHeader>
 
+        {/* Nội dung */}
         {loadingData ? (
-          <p className="text-gray-500 text-center py-4">Đang tải dữ liệu...</p>
+          <div className="py-12 text-center text-gray-500 animate-pulse">
+            Đang tải dữ liệu bài viết...
+          </div>
         ) : (
           <>
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Tiêu đề */}
               <div>
-                <Label>Tiêu đề</Label>
+                <Label className="text-gray-700 font-medium">Tiêu đề</Label>
                 <Input
-                  name="title"
                   value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Nhập tiêu đề bài viết"
+                  onChange={(e) => handleChange("title", e.target.value)}
+                  placeholder="Nhập tiêu đề bài viết..."
+                  className="mt-2 h-11 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
                 />
               </div>
 
+              {/* Mô tả chi tiết */}
               <div>
-                <Label>Mô tả</Label>
-                <Textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Nhập mô tả chi tiết về sản phẩm"
-                />
+                <Label className="text-gray-700 font-medium mb-2 block">
+                  Mô tả chi tiết
+                </Label>
+                <div className="border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100/40 transition-all">
+                  <TiptapEditor
+                    content={formData.description}
+                    onChange={(value) => handleChange("description", value)}
+                    placeholder="Nhập mô tả chi tiết về sản phẩm..."
+                  />
+                </div>
               </div>
 
+              {/* Giá */}
               <div>
-                <Label>Giá (VNĐ)</Label>
+                <Label className="text-gray-700 font-medium">Giá (VNĐ)</Label>
                 <Input
                   type="number"
-                  name="price"
                   value={formData.price}
-                  onChange={handleChange}
-                  min="0"
+                  onChange={(e) => handleChange("price", e.target.value)}
+                  min="50000"
+                  className="mt-2 h-11 rounded-xl border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Giá tối thiểu: 50.000₫
+                </p>
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <Button variant="outline" onClick={onClose}>
+            {/* Footer */}
+            <div className="flex justify-end gap-3 mt-8 border-t pt-5">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="h-11 px-6 rounded-lg border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
+              >
                 Huỷ
               </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
+              <Button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="h-11 px-6 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all"
+              >
                 {loading ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </div>

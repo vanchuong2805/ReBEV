@@ -33,7 +33,7 @@ export default function ReturnOrderDetailPage() {
   }
 
   // 🧠 Xác định trạng thái khiếu nại
-  const complaintStatus = order.complaint_status
+  const complaintStatus = order.complaint_status || 1
   const isApproved = complaintStatus === 1
 
   // 🧩 Lấy trạng thái đơn hoàn
