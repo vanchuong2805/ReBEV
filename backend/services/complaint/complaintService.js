@@ -143,6 +143,24 @@ const getAll = async (filters) => {
     const pageSize = parseInt(limit) || null;
     const offset = (pageNum - 1) * pageSize;
     const data = await complaints.findAll({
+        include: [{
+            association: 'user',
+            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+        },
+        {
+            association: 'order_detail',
+            include: [{
+                association: 'post',
+                attributes: ['id', 'title', 'description', 'price', 'media'],
+            }],
+            attributes: ['id'],
+        },
+        {
+            association: 'moderator_user',
+            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+        }
+    ],
+
         ...(pageSize ? { limit: pageSize, offset } : {}),
         order: [['complaint_status', 'ASC'], ['create_at', 'DESC']],
     });
