@@ -47,7 +47,7 @@ const getPosts = async (filters = {}) => {
         }
     }
 
-    const where = { };
+    const where = {};
     const include = province_id
         ? [
               {
@@ -161,6 +161,7 @@ const getPosts = async (filters = {}) => {
             'status',
             'base_id',
             'seller_contact_id',
+            'is_deleted',
             [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
         ],
         group: [
@@ -179,6 +180,7 @@ const getPosts = async (filters = {}) => {
             'user.email',
             'user.phone',
             'user.avatar',
+            'posts.is_deleted',
         ],
         ...(variationFilter
             ? {
