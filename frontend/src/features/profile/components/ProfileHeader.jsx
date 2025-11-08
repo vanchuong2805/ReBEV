@@ -1,90 +1,119 @@
 import React from "react"
-import { useUser } from "@/contexts/UserContext"
-import { Shield, Mail, Phone, Calendar, Award } from "lucide-react"
+import { Shield, Mail, Phone, Calendar, Award, CheckCircle2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useUser } from "@/contexts/UserContext"
 
 const ProfileHeader = () => {
   const { user, loading } = useUser()
 
-  // 🔹 Hiển thị khi đang tải
   if (loading) {
     return (
-      <Card className="mb-8">
-        <CardContent className="p-8 text-gray-500 text-center">
+      <Card className="mb-8 border-slate-200">
+        <CardContent className="p-8 text-slate-500 text-center">
           Đang tải thông tin người dùng...
         </CardContent>
       </Card>
     )
   }
 
-  // 🔹 Hiển thị khi chưa có user (chưa đăng nhập)
   if (!user) {
     return (
-      <Card className="mb-8">
-        <CardContent className="p-8 text-gray-500 text-center">
+      <Card className="mb-8 border-slate-200">
+        <CardContent className="p-8 text-slate-500 text-center">
           Không có thông tin người dùng.
         </CardContent>
       </Card>
     )
   }
 
-  // 🔹 Giao diện chính
   return (
-    <Card className="mb-8">
-      <CardContent className="p-8">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-          {/* Ảnh đại diện */}
-          <div className="relative">
-            <img
-              src={user.avatar || "/default-avatar.png"}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-            />
-            <div className="absolute -bottom-1 -right-1 bg-green-500 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
-              <Shield className="w-3 h-3 text-white" />
-            </div>
-          </div>
-
-          {/* Thông tin người dùng */}
-          <div className="flex-1">
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {user.display_name || "Người dùng chưa đặt tên"}
-                </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge
-                    variant="secondary"
-                    className="bg-yellow-100 text-yellow-800 border-yellow-200"
-                  >
-                    <Award className="w-3 h-3 mr-1" />
-                    {user.package_id ? `VIP${user.package_id}` : "Basic"} Member
-                  </Badge>
+    <Card className="mb-8 border-slate-200 shadow-sm">
+      <CardContent className="p-0">
+        {/* Background gradient - subtle */}
+        <div className="relative from-slate-50 to-slate-100 px-8 pt-8 pb-8">
+          <div className="flex flex-col lg:flex-row items-center lg:items-center gap-6">
+            {/* Avatar with enhanced design */}
+            <div className="relative flex-shrink-0">
+              <div className="absolute -inset-1 bg-gradient-to-r from-slate-300 to-slate-400 rounded-full blur opacity-25"></div>
+              <div className="relative">
+                <img
+                  src={user.avatar || "https://res.cloudinary.com/du261e4fa/image/upload/v1762304930/avatar-trang-4_auzkk9.jpg"}
+                  alt="Profile"
+                  className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md relative"
+                />
+                <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-7 h-7 rounded-full border-2 border-white shadow-md flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
               </div>
             </div>
 
-            {/* Email / SĐT / Ngày tham gia */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                {user.email || "Chưa có email"}
+            {/* User Info */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-center lg:justify-start gap-3 mb-1">
+                <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+                  {user.display_name || "Người dùng chưa đặt tên"}
+                </h1>
+                <Badge
+                  variant="secondary"
+                  className="bg-slate-900 text-white border-0 px-3 py-1 w-fit mx-auto lg:mx-0 hover:bg-slate-800"
+                >
+                  <Award className="w-3.5 h-3.5 mr-1.5" />
+                  {user.package_id ? `VIP ${user.package_id}` : "Basic"}
+                </Badge>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4" />
-                {user.phone || "Chưa có số điện thoại"}
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information - Clean section */}
+        <div className="px-8 py-6 bg-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex items-start gap-3 group">
+              <div className="mt-0.5 p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+                <Mail className="w-4 h-4 text-slate-600" />
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Thành viên từ{" "}
-                {user.create_at
-                  ? new Date(user.create_at).toLocaleDateString("vi-VN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
-                  : "—"}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                  Email
+                </p>
+                <p className="text-sm text-slate-900 truncate">
+                  {user.email || "Chưa có email"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 group">
+              <div className="mt-0.5 p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+                <Phone className="w-4 h-4 text-slate-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                  Số điện thoại
+                </p>
+                <p className="text-sm text-slate-900">
+                  {user.phone || "Chưa có số điện thoại"}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 group">
+              <div className="mt-0.5 p-2 bg-slate-100 rounded-lg group-hover:bg-slate-200 transition-colors">
+                <Calendar className="w-4 h-4 text-slate-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+                  Ngày tham gia
+                </p>
+                <p className="text-sm text-slate-900">
+                  {user.create_at
+                    ? new Date(user.create_at).toLocaleDateString("vi-VN", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </p>
               </div>
             </div>
           </div>

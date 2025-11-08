@@ -7,6 +7,8 @@ import visibilityController from '../controllers/post/visibilityController.js';
 import changeStatusController from '../controllers/post/changeStatusController.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import authorize from '../middlewares/authorize.js';
+import verifySeller from '../middlewares/verifySellerMiddleware.js';
+import updatePost from '../controllers/post/updateController.js';
 import { ROLE } from '../config/constants.js';
 const router = express.Router();
 
@@ -17,10 +19,16 @@ const router = express.Router();
  *   description: API quản lý bài đăng
  */
 
-router.post('/', authMiddleware, authorize(ROLE.MEMBER), createPost);
+router.post('/', authMiddleware, authorize(ROLE.MEMBER), verifySeller, createPost);
 router.get('/', getPosts);
 router.get('/:id', getPost);
+router.patch('/:id', authMiddleware, updatePost);
 router.patch('/:id/visibility', authMiddleware, visibilityController);
 router.patch('/:id/delete', authMiddleware, deleteController);
-router.patch('/:id/status', authMiddleware, authorize([ROLE.ADMIN, ROLE.STAFF]), changeStatusController);
+router.patch(
+    '/:id/status',
+    authMiddleware,
+    authorize([ROLE.MEMBER, ROLE.ADMIN, ROLE.STAFF]),
+    changeStatusController
+);
 export default router;

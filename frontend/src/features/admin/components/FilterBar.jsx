@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function FilterBar({
+  setFilSearch,
   searchTerm,
   onSearchChange,
   searchPlaceholder = "Tìm kiếm...",
@@ -22,7 +23,13 @@ export default function FilterBar({
             <Input
               placeholder={searchPlaceholder}
               value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e) => {
+                onSearchChange(e.target.value);
+                setFilSearch((pre) => ({
+                  ...pre,
+                  searchTerm: e.target.value,
+                }));
+              }}
               className="pl-10"
             />
           </div>
@@ -37,7 +44,13 @@ export default function FilterBar({
               )}
               <select
                 value={sel.value}
-                onChange={(e) => sel.onChange(e.target.value)}
+                onChange={(e) => {
+                  sel.onChange(e.target.value);
+                  setFilSearch((pre) => ({
+                    ...pre,
+                    [sel.key]: e.target.value ? e.target.value : "",
+                  }));
+                }}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
               >
                 {sel.options.map((opt) => (
@@ -48,8 +61,6 @@ export default function FilterBar({
               </select>
             </div>
           ))}
-
-          
         </div>
       </div>
     </Card>

@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, Link, redirect } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { useCart } from "@/contexts/CartContext";
-import { createOrder, getDeliveryFees } from "../service";
+import { createOrder } from "../service";
 import CheckoutBar from "../components/CheckoutBar";
 import Header from "@/components/common/Header";
+import { toast } from "sonner";
 
-// chỉ import & xài AddAddressModal (không tạo file mới)
+// import & xài AddAddressModal
 import AddAddressModal from "@/features/profile/components/settings/AddAddressModal";
 import { getContactByUserId, deleteContact } from "@/features/profile/service";
-import { getContactById } from "@/features/cart/service";
 
 // shadcn ui
 import {
@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import GroupCheckout from "../components/GroupCheckout";
-import { from } from "@apollo/client";
 
 export default function CheckoutPage() {
+  const navigate = useNavigate();
   const { selectedTotal, selectedGroups } = useCart();
   const [paymentGroup, setPaymentGroup] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(0);
   const [shippingFee, setShippingFee] = useState(0);
   const [addressOpen, setAddressOpen] = useState(false);
   const [contacts, setContacts] = useState([]);
@@ -35,7 +35,13 @@ export default function CheckoutPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
 
-  const navigate = useNavigate();
+  // Chặn truy cập trực tiếp nếu chưa chọn sản phẩm
+  useEffect(() => {
+    if (!selectedGroups || selectedGroups.length === 0 || selectedTotal === 0) {
+      toast.error("Vui lòng chọn sản phẩm trước khi thanh toán");
+      navigate("/", { replace: true });
+    }
+  }, [selectedGroups, selectedTotal, navigate]);
 
   useEffect(() => {
     const totalDeliveryFee = Object.values(paymentGroup).reduce(
@@ -46,10 +52,24 @@ export default function CheckoutPage() {
     setShippingFee(totalDeliveryFee);
   }, [paymentGroup]);
 
-  // lấy user id (tuỳ app của bạn)
+  // lấy user id
   const userRaw =
     typeof window !== "undefined" ? localStorage.getItem("user") : null;
   const user = userRaw ? JSON.parse(userRaw) : null;
+
+  useEffect(() => {
+    if (!contacts.length) return;
+
+    if (!selectedContact) {
+      setSelectedContact(contacts[0]);
+      return;
+    }
+
+    const stillExists = contacts.some((c) => c.id === selectedContact.id);
+    if (!stillExists) {
+      setSelectedContact(contacts[0]);
+    }
+  }, [contacts, selectedContact]);
 
   // mở modal -> load contact từ DB
   useEffect(() => {
@@ -62,9 +82,10 @@ export default function CheckoutPage() {
           ? data.filter((c) => !c.is_deleted)
           : [];
         setContacts(list);
-        if (!selectedContact && list.length > 0) {
+        if (list.length > 0) {
           setSelectedContact(list[0]);
         }
+        console.log("abcxyz");
       } catch (e) {
         console.error("Load contacts failed:", e);
         setContacts([]);
@@ -72,8 +93,7 @@ export default function CheckoutPage() {
         setContactsLoading(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [addressOpen, user?.id]);
+  }, [loading, user?.id, addressOpen]);
 
   const placeOrder = async () => {
     // selectedGroups, selectedContact, paymentGroup
@@ -92,7 +112,7 @@ export default function CheckoutPage() {
         post_id: item.post_id,
         price: item.price,
         deposit_amount: item.price * item.deposit_rate,
-        commission_amount: item.commission_rate * item.price,
+        commission_amount: item.commission_rate * item.price / 100,
         appointment_time,
       }));
       return {
@@ -107,7 +127,7 @@ export default function CheckoutPage() {
       };
     });
     const orderData = { orders, paymentInfo };
-    console.log(orderData)
+    console.log(orderData);
     const { payUrl } = await createOrder(orderData);
     console.log(payUrl);
     window.location.href = payUrl;
@@ -134,9 +154,11 @@ export default function CheckoutPage() {
       const list = Array.isArray(data) ? data.filter((c) => !c.is_deleted) : [];
       setContacts(list);
       const maybe = list.find(
-        (c) => c.phone === payload.phone && c.detail === payload.detail
+        (c) =>
+          (payload?.id && c.id === payload.id) ||
+          (c.phone === payload?.phone && c.detail === payload?.detail)
       );
-      if (maybe) setSelectedContact(maybe);
+      setSelectedContact(maybe || list[0] || null);
     } catch (e) {
       console.error("saveAddress reload failed:", e);
     } finally {
@@ -149,12 +171,6 @@ export default function CheckoutPage() {
     try {
       await deleteContact(id);
       setContacts((prev) => prev.filter((c) => c.id !== id));
-      if (selectedContact?.id === id) {
-        setSelectedContact(() => {
-          const remain = contacts.filter((c) => c.id !== id);
-          return remain[0] || null;
-        });
-      }
     } catch (e) {
       console.error("deleteContact failed:", e);
       alert("Xoá thất bại, vui lòng thử lại.");
@@ -169,18 +185,19 @@ export default function CheckoutPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold">Địa chỉ nhận hàng</h2>
-              {selectedContact ? (
+              {selectedContact || contacts[0] ? (
                 <div className="mt-1 text-sm text-gray-700">
                   <div className="font-medium">
-                    {selectedContact.name} • {selectedContact.phone}
+                    {(selectedContact || contacts[0]).name} •{" "}
+                    {(selectedContact || contacts[0]).phone}
                   </div>
                   <div>
-                    {selectedContact.detail}
+                    {(selectedContact || contacts[0]).detail}
                     {", "}
                     {[
-                      selectedContact.ward_name,
-                      selectedContact.district_name,
-                      selectedContact.province_name,
+                      (selectedContact || contacts[0]).ward_name,
+                      (selectedContact || contacts[0]).district_name,
+                      (selectedContact || contacts[0]).province_name,
                     ]
                       .filter(Boolean)
                       .join(", ")}
@@ -196,7 +213,7 @@ export default function CheckoutPage() {
               onClick={() => setAddressOpen(true)}
               className="text-blue-600 hover:underline"
             >
-              {selectedContact ? "Thay đổi" : "Chọn địa chỉ"}
+              {selectedContact || contacts[0] ? "Thay đổi" : "Chọn địa chỉ"}
             </button>
           </div>
         </div>
@@ -219,7 +236,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* ======= TỔNG KẾT ======= */}
-        <div className="px-4 py-3">
+        <div>
           <CheckoutBar
             subtotal={selectedTotal}
             shipping={shippingFee}
@@ -234,7 +251,7 @@ export default function CheckoutPage() {
 
       {/* ======= MODAL CHỌN ĐỊA CHỈ (click card để chọn) ======= */}
       <Dialog open={addressOpen} onOpenChange={setAddressOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Chọn địa chỉ nhận hàng</DialogTitle>
           </DialogHeader>
@@ -254,7 +271,8 @@ export default function CheckoutPage() {
               </div>
             ) : (
               contacts.map((c) => {
-                const active = selectedContact?.id === c.id;
+                const active =
+                  (selectedContact?.id ?? contacts[0]?.id) === c.id;
                 return (
                   <div
                     key={c.id}
@@ -326,6 +344,7 @@ export default function CheckoutPage() {
         onClose={() => {
           setShowAdd(false);
           setEditing(null);
+          setLoading((prev) => prev + 1);
         }}
         onSave={saveAddress}
         contact={editing}

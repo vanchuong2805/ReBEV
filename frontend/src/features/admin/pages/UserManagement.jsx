@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 
 const UserManagement = () => {
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -31,6 +32,7 @@ const UserManagement = () => {
   useEffect(() => {
     fetchUsers().then(setUsers);
   }, []);
+
   const refreshUsers = async () => {
     const fresh = await fetchUsers();
     setUsers(fresh);
@@ -161,34 +163,7 @@ const UserManagement = () => {
         description="Xem thông tin người dùng và quản lý trạng thái tài khoản"
       />
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-        <StatsCard
-          number={users.filter((u) => u.is_locked == false).length}
-          description="Người dùng hoạt động"
-          color={"green"}
-        />
-        <StatsCard
-          number={users.filter((u) => u.is_locked == true).length}
-          description="Người dùng bị khóa"
-          color={"red"}
-        />
-        <StatsCard
-          number={users.filter((u) => u.role === 1).length}
-          description="Nhân viên"
-          color={"orange"}
-        />
 
-        <StatsCard
-          number={users.filter((u) => u.role === 2).length}
-          description="Quản trị viên"
-          color={"purple"}
-        />
-        <StatsCard
-          number={users.length}
-          description="Tổng người dùng"
-          color={"blue"}
-        />
-      </div>
       <div className="flex items-center justify-between mb-6">
         <Button
           onClick={handleCreateStaff}

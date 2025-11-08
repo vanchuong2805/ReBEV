@@ -1,4 +1,6 @@
+// LoginForm.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 import FieldError from "./FieldError";
@@ -8,6 +10,7 @@ import { useUser } from "../../../contexts/UserContext";
 import { toast } from "sonner";
 import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff } from "lucide-react";
+import { redirectAfterLogin } from "../../../services/routeGuard";
 
 const LoginForm = () => {
   const [phone, setPhone] = useState("");
@@ -15,35 +18,35 @@ const LoginForm = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useUser();
+  const navigate = useNavigate();
 
   const handlePhoneLogin = (e) => {
     e.preventDefault();
     const newErrors = validateLogin({ phone, password });
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
-    // Call login API
+
     loginUser({ phone, password })
       .then((response) => {
-        console.log("Login successful:", response);
-        // Handle successful login (e.g., store token, redirect)
         login(response.user, response.accessToken);
         toast.success("Đăng nhập thành công!");
+        // Redirect dựa trên role
+        redirectAfterLogin(response.user, navigate);
       })
       .catch((error) => {
         console.error("Login failed:", error);
-        // Handle login error (e.g., show error message)
         toast.error("Đăng nhập thất bại!");
       });
   };
 
   const handleGoogleLogin = async (response) => {
     try {
-      const { credential } = response; // Google ID Token
-      const data = await googleLogin(credential); // gọi API tới backend
-
-      // nếu BE trả về user + accessToken
+      const { credential } = response;
+      const data = await googleLogin(credential);
       login(data.user, data.token);
       toast.success("Đăng nhập Google thành công!");
+      // Redirect dựa trên role
+      redirectAfterLogin(data.user, navigate);
     } catch (error) {
       console.error("Google login failed:", error);
       toast.error("Đăng nhập Google thất bại!");
@@ -72,7 +75,7 @@ const LoginForm = () => {
           <FieldError message={errors.phone} />
         </div>
 
-        <div className="relative mb-8">
+        <div className="relative mb-2">
           <input
             id="password"
             type={showPassword ? "text" : "password"}
@@ -91,6 +94,21 @@ const LoginForm = () => {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
           <FieldError message={errors.password} />
+        </div>
+
+        <div className="flex justify-end mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              // lưu số điện thoại để trang Forgot đọc được
+              // dùng sessionStorage cho chắc (tránh mất khi reload)
+              sessionStorage.setItem("fp_phone", phone || "");
+              window.open("/forgot", "_blank");
+            }}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            Quên mật khẩu?
+          </button>
         </div>
 
         <Button

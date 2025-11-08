@@ -1,6 +1,7 @@
-import { logoutUser, refreshToken } from "@/features/auth/service";
+import { logoutUser } from "@/features/auth/service";
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useAuthDialog } from "./AuthDialogContext";
 
 const UserContext = createContext();
 
@@ -9,6 +10,7 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { close } = useAuthDialog();
   useEffect(() => {
     // Check if user is logged in on app start
     const initAuth = async () => {
@@ -38,6 +40,7 @@ export const UserProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
+      close();
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
       setUser(null);

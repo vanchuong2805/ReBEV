@@ -1,7 +1,9 @@
-import { ERROR_MESSAGE } from "../../config/constants.js";
-import { SUCCESS_MESSAGE } from "../../config/constants.js";
-import userService from "../../services/user/userService.js";
-import packageService from "../../services/package/packageService.js";
+import { ERROR_MESSAGE } from '../../config/constants.js';
+import { SUCCESS_MESSAGE } from '../../config/constants.js';
+import userService from '../../services/user/userService.js';
+import packageService from '../../services/package/packageService.js';
+import e from 'express';
+import momoService from '../../services/payment/momoService.js';
 
 /**
  * @swagger
@@ -31,6 +33,17 @@ import packageService from "../../services/package/packageService.js";
  *         schema:
  *           type: integer
  *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               redirectUrl:
+ *                 type: string
+ *                 format: uri
+ *                 example: "https://example.com/redirect"
  *     responses:
  *       200:
  *         description: Package registered successfully
@@ -113,51 +126,61 @@ import packageService from "../../services/package/packageService.js";
 
 const registerPackage = async (req, res) => {
     try {
-        const {
-            user_id,
-            package_id
-        } = req.params;
-
+        const { user_id, package_id } = req.params;
+        const { redirectUrl } = req.body;
         const userId = req.user.id;
 
         if (parseInt(user_id) !== userId) {
             return res.status(403).json({
-                error: "Forbidden"
+                error: 'Forbidden',
             });
         }
 
         const errors = [];
         const user = await userService.getUser(user_id);
         const packages = await packageService.getPackage(package_id);
-
+        if (!redirectUrl) {
+            errors.push("RedirectUrl is required");
+        }
         if (!user) {
             errors.push(ERROR_MESSAGE.USER_NOT_FOUND);
         }
         if (!packages) {
             errors.push(ERROR_MESSAGE.PACKAGE_NOT_FOUND);
         }
+        if (await packageService.is_deleted(package_id)) {
+            errors.push(ERROR_MESSAGE.PACKAGE_NOT_FOUND);
+        }
         if (errors.length > 0) {
             return res.status(404).json({ errors });
         }
-        if (await packageService.is_deleted(package_id)) {
-            errors.push(ERROR_MESSAGE.PACKAGE_NOT_FOUND);
-            return res.status(400).json({ errors });
+
+        // Tạo payUrl để thanh toán 
+
+        const paymentInfo = {
+            amount: packages.price,
+            orderId: `${user_id}-${package_id}-${Date.now()}`,
+            orderInfo: `Register package ${packages.name} for user ${user.display_name}`,
+            extraData: JSON.stringify({ user_id, package_id }),
+            redirectUrl,
+            ipnUrl: process.env.INTERNAL_API_URL + '/transactions/package',
+        }   
+
+        const result = await momoService.createPayment(paymentInfo);
+        if (!result.payUrl) {
+            return res.status(500).json({
+                error: 'Failed to create payment URL',
+            });
         }
-        const updatedPackages = await userService.updatePackage(user_id, {
-            package_id
-        });
-
         res.status(200).json({
-            message: SUCCESS_MESSAGE.REGISTER_SUCCESS,
-            user: updatedPackages,
+            payUrl: result.payUrl,
         });
-
     } catch (error) {
         console.error(ERROR_MESSAGE.REGISTER_FAIL, error);
         res.status(400).json({
             error: error.message,
         });
     }
-}
+};
 
 export default registerPackage;

@@ -1,96 +1,9 @@
-import { useEffect, useState } from "react";
 import axios from "axios";
 
 // hooks/useUserPackages.js
 
-export function useUserPackages(initial) {
-  const [userPackages, setUserPackages] = useState(initial);
-  const [showAddPackage, setShowAddPackage] = useState(false);
-  const [newPackage, setNewPackage] = useState({
-    name: "",
-    privileges: [],
-    price: 0,
-  });
-
-  const startEdit = (id) =>
-    setUserPackages((prev) =>
-      prev.map((p) => ({ ...p, isEditing: p.id === id }))
-    );
-
-  const saveEdit = (id) =>
-    setUserPackages((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isEditing: false } : p))
-    );
-
-  const cancelEdit = (id) => saveEdit(id);
-
-  const changePrice = (id, price) =>
-    setUserPackages((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, price: parseFloat(price) || 0 } : p
-      )
-    );
-
-  const togglePrivilege = (label) =>
-    setNewPackage((prev) => ({
-      ...prev,
-      privileges: prev.privileges.includes(label)
-        ? prev.privileges.filter((x) => x !== label)
-        : [...prev.privileges, label],
-    }));
-
-  const add = () => {
-    if (!newPackage.name) return;
-    const pkg = {
-      id: Date.now(),
-      name: newPackage.name,
-      privileges: newPackage.privileges,
-      price: parseFloat(newPackage.price) || 0,
-      isEditing: false,
-    };
-    setUserPackages((prev) => [...prev, pkg]);
-    setNewPackage({ name: "", privileges: [], price: 0 });
-    setShowAddPackage(false);
-  };
-
-  return {
-    userPackages,
-    setUserPackages,
-    showAddPackage,
-    setShowAddPackage,
-    newPackage,
-    setNewPackage,
-    startEdit,
-    saveEdit,
-    cancelEdit,
-    changePrice,
-    togglePrivilege,
-    add,
-  };
-}
-
-const baseAPI = "https://rebev.up.railway.app/api";
+const baseAPI = import.meta.env.VITE_BASE_URL;
 //---------------------------------------------------------
-// LOGOUT
-
-export const logoutAdmin = async () => {
-  const token = localStorage.getItem("token"); // lấy token đã lưu sau khi login
-  try {
-    const res = await axios.post(
-      `${baseAPI}/users/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    console.log("Logout successful:", res.data);
-    localStorage.removeItem("token"); // Xóa token khỏi localStorage
-  } catch (err) {
-    console.error("Error logging out:", err.response?.data || err.message);
-  }
-};
 
 // GET FULL PACKAGE
 
@@ -188,35 +101,13 @@ export const updatePackage = async (packages) => {
 
 // GET all users
 
-export function useAllUsers() {
-  const [users, setUsers] = useState([]);
-  async function getUsersWithAxios() {
-    try {
-      const res = await axios.get("https://rebev.up.railway.app/api/users");
-      setUsers(res.data); // cập nhật state
-      console.log(res.data);
-    } catch (err) {
-      console.error("Axios error:", err.response?.data ?? err.message);
-    }
-  }
-
-  useEffect(() => {
-    getUsersWithAxios();
-  }, []);
-
-  return users;
-}
-
-export const fetchUsers = async () => {
-  const res = await axios.get(baseAPI + "/users");
+export const fetchUserById = async (userId) => {
+  const res = await axios.get(`${baseAPI}/users/${userId}`);
   return res.data;
 };
 
-export const createUser = async (userData) => {
-  const res = await axios.post(
-    "https://rebev.up.railway.app/api/users",
-    userData
-  );
+export const fetchUsers = async () => {
+  const res = await axios.get(baseAPI + "/users");
   return res.data;
 };
 
@@ -291,10 +182,12 @@ export const createStaffAccount = async (staff) => {
 
 //POST-----------
 
-export const fetchPost = async () => {
-  const res = await axios.get(baseAPI + "/posts");
+export const fetchPost = async (searchKey) => {
+  const apiPost = baseAPI + "/posts" + (searchKey ? searchKey : "");
+  const res = await axios.get(apiPost);
   return res.data.data;
 };
+//"/posts?status=1&category_id=1&user_id=5&search=đời&page=2&limit=1"
 
 export const updatePostStatus = async (postId, newStatus) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
@@ -317,10 +210,51 @@ export const updatePostStatus = async (postId, newStatus) => {
   }
 };
 //-----------------------------------------
-export const getOrders = async () => {
+export const getOrders = async (type) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
-    const res = await axios.get(`${baseAPI}/orders`, {
+    const res = await axios.get(
+      `${baseAPI}/orders?page=1&limit=20&order_type=${type}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+//.---
+// Update contractFile
+// https://rebev.up.railway.app/api/order-details/:id/contract
+export const updateContractFile = async (id, url) => {
+  const token = localStorage.getItem("accessToken");
+
+  const res = await axios.patch(
+    `${baseAPI}/order-details/${id}/contract`,
+    { contract_file: url },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    }
+  );
+  return res.data;
+};
+
+//Static Page
+
+export const getStaticPage = async (year) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/statistics?year=${year}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`, // thêm token vào header

@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
 
 export const getUserByID = async (userId) => {
   const res = await axios.get(
