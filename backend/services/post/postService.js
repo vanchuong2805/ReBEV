@@ -33,8 +33,8 @@ const getPosts = async (filters = {}) => {
         province_id,
         order_by,
         order_direction,
-        is_deleted = false,
-        is_hidden = false,
+        is_deleted,
+        is_hidden,
         max_price,
         min_price,
     } = filters;
@@ -47,7 +47,7 @@ const getPosts = async (filters = {}) => {
         }
     }
 
-    const where = { is_deleted, is_hidden };
+    const where = { };
     const include = province_id
         ? [
               {
@@ -66,7 +66,7 @@ const getPosts = async (filters = {}) => {
         include: [
             {
                 association: 'package',
-                attributes: [],
+                attributes: ['highlight', 'top'],
             },
         ],
     });
@@ -102,6 +102,14 @@ const getPosts = async (filters = {}) => {
             { '$base.province_id$': province_id },
             { '$seller_contact.province_id$': province_id },
         ];
+    }
+
+    if (is_deleted !== undefined) {
+        where.is_deleted = is_deleted;
+    }
+
+    if (is_hidden !== undefined) {
+        where.is_hidden = is_hidden;
     }
 
     if (min_price) {
@@ -161,6 +169,8 @@ const getPosts = async (filters = {}) => {
             'posts.title',
             'posts.create_at',
             '[user->package].[top]',
+            '[user->package].[highlight]',
+            '[user->package].[id]',
             'posts.status',
             'posts.base_id',
             'posts.seller_contact_id',
