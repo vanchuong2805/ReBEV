@@ -6,14 +6,20 @@ import userService from "../../services/user/userService.js";
  * @swagger
  * /api/users/{id}/update:
  *   put:
- *     summary: Cập nhật thông tin người dùng
- *     description: API cho phép người dùng cập nhật thông tin cá nhân của chính họ, bao gồm tên hiển thị và ảnh đại diện.
+ *     summary: Update user information
+ *     description: |
+ *       This API allows a user to update their personal information, including display name and avatar.  
+ *       - Users cannot update information of other users.  
+ *       - Returns 404 if the user does not exist.  
+ *       - Returns 400 if input data is missing or invalid.
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID của người dùng cần cập nhật
+ *         description: ID of the user to update
  *         schema:
  *           type: integer
  *           example: 123
@@ -26,79 +32,92 @@ import userService from "../../services/user/userService.js";
  *             properties:
  *               display_name:
  *                 type: string
- *                 description: Tên hiển thị mới của người dùng
+ *                 description: New display name of the user
  *                 example: "Nguyen Van A"
  *               avatar:
  *                 type: string
- *                 description: URL ảnh đại diện của người dùng
+ *                 description: URL of the user's avatar
  *                 example: "https://example.com/avatar.jpg"
  *     responses:
  *       200:
- *         description: Cập nhật thông tin người dùng thành công
+ *         description: User information updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Cập nhật thông tin người dùng thành công"
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 123
- *                     display_name:
- *                       type: string
- *                       example: "Nguyen Van A"
- *                     avatar:
- *                       type: string
- *                       example: "https://example.com/avatar.jpg"
- *                     update_at:
- *                       type: string
- *                       format: date-time
- *                       example: "2025-10-30T08:30:00Z"
+ *               $ref: '#/components/schemas/UserUpdateResponse'
  *       400:
- *         description: Yêu cầu không hợp lệ hoặc dữ liệu bị thiếu
+ *         description: Invalid request or missing data
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Thiếu dữ liệu cần thiết hoặc định dạng không hợp lệ"
+ *               $ref: '#/components/schemas/BadRequestError'
  *       403:
- *         description: Người dùng không có quyền truy cập (không thể cập nhật thông tin người khác)
+ *         description: Forbidden – user cannot update other users' info
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Forbidden"
+ *               $ref: '#/components/schemas/ForbiddenError'
  *       404:
- *         description: Không tìm thấy người dùng
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Không tìm thấy người dùng"
+ *               $ref: '#/components/schemas/NotFoundError'
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Lỗi khi cập nhật thông tin người dùng"
+ *               $ref: '#/components/schemas/ServerError'
+ *
+ * components:
+ *   schemas:
+ *     UserUpdateResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "User information updated successfully"
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 123
+ *             display_name:
+ *               type: string
+ *               example: "Nguyen Van A"
+ *             avatar:
+ *               type: string
+ *               example: "https://example.com/avatar.jpg"
+ *             update_at:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-10-30T08:30:00Z"
+ *     BadRequestError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Missing required data or invalid format"
+ *     ForbiddenError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Forbidden"
+ *     NotFoundError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "User not found"
+ *     ServerError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Failed to update user information"
  */
 
 const updateUser = async (req, res) => {
