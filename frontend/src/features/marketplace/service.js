@@ -8,7 +8,8 @@ const headers = {
   Token: TOKEN,
 };
 
-const API_BASE_URL = "https://rebev.up.railway.app/api";
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export const getPostById = async (id) => {
   const res = await axios.get(`${API_BASE_URL}/posts/${id}`);
   console.log(res.data);

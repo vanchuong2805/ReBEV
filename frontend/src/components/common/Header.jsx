@@ -32,15 +32,11 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { useUser } from "@/contexts/UserContext";
-import {
-  fetchDistricts,
-  fetchProvinces,
-  fetchWards,
-} from "../../features/profile/service";
+import { fetchProvinces } from "../../features/profile/service";
 import { getVariationValues } from "@/features/posts/service";
-// ========== GHN CONFIG ==========
+import { toast } from "sonner";
 
 // ===== Header Component =====
 const Header = () => {
@@ -48,33 +44,27 @@ const Header = () => {
   const { user, logout } = useUser();
   const { cartItemCount } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Search state - local state để quản lý input
   const [localSearch, setLocalSearch] = useState("");
 
   // ====== LOCATION STATES ======
   const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
-
   const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
 
   const [provLoading, setProvLoading] = useState(false);
-  const [districtLoading, setDistrictLoading] = useState(false);
-  const [wardLoading, setWardLoading] = useState(false);
   const [provError, setProvError] = useState(null);
-  const [wardError, setWardError] = useState(null);
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     (async () => {
       try {
         setProvLoading(true);
         const data = await fetchProvinces();
+        console.log(data);
         setProvinces(data);
       } catch (err) {
-        console.error("❌ Error loading provinces:", err);
+        console.error(" Error loading provinces:", err);
         setProvError(err);
       } finally {
         setProvLoading(false);
@@ -82,44 +72,28 @@ const Header = () => {
     })();
   }, []);
 
-  // ======= FETCH DISTRICTS =======
+  // Đọc province_id từ URL khi component mount hoặc URL thay đổi
+  useEffect(() => {
+    const provinceIdFromUrl = searchParams.get("province_id");
+    if (provinceIdFromUrl) {
+      setSelectedProvince(provinceIdFromUrl);
+    }
+  }, [searchParams]);
+
   const handleProvinceChange = async (e) => {
     const id = e.target.value;
     setSelectedProvince(id);
-    setSelectedDistrict("");
-    setSelectedWard("");
-    setDistricts([]);
-    setWards([]);
 
-    if (!id) return;
-    try {
-      setDistrictLoading(true);
-      const res = await fetchDistricts(id);
-      setDistricts(res);
-    } catch (err) {
-      console.error("❌ Error loading districts:", err);
-    } finally {
-      setDistrictLoading(false);
-    }
-  };
-
-  // ======= FETCH WARDS =======
-  const handleDistrictChange = async (e) => {
-    const id = e.target.value;
-    setSelectedDistrict(id);
-    setSelectedWard("");
-    setWards([]);
-
-    if (!id) return;
-    try {
-      setWardLoading(true);
-      const res = await fetchWards(id);
-      setWards(res);
-    } catch (err) {
-      console.error("❌ Error loading wards:", err);
-      setWardError(err);
-    } finally {
-      setWardLoading(false);
+    // Navigate đến marketplace với province_id trong URL
+    if (id) {
+      const params = new URLSearchParams(searchParams);
+      params.set("province_id", id);
+      navigate(`/marketplace/all?${params.toString()}`);
+    } else {
+      // Nếu chọn "Chọn tỉnh thành" (clear selection)
+      const params = new URLSearchParams(searchParams);
+      params.delete("province_id");
+      navigate(`/marketplace/all?${params.toString()}`);
     }
   };
 
@@ -143,7 +117,6 @@ const Header = () => {
           xe: {
             "Thương hiệu": { icon: <Factory size={14} />, data: grouped[1] },
             "Công suất (W)": { icon: <Power size={14} />, data: grouped[3] },
-
             "Xuất xứ": { icon: <Globe size={14} />, data: grouped[6] },
           },
           pin: {
@@ -163,7 +136,7 @@ const Header = () => {
           },
         });
       } catch (err) {
-        console.error("❌ Lỗi khi tải variationValues:", err);
+        console.error(" Lỗi khi tải variationValues:", err);
       } finally {
         setLoadingVariations(false);
       }
@@ -328,15 +301,17 @@ const Header = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 console.log("🔎 Submitting search:", localSearch);
-                // Chuyển sang trang marketplace/all với search query trong URL
+                // Chuyển sang trang marketplace/all với 
                 const searchQuery = localSearch.trim();
+                const params = new URLSearchParams(searchParams);
+
                 if (searchQuery) {
-                  navigate(
-                    `/marketplace/all?search=${encodeURIComponent(searchQuery)}`
-                  );
+                  params.set("search", searchQuery);
                 } else {
-                  navigate("/marketplace/all");
+                  params.delete("search");
                 }
+
+                navigate(`/marketplace/all?${params.toString()}`);
               }}
               className="flex items-center w-full gap-2 px-2 py-1 bg-white shadow-md rounded-xl"
             >
@@ -351,7 +326,7 @@ const Header = () => {
                 />
               </div>
 
-              {/* Dropdown chọn tỉnh / quận / xã */}
+              {/* Dropdown chọn tỉnh*/}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -409,72 +384,7 @@ const Header = () => {
                         ))}
                       </select>
                     </div>
-
-                    {/* Quận/Huyện */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Quận/Huyện *
-                      </label>
-                      <select
-                        value={selectedDistrict}
-                        onChange={handleDistrictChange}
-                        disabled={!selectedProvince || districtLoading}
-                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
-                      >
-                        <option value="">
-                          {!selectedProvince
-                            ? "Chọn tỉnh trước"
-                            : districtLoading
-                            ? "Đang tải..."
-                            : "-- Chọn quận --"}
-                        </option>
-                        {districts.map((d) => (
-                          <option key={d.DistrictID} value={d.DistrictID}>
-                            {d.DistrictName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Xã/Phường */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Xã/Phường *
-                      </label>
-                      <select
-                        value={selectedWard}
-                        onChange={(e) => setSelectedWard(e.target.value)}
-                        disabled={!selectedDistrict || wardLoading}
-                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
-                      >
-                        <option value="">
-                          {!selectedDistrict
-                            ? "Chọn quận trước"
-                            : wardLoading
-                            ? "Đang tải..."
-                            : "-- Chọn xã --"}
-                        </option>
-                        {wards.map((w) => (
-                          <option key={w.WardCode} value={w.WardCode}>
-                            {w.WardName}
-                          </option>
-                        ))}
-                      </select>
-
-                      {wardError && (
-                        <p className="mt-1 text-sm text-red-500">
-                          Không thể tải danh sách xã.
-                        </p>
-                      )}
-                    </div>
                   </div>
-
-                  <Button
-                    className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
-                    disabled={provLoading}
-                  >
-                    Áp dụng
-                  </Button>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -551,10 +461,18 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
-                asChild
+                onClick={(e) => {
+                  if (!user?.package_id || user.package_id === null) {
+                    e.preventDefault();
+                    toast.error("Bạn phải đăng ký gói trước khi đăng tin");
+                    navigate("/upgrade");
+                  } else {
+                    navigate("/posts");
+                  }
+                }}
                 className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg"
               >
-                <Link to="/posts">Đăng tin</Link>
+                Đăng tin
               </Button>
             </nav>
           ) : (

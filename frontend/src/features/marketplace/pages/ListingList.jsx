@@ -87,6 +87,12 @@ export default function ListingList() {
         if (minPrice) queryParams.min_price = minPrice;
         if (maxPrice) queryParams.max_price = maxPrice;
 
+        // Province ID
+        const provinceId = searchParams.get("province_id");
+        if (provinceId) {
+          queryParams.province_id = provinceId;
+        }
+
         // Status - chỉ lấy approved
         queryParams.status = 1;
 
