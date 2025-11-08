@@ -7,15 +7,42 @@ import postService from '../post/postService.js';
 import orderDetailService from '../order/orderDetailService.js';
 import userReviewService from './userReviewService.js';
 
-const getUsers = async () => {
-    const data = await users.findAll({ raw: true });
-    for (const user of data) {
-        const { count, totalRating } = await getUserRatingCount(user.id);
+const getUsers = async ({ page = 1, limit = 10 }) => {
+
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+        throw new Error('Invalid query parameters');
+    }
+
+    const offset = (page - 1) * limit;
+
+    const {
+         count, rows
+         } = await users.findAndCountAll({
+        offset,
+        limit,
+        raw: true
+    });
+
+    for (const user of rows) {
+        const {
+            count,
+            totalRating
+        } = await getUserRatingCount(user.id);
         user.rating_count = count;
         user.total_rating = totalRating;
     }
 
-    return data;
+
+    return {
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit),
+        users: rows
+    }
 };
 const getUser = async (id) => {
     const data = await users.findByPk(id, { raw: true });

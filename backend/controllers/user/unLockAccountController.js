@@ -6,85 +6,159 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * @swagger
  * /api/users/{user_id}/unlock-account:
  *   patch:
- *     summary: Mở khóa tài khoản người dùng
+ *     summary: Unlock a user account
  *     description: |
- *       API này cho phép **mở khóa tài khoản người dùng** dựa trên `user_id`.  
- *       - Nếu tài khoản chưa bị khóa, hệ thống trả về lỗi `400`.  
- *       - Nếu không tìm thấy người dùng, trả về `404`.  
- *       - Nếu thành công, hệ thống cập nhật trạng thái `is_locked = false` và trả về thông tin người dùng đã mở khóa.
+ *       Unlock the account of a user by their ID.  
+ *       - If the account is not locked, returns 400.  
+ *       - If the user does not exist, returns 404.
  *     tags: [Users]
- *     security:
- *       - bearerAuth: []
+ *     operationId: unlockUserAccount
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: ID của người dùng cần mở khóa
  *         schema:
  *           type: integer
  *           example: 7
+ *         description: ID of the user to unlock
  *     responses:
  *       200:
- *         description: Mở khóa tài khoản thành công
+ *         description: Account successfully unlocked
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Account unlocked successfully"
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 7
- *                     display_name:
- *                       type: string
- *                       example: "Nguyen Van B"
- *                     phone:
- *                       type: string
- *                       example: "0909876543"
- *                     email:
- *                       type: string
- *                       example: "nguyenb@example.com"
- *                     is_locked:
- *                       type: boolean
- *                       example: false
+ *               $ref: '#/components/schemas/UserUnlockResponse'
+ *             examples:
+ *               success:
+ *                 summary: Successful unlock
+ *                 value:
+ *                   message: "Account unlocked successfully"
+ *                   data:
+ *                     id: 7
+ *                     display_name: "Nguyen Van B"
+ *                     phone: "0909876543"
+ *                     email: "nguyenb@example.com"
+ *                     role: 0
+ *                     balance: "150000.00"
+ *                     avatar: "https://example.com/avatar.jpg"
+ *                     package_id: 2
+ *                     is_locked: false
+ *                     package_start: "2025-01-01T07:00:00Z"
+ *                     create_at: "2025-03-01T09:30:00Z"
+ *                     update_at: "2025-10-30T09:00:00Z"
+ *
  *       400:
- *         description: Tài khoản đã được mở khóa trước đó
+ *         description: Account already unlocked or invalid request
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Account is already unlocked"
+ *               $ref: '#/components/schemas/BadRequestError'
+ *             examples:
+ *               alreadyUnlocked:
+ *                 summary: Account already unlocked
+ *                 value:
+ *                   message: "Account is already unlocked"
+ *
  *       404:
- *         description: Không tìm thấy người dùng cần mở khóa
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User not found"
+ *               $ref: '#/components/schemas/NotFoundError'
+ *             examples:
+ *               userNotFound:
+ *                 summary: User not found example
+ *                 value:
+ *                   message: "User not found"
+ *
  *       500:
- *         description: Lỗi máy chủ nội bộ khi mở khóa tài khoản
+ *         description: Internal server error while unlocking account
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Failed to unlock account"
- *                 error:
- *                   type: string
- *                   example: "Database connection failed"
+ *               $ref: '#/components/schemas/ServerError'
+ *             examples:
+ *               serverFailure:
+ *                 summary: Server error example
+ *                 value:
+ *                   message: "Failed to unlock account"
+ *                   error: "Database connection timeout"
+ *
+ * components:
+ *   schemas:
+ *     UserUnlockResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Account unlocked successfully"
+ *         data:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 7
+ *             display_name:
+ *               type: string
+ *               example: "Nguyen Van B"
+ *             phone:
+ *               type: string
+ *               example: "0909876543"
+ *             email:
+ *               type: string
+ *               example: "nguyenb@example.com"
+ *             role:
+ *               type: integer
+ *               example: 0
+ *             balance:
+ *               type: string
+ *               example: "150000.00"
+ *             avatar:
+ *               type: string
+ *               example: "https://example.com/avatar.jpg"
+ *             package_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 2
+ *             is_locked:
+ *               type: boolean
+ *               example: false
+ *             package_start:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-01-01T07:00:00Z"
+ *             create_at:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-03-01T09:30:00Z"
+ *             update_at:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-10-30T09:00:00Z"
+ *
+ *     BadRequestError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Account is already unlocked"
+ *
+ *     NotFoundError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "User not found"
+ *
+ *     ServerError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Failed to unlock account"
+ *         error:
+ *           type: string
+ *           example: "Database connection timeout"
  */
 
 const unLockAccount = async (req, res) => {

@@ -8,8 +8,11 @@ import jwtService from '../../services/auth/jwtService.js';
  * @swagger
  * /api/users/login/phone:
  *   post:
- *     summary: Đăng nhập người dùng bằng số điện thoại
- *     description: API cho phép người dùng đăng nhập bằng **số điện thoại** và **mật khẩu**. Nếu đăng nhập thành công, trả về thông tin người dùng và token.
+ *     summary: Login user with phone number
+ *     description: |
+ *       Allows users to login using **phone number** and **password**.  
+ *       - Returns user info and JWT access token if login is successful.  
+ *       - If the account is locked, returns 403.
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -29,92 +32,119 @@ import jwtService from '../../services/auth/jwtService.js';
  *                 example: "mypassword123"
  *     responses:
  *       200:
- *         description: Đăng nhập thành công
+ *         description: Login successful
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Đăng nhập thành công"
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 1
- *                     display_name:
- *                       type: string
- *                       example: "Nguyen Van A"
- *                     email:
- *                       type: string
- *                       example: "nguyenvana@gmail.com"
- *                     phone:
- *                       type: string
- *                       example: "0987654321"
- *                     role:
- *                       type: string
- *                       example: "user"
- *                     avatar:
- *                       type: string
- *                       example: "https://example.com/avatar.jpg"
- *                     package_id:
- *                       type: integer
- *                       example: 3
- *                     package_start:
- *                       type: string
- *                       format: date-time
- *                       example: "2025-10-29T10:00:00Z"
- *                 accessToken:
- *                   type: string
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+ *               $ref: '#/components/schemas/LoginPhoneSuccess'
+ *
  *       400:
- *         description: Thiếu thông tin đăng nhập hoặc lỗi dữ liệu đầu vào
+ *         description: Missing or invalid input
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example:
- *                     - "Số điện thoại không được để trống"
- *                     - "Mật khẩu không được để trống"
+ *               $ref: '#/components/schemas/LoginPhoneBadRequest'
+ *
  *       401:
- *         description: Mật khẩu không chính xác
+ *         description: Incorrect password
  *         content:
  *           application/json:
  *             schema:
- *               type: string
- *               example: "Số điện thoại hoặc mật khẩu không chính xác"
+ *               $ref: '#/components/schemas/LoginPhoneUnauthorized'
+ *
  *       403:
- *         description: Tài khoản đã bị khóa
+ *         description: Account is locked
  *         content:
  *           application/json:
  *             schema:
- *               type: string
- *               example: "Tài khoản của bạn đã bị khóa"
+ *               $ref: '#/components/schemas/LoginPhoneForbidden'
+ *
  *       404:
- *         description: Không tìm thấy người dùng tương ứng với số điện thoại
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
- *               type: string
- *               example: "Số điện thoại hoặc mật khẩu không chính xác"
+ *               $ref: '#/components/schemas/LoginPhoneNotFound'
+ *
  *       500:
- *         description: Lỗi máy chủ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Đăng nhập thất bại do lỗi hệ thống"
+ *               $ref: '#/components/schemas/LoginPhoneServerError'
+ *
+ * components:
+ *   schemas:
+ *     LoginPhoneSuccess:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Login successful"
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 1
+ *             display_name:
+ *               type: string
+ *               example: "Nguyen Van A"
+ *             email:
+ *               type: string
+ *               example: "nguyenvana@gmail.com"
+ *             phone:
+ *               type: string
+ *               example: "0987654321"
+ *             role:
+ *               type: string
+ *               example: "user"
+ *             avatar:
+ *               type: string
+ *               example: "https://example.com/avatar.jpg"
+ *             package_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 3
+ *             package_start:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-10-29T10:00:00Z"
+ *         accessToken:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+ *
+ *     LoginPhoneBadRequest:
+ *       type: object
+ *       properties:
+ *         errors:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example:
+ *             - "Phone number cannot be blank"
+ *             - "Password cannot be blank"
+ *
+ *     LoginPhoneUnauthorized:
+ *       type: string
+ *       example: "Phone number or password is incorrect"
+ *
+ *     LoginPhoneForbidden:
+ *       type: string
+ *       example: "Your account is locked"
+ *
+ *     LoginPhoneNotFound:
+ *       type: string
+ *       example: "Phone number or password is incorrect"
+ *
+ *     LoginPhoneServerError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Login failed due to system error"
  */
+
 
 const loginUserByPhone = async (req, res) => {
     try {
