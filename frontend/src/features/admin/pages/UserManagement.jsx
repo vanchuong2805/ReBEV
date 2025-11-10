@@ -14,7 +14,6 @@ import {
   unLockUserAccount,
 } from "../service";
 import { toast } from "sonner";
-import { data } from "react-router";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
