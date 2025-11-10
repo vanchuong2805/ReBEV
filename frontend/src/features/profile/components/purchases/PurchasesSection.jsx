@@ -13,6 +13,7 @@ import {
   getOrderByCustomer,
   changeOrderStatus,
   getComplaintByUserId,
+  updateAppointmentTim, // 🆕 import hàm cập nhật lịch hẹn
 } from "@/features/profile/service"
 
 import ReviewModal from "@/features/profile/components/ReviewModal"
@@ -37,10 +38,9 @@ const PurchasesSection = () => {
   const navigate = useNavigate()
   const { user } = useUser()
 
-  
   const getStatus = (order) => order?.order_statuses?.at(-1)?.status || ""
 
-  
+  // 🧩 Lấy danh sách đơn hàng và khiếu nại
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user?.id) return
@@ -59,12 +59,10 @@ const PurchasesSection = () => {
           })
         )
 
-        console.log(" Đơn mua đã tải:", withReviewed)
-        console.log(" Đơn khiếu nại đã tải:", res1)
         setOrders(withReviewed)
         setComplaints(res1)
       } catch (error) {
-        console.error(" Lỗi tải đơn hàng:", error)
+        console.error("❌ Lỗi tải đơn hàng:", error)
       } finally {
         setLoading(false)
       }
@@ -73,20 +71,20 @@ const PurchasesSection = () => {
     fetchOrders()
   }, [user])
 
- 
+  // 🔹 Mở modal đánh giá
   const handleReview = (purchase, reviewed) => {
     setSelectedOrder(purchase)
     setShowReview(true)
     setReviewed(reviewed)
   }
 
-
+  // 🔹 Mở modal khiếu nại
   const handleComplaint = (purchase) => {
     setSelectedOrder(purchase)
     setShowComplaint(true)
   }
 
-  
+  // 🔹 Huỷ đơn
   const handleCancel = async (order) => {
     if (!window.confirm("Bạn có chắc muốn huỷ đơn hàng này không?")) return
     try {
@@ -94,10 +92,7 @@ const PurchasesSection = () => {
       setOrders((prev) =>
         prev.map((o) =>
           o.id === order.id
-            ? {
-                ...o,
-                order_statuses: [...o.order_statuses, { status: "CANCELLED" }],
-              }
+            ? { ...o, order_statuses: [...o.order_statuses, { status: "CANCELLED" }] }
             : o
         )
       )
@@ -108,22 +103,15 @@ const PurchasesSection = () => {
     }
   }
 
-
+  // 🔹 Hoàn tất đơn
   const handleComplete = async (order) => {
     if (!window.confirm("Bạn có chắc muốn hoàn tất đơn hàng này không?")) return
     try {
-      await changeOrderStatus(
-        order.id,
-        "COMPLETED",
-        "Người mua đã hoàn tất đơn hàng"
-      )
+      await changeOrderStatus(order.id, "COMPLETED", "Người mua đã hoàn tất đơn hàng")
       setOrders((prev) =>
         prev.map((o) =>
           o.id === order.id
-            ? {
-                ...o,
-                order_statuses: [...o.order_statuses, { status: "COMPLETED" }],
-              }
+            ? { ...o, order_statuses: [...o.order_statuses, { status: "COMPLETED" }] }
             : o
         )
       )
@@ -134,6 +122,40 @@ const PurchasesSection = () => {
     }
   }
 
+  // 🆕 🔹 Cập nhật lịch hẹn (chỉ xe, trạng thái PAID)
+  const handleUpdateAppointment = async (order, appointment_time) => {
+    try {
+      await updateAppointmentTim(order.id, appointment_time)
+      alert("✅ Cập nhật lịch hẹn thành công!")
+
+      // Cập nhật lại state để hiển thị ngày mới
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                order_details: o.order_details.map((d) => ({
+                  ...d,
+                  appointment_time,
+                })),
+              }
+            : o
+        )
+      )
+    } catch (err) {
+      console.error("❌ Lỗi cập nhật lịch hẹn:", err)
+      alert("Cập nhật lịch hẹn thất bại.")
+    }
+  }
+
+  // 🔹 Xem chi tiết đơn
+  const handleView = (order) => {
+    navigate(`/profile/purchases/${order.id}`, {
+      state: { from: `/profile/purchases?type=${type}` },
+    })
+  }
+
+  // 🔹 Lọc theo trạng thái
   const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
   const shippingOrders = orders.filter((o) => getStatus(o) === "DELIVERING")
@@ -148,13 +170,7 @@ const PurchasesSection = () => {
   const refundedOrders = complaints
   const total = orders.length
 
-  const handleView = (order) => {
-    navigate(`/profile/purchases/${order.id}`, {
-      state: { from: `/profile/purchases?type=${type}` },
-    })
-  }
-
-
+  // 🔹 Render từng đơn hàng
   const renderPurchaseCard = (order) => {
     const status = getStatus(order)
 
@@ -169,6 +185,7 @@ const PurchasesSection = () => {
           const product = detail.post
           return (
             <GenericPurchaseCard
+              order={detail}
               key={detail.id}
               purchase={product}
               status={status}
@@ -193,24 +210,25 @@ const PurchasesSection = () => {
           )
         })}
 
+        {/* ✅ Footer có cập nhật lịch hẹn */}
         <PurchaseFooter
           order={order}
           status={status}
           onCancel={handleCancel}
           onComplete={handleComplete}
           onView={handleView}
+          onUpdateAppointment={handleUpdateAppointment} // 🔹 truyền vào Footer
         />
       </div>
     )
   }
 
-  if (loading) {
+  if (loading)
     return (
       <div className="text-center py-16 text-gray-500">
         Đang tải danh sách đơn mua...
       </div>
     )
-  }
 
   return (
     <>
@@ -238,7 +256,7 @@ const PurchasesSection = () => {
               <TabsTrigger value="refunded">Hoàn tiền</TabsTrigger>
             </TabsList>
 
-            {/* === ALL === */}
+            {/* Các tab trạng thái */}
             <TabsContent value="all" className="space-y-4">
               {total === 0 ? (
                 <div className="text-center py-12 text-gray-500">
@@ -332,12 +350,10 @@ const PurchasesSection = () => {
         open={showReview}
         onClose={() => setShowReview(false)}
         purchase={selectedOrder}
-        onSubmit={(data) => {
-          console.log("📤 Review gửi server:", data)
-          setShowReview(false)
-        }}
+        onSubmit={() => setShowReview(false)}
       />
-        {/* Modal khiếu nại */}
+
+      {/* Modal khiếu nại */}
       <ComplaintModal
         open={showComplaint}
         onClose={() => setShowComplaint(false)}

@@ -3,31 +3,78 @@ import { ORDER_STATUS } from '../../config/constants.js';
 import models from '../../models/index.js';
 const { orders } = models;
 
-const getOrders = async (options, { page, limit }) => {
+const getOrders = async (options) => {
+    const {
+        order_type,
+        customer_id,
+        seller_id,
+        page,
+        limit,
+        order_id,
+        priority = ORDER_STATUS.DELIVERED,
+        order_status,
+    } = options;
+
+    const where = {};
+
+    if (order_type) {
+        if (Array.isArray(order_type)) {
+            where.order_type = { [Op.in]: order_type };
+        } else {
+            where.order_type = order_type;
+        }
+    }
+
+    if (customer_id) {
+        where.customer_id = customer_id;
+    }
+    if (seller_id) {
+        where.seller_id = seller_id;
+    }
+    if (order_id) {
+        where.id = order_id;
+    }
+
     const pageNum = parseInt(page) || 1;
     const pageSize = parseInt(limit) || null;
     const offset = (pageNum - 1) * pageSize;
-    const total = await orders.count({ where: options });
-
-    const order = [];
-
-    order.push([Sequelize.literal('order_statuses.status'), 'DESC']);
 
     const ordersData = await orders.findAll({
         include: [
             {
                 association: 'order_statuses',
-                separated: true,
-                limit: 1,
-                order: [['create_at', 'DESC']],
-                include: [{
-                    association: 'create_by_user',
-                    attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
-                }],
+                where: {
+                    create_at: {
+                        [Op.eq]: Sequelize.literal(
+                            `(SELECT MAX(create_at) FROM order_status WHERE order_status.order_id = orders.id)`
+                        ),
+                    },
+                },
+                include: [
+                    {
+                        association: 'create_by_user',
+                        attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+                    },
+                ],
+                attributes: ['id', 'status', 'description', 'create_at', 'create_by'],
             },
             {
                 association: 'order_details',
-                include: ['post', 'user_reviews'],
+                include: [
+                    {
+                        association: 'post',
+                        attributes: ['id', 'title', 'price', 'media', 'status'],
+                    },
+                    {
+                        association: 'user_reviews',
+                        attributes: ['id', 'rating_value', 'comment'],
+                    },
+                    {
+                        association: 'complaints',
+                        attributes: ['id'],
+                    },
+                ],
+                attributes: ['id', 'contract_file', 'appointment_time'],
             },
             {
                 association: 'customer',
@@ -37,12 +84,30 @@ const getOrders = async (options, { page, limit }) => {
                 association: 'seller',
                 attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
             },
-            
         ],
-        where: options,
+        attributes: ['id', 'total_amount', 'delivery_price', 'order_type'],
+        where: {
+            ...where,
+            ...(order_status ? { '$order_statuses.status$': order_status } : {}),
+        },
         ...(pageSize ? { limit: pageSize, offset } : {}),
-        
+        subQuery: false,
+        // order by  priority status first, then by most recent status update
+        order: [
+            [
+                Sequelize.literal(`
+                CASE
+                    WHEN order_statuses.status = '${priority}' THEN 0
+                    WHEN order_statuses.status = '${ORDER_STATUS.CONFIRMED}' THEN 1
+                    ELSE 4
+                END`),
+                'ASC',
+            ],
+            [Sequelize.col('order_statuses.create_at'), 'DESC'],
+        ],
     });
+
+    const total = await orders.count({ where });
 
     const data = {
         orders: ordersData,
@@ -67,17 +132,20 @@ const getOrdersDelivered = async () => {
         (order) =>
             order?.order_statuses[0]?.status === ORDER_STATUS.DELIVERED &&
             new Date(order.order_statuses[0].create_at).getTime() + 7 * 24 * 60 * 60 * 1000 <
-            new Date().getTime()
+                new Date().getTime()
     );
     return ordersList;
 };
 
 const getById = async (id) => {
     const order = await orders.findByPk(id, {
-        include: [{
-            association: 'order_details',
-            include: ['post', 'user_reviews'],
-        }, 'order_statuses'],
+        include: [
+            {
+                association: 'order_details',
+                include: ['post', 'user_reviews'],
+            },
+            'order_statuses',
+        ],
     });
     return order;
 };
@@ -90,7 +158,6 @@ const createOrder = async (orderData, options) => {
 const updateOrder = async (orderId, data, options = {}) => {
     return await orders.update(data, { where: { id: orderId }, ...options });
 };
-
 
 export default {
     getOrders,

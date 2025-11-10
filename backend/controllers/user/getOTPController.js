@@ -6,72 +6,127 @@ import userService from "../../services/user/userService.js";
  * @swagger
  * /api/users/get-otp:
  *   post:
- *     summary: Yêu cầu mã OTP để đặt lại mật khẩu
- *     description: API cho phép người dùng yêu cầu một mã OTP (One-Time Password) để đặt lại mật khẩu thông qua số điện thoại đã đăng ký.
+ *     summary: Request OTP for password reset
+ *     description: |
+ *       This API allows a user to request a **One-Time Password (OTP)** for resetting their password using their registered phone number.  
+ *       - No authentication is required.  
+ *       - The OTP is a 6-digit numeric code generated randomly.  
+ *       - If the phone number does not exist in the system, a **404 Not Found** response is returned.  
+ *       - Input validation is performed; missing or invalid phone numbers return **400 Bad Request**.
  *     tags: [Users]
+ *     operationId: getOTPPassword
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - phone
- *             properties:
- *               phone:
- *                 type: string
- *                 description: Số điện thoại của người dùng
- *                 example: "0901234567"
+ *             $ref: '#/components/schemas/GetOTPRequest'
+ *           examples:
+ *             validRequest:
+ *               summary: Valid phone number
+ *               value:
+ *                 phone: "0901234567"
+ *             missingPhone:
+ *               summary: Missing phone field
+ *               value: {}
+ *
  *     responses:
  *       200:
- *         description: Gửi mã OTP thành công
+ *         description: OTP sent successfully
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "OTP has been sent successfully"
- *                 otp:
- *                   type: string
- *                   example: "483920"
+ *               $ref: '#/components/schemas/GetOTPResponse'
+ *             examples:
+ *               success:
+ *                 summary: Example successful response
+ *                 value:
+ *                   message: "OTP has been sent successfully"
+ *                   otp: "483920"
  *
  *       400:
- *         description: Dữ liệu đầu vào không hợp lệ (thiếu hoặc sai định dạng số điện thoại)
+ *         description: Invalid phone number input
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Invalid phone number format"
+ *               $ref: '#/components/schemas/BadRequestError'
+ *             examples:
+ *               invalidPhone:
+ *                 summary: Invalid phone format
+ *                 value:
+ *                   message: "Invalid phone number format"
  *
  *       404:
- *         description: Không tìm thấy người dùng với số điện thoại đã cung cấp
+ *         description: User not found with the provided phone number
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "User not found"
+ *               $ref: '#/components/schemas/NotFoundError'
+ *             examples:
+ *               userNotFound:
+ *                 summary: Phone number not registered
+ *                 value:
+ *                   message: "User not found"
  *
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Server error"
- *                 error:
- *                   type: string
- *                   example: "Database connection failed"
+ *               $ref: '#/components/schemas/ServerError'
+ *             examples:
+ *               serverFailure:
+ *                 summary: Database or server error
+ *                 value:
+ *                   message: "Server error"
+ *                   error: "Database connection failed"
+ *
+ * components:
+ *   schemas:
+ *     GetOTPRequest:
+ *       type: object
+ *       required:
+ *         - phone
+ *       properties:
+ *         phone:
+ *           type: string
+ *           description: Registered phone number of the user
+ *           example: "0901234567"
+ *
+ *     GetOTPResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "OTP has been sent successfully"
+ *         otp:
+ *           type: string
+ *           description: 6-digit OTP code
+ *           example: "483920"
+ *
+ *     BadRequestError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Invalid phone number format"
+ *
+ *     NotFoundError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "User not found"
+ *
+ *     ServerError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Server error"
+ *         error:
+ *           type: string
+ *           example: "Database connection failed"
  */
 
 

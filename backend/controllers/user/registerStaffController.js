@@ -4,35 +4,38 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
 
 /**
  * @swagger
- * /api/users/{user_id}/register-package/{package_id}:
+ * /api/users/register-staff:
  *   post:
- *     summary: Đăng ký gói dịch vụ cho người dùng
+ *     summary: Register a new staff user
  *     description: |
- *       API cho phép người dùng đăng ký **gói dịch vụ (package)** theo ID.  
- *       - Chỉ người dùng có quyền tương ứng mới được phép đăng ký (kiểm tra `user_id` trùng với người đăng nhập).  
- *       - Nếu người dùng hoặc gói không tồn tại, trả về lỗi `404`.  
- *       - Nếu gói đã bị xóa (`is_deleted = true`), trả về lỗi `400`.  
+ *       This API allows registering a **new staff user** with an email and optionally a phone number.  
+ *       - If the email already exists, the API will return `400`.  
+ *       - If the phone number already exists, the API will return `400`.  
+ *       - If required fields are missing, the API will return `400`.  
+ *       - On success, returns the newly created staff user information (without the password).
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         required: true
- *         description: ID của người dùng cần đăng ký gói
- *         schema:
- *           type: integer
- *           example: 5
- *       - in: path
- *         name: package_id
- *         required: true
- *         description: ID của gói dịch vụ cần đăng ký
- *         schema:
- *           type: integer
- *           example: 2
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Email of the staff user
+ *                 example: "staff@example.com"
+ *               phone:
+ *                 type: string
+ *                 description: Optional phone number of the staff user
+ *                 example: "0912345678"
  *     responses:
- *       200:
- *         description: Đăng ký gói dịch vụ thành công
+ *       201:
+ *         description: Staff user created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -40,28 +43,32 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Register package successfully"
+ *                   example: "Staff user created successfully"
  *                 user:
  *                   type: object
+ *                   description: Newly created staff user information (without password)
  *                   properties:
  *                     id:
  *                       type: integer
- *                       example: 5
+ *                       example: 10
  *                     display_name:
  *                       type: string
- *                       example: "Nguyen Van A"
+ *                       example: ""
+ *                     email:
+ *                       type: string
+ *                       example: "staff@example.com"
  *                     phone:
  *                       type: string
- *                       example: "0901234567"
- *                     package_id:
- *                       type: integer
- *                       example: 2
- *                     package_start:
+ *                       nullable: true
+ *                       example: "0912345678"
+ *                     role:
  *                       type: string
- *                       format: date-time
- *                       example: "2025-10-30T10:20:45.000Z"
+ *                       example: "STAFF"
+ *                     is_locked:
+ *                       type: boolean
+ *                       example: false
  *       400:
- *         description: Yêu cầu không hợp lệ hoặc gói đã bị xóa
+ *         description: Invalid input or email/phone already exists
  *         content:
  *           application/json:
  *             schema:
@@ -72,41 +79,21 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                   items:
  *                     type: string
  *                   example:
- *                     - "Package not found or has been deleted"
- *       403:
- *         description: Người dùng không có quyền truy cập (user_id không khớp với token)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Forbidden"
- *       404:
- *         description: Không tìm thấy người dùng hoặc gói dịch vụ
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: string
- *                   example:
- *                     - "User not found"
- *                     - "Package not found"
+ *                     - "Email cannot be blank"
+ *                     - "Phone number already exists"
  *       500:
- *         description: Lỗi máy chủ nội bộ khi xử lý đăng ký
+ *         description: Internal server error while creating staff
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Failed to create staff user"
  *                 error:
  *                   type: string
- *                   example: "Failed to register package"
+ *                   example: "Database connection failed"
  */
 
 

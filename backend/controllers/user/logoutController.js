@@ -5,14 +5,16 @@ import jwtService from "../../services/auth/jwtService.js";
  * @swagger
  * /api/users/logout:
  *   post:
- *     summary: Đăng xuất người dùng
- *     description: API này cho phép người dùng **đăng xuất** bằng cách vô hiệu hóa token truy cập hiện tại (access token). Token phải được gửi trong phần **Authorization Header** dưới dạng Bearer token.
+ *     summary: Logout user
+ *     description: |
+ *       Allows a user to **logout** by invalidating the current access token.  
+ *       The token must be sent in the **Authorization header** as a Bearer token.
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Đăng xuất thành công
+ *         description: Logout successful
  *         content:
  *           application/json:
  *             schema:
@@ -22,7 +24,7 @@ import jwtService from "../../services/auth/jwtService.js";
  *                   type: string
  *                   example: "Logout successful"
  *       400:
- *         description: Yêu cầu không hợp lệ (Bad request)
+ *         description: Bad request (invalid request or token)
  *         content:
  *           application/json:
  *             schema:
@@ -32,7 +34,7 @@ import jwtService from "../../services/auth/jwtService.js";
  *                   type: string
  *                   example: "Bad request"
  *       401:
- *         description: Không có quyền truy cập (thiếu hoặc token không hợp lệ)
+ *         description: Unauthorized (missing or invalid token)
  *         content:
  *           application/json:
  *             schema:
@@ -42,7 +44,7 @@ import jwtService from "../../services/auth/jwtService.js";
  *                   type: string
  *                   example: "Unauthorized"
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -51,6 +53,13 @@ import jwtService from "../../services/auth/jwtService.js";
  *                 error:
  *                   type: string
  *                   example: "Internal server error"
+ *
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
 
 const logout = async (req, res) => {

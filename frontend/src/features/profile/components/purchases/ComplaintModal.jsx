@@ -73,7 +73,7 @@ export default function ComplaintModal({ open, onClose, purchase }) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Tạo Khiếu Nại</DialogTitle>
+          <DialogTitle>Tạo Yêu Cầu Hoàn Trả</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -133,7 +133,7 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         <DialogFooter className="mt-5">
           <Button variant="outline" onClick={onClose}>Hủy</Button>
           <Button disabled={isSubmitting || uploading} onClick={handleSubmit}>
-            {isSubmitting ? "Đang gửi..." : "Gửi khiếu nại"}
+            {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -9,8 +9,11 @@ import jwtService from '../../services/auth/jwtService.js';
  * @swagger
  * /api/users/login/google:
  *   post:
- *     summary: Đăng nhập người dùng bằng Google
- *     description: Cho phép người dùng đăng nhập bằng tài khoản Google. Nếu email chưa tồn tại trong hệ thống, tài khoản mới sẽ được tự động tạo.
+ *     summary: Login user with Google
+ *     description: |
+ *       Allows users to login using their Google account.  
+ *       - If the email does not exist in the system, a new user account will be automatically created.  
+ *       - If the account is locked, returns 403.
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -23,75 +26,136 @@ import jwtService from '../../services/auth/jwtService.js';
  *             properties:
  *               id_token:
  *                 type: string
- *                 description: Mã ID token từ Google (JWT)
+ *                 description: JWT ID token from Google
  *                 example: "eyJhbGciOiJSUzI1NiIsImtpZCI6IjM5Zj..."
  *     responses:
  *       200:
- *         description: Đăng nhập bằng Google thành công
+ *         description: Google login successful
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Login with Google successful"
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       example: 12
- *                     display_name:
- *                       type: string
- *                       example: "Nguyen Van A"
- *                     email:
- *                       type: string
- *                       example: "vana@gmail.com"
- *                     role:
- *                       type: integer
- *                       example: 0
- *                     avatar:
- *                       type: string
- *                       example: "https://lh3.googleusercontent.com/a/AEdFTp5..."
- *                 token:
- *                   type: string
- *                   description: Mã JWT access token hợp lệ trong 1 giờ
- *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *               $ref: '#/components/schemas/LoginGoogleSuccess'
+ *             examples:
+ *               success:
+ *                 summary: Login success example
+ *                 value:
+ *                   message: "Login with Google successful"
+ *                   user:
+ *                     id: 12
+ *                     display_name: "Nguyen Van A"
+ *                     email: "vana@gmail.com"
+ *                     role: 0
+ *                     avatar: "https://lh3.googleusercontent.com/a/AEdFTp5..."
+ *                     phone: "0901234567"
+ *                     package_id: 2
+ *                     package_start: "2025-10-01T07:00:00Z"
+ *                   token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *
  *       400:
- *         description: Dữ liệu yêu cầu không hợp lệ hoặc lỗi khi xác thực Google
+ *         description: Invalid request or Google verification failed
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Invalid Google token"
+ *               $ref: '#/components/schemas/BadRequestError'
+ *             examples:
+ *               invalidToken:
+ *                 summary: Google token invalid
+ *                 value:
+ *                   error: "Invalid Google token"
+ *               emailNotVerified:
+ *                 summary: Email not verified
+ *                 value:
+ *                   error: "Google email is not verified"
  *
  *       403:
- *         description: Tài khoản đã bị khóa, không thể đăng nhập
+ *         description: Account is locked
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Account is locked"
+ *               $ref: '#/components/schemas/ForbiddenError'
+ *             examples:
+ *               locked:
+ *                 summary: Account locked
+ *                 value:
+ *                   error: "Account is locked"
  *
  *       500:
- *         description: Lỗi máy chủ nội bộ khi đăng nhập bằng Google
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Failed to login with Google"
+ *               $ref: '#/components/schemas/ServerError'
+ *             examples:
+ *               serverFail:
+ *                 summary: Server error example
+ *                 value:
+ *                   error: "Failed to login with Google"
+ *
+ * components:
+ *   schemas:
+ *     LoginGoogleSuccess:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Login with Google successful"
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *               example: 12
+ *             display_name:
+ *               type: string
+ *               example: "Nguyen Van A"
+ *             email:
+ *               type: string
+ *               example: "vana@gmail.com"
+ *             role:
+ *               type: integer
+ *               example: 0
+ *             avatar:
+ *               type: string
+ *               example: "https://lh3.googleusercontent.com/a/AEdFTp5..."
+ *             phone:
+ *               type: string
+ *               nullable: true
+ *               example: "0901234567"
+ *             package_id:
+ *               type: integer
+ *               nullable: true
+ *               example: 2
+ *             package_start:
+ *               type: string
+ *               format: date-time
+ *               example: "2025-10-01T07:00:00Z"
+ *         token:
+ *           type: string
+ *           description: JWT access token valid for 1 hour
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *
+ *     BadRequestError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Invalid Google token"
+ *
+ *     ForbiddenError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Account is locked"
+ *
+ *     ServerError:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ *           example: "Failed to login with Google"
  */
+
 
 const loginUserByGoogle = async (req, res) => {
     try {

@@ -138,8 +138,35 @@ const getById = async (id) => {
 };
 
 const getAll = async (filters) => {
-    const data = await complaints.findAll();
-    return data;
+    const { page, limit } = filters;
+    const pageNum = parseInt(page) || 1;
+    const pageSize = parseInt(limit) || null;
+    const offset = (pageNum - 1) * pageSize;
+    const data = await complaints.findAll({
+        include: [{
+            association: 'user',
+            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+        },
+        {
+            association: 'order_detail',
+            include: [{
+                association: 'post',
+                attributes: ['id', 'title', 'description', 'price', 'media'],
+            }],
+            attributes: ['id'],
+        },
+        {
+            association: 'moderator_user',
+            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+        }
+    ],
+
+        ...(pageSize ? { limit: pageSize, offset } : {}),
+        order: [['complaint_status', 'ASC'], ['create_at', 'DESC']],
+    });
+    const total = await complaints.count();
+    const pagination = pageSize ? { page: pageNum, limit: pageSize, total } : null;
+    return { complaints: data, pagination };
 }
 
 export default {
@@ -150,4 +177,5 @@ export default {
     updateStatus,
     getByUserId,
     updateComplaint,
+    getAll,
 };
