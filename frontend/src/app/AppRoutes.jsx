@@ -38,6 +38,7 @@ import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
 import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
 import ComplaintDetail from "@/features/admin/components/TransactionComponents/ComplaintDetail.jsx";
+import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 
 export default function AppRoutes() {
   return (
