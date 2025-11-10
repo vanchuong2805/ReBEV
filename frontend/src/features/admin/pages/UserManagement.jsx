@@ -14,9 +14,9 @@ import {
   unLockUserAccount,
 } from "../service";
 import { toast } from "sonner";
+import { data } from "react-router";
 
 const UserManagement = () => {
-  
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
@@ -30,7 +30,9 @@ const UserManagement = () => {
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
-    fetchUsers().then(setUsers);
+    fetchUsers().then((data) => {
+      setUsers(data.users);
+    });
   }, []);
 
   const refreshUsers = async () => {

@@ -37,6 +37,7 @@ import ForgotPhonePage from "@/features/auth/pages/ForgotPhonePage.jsx";
 import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
 import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
+import ComplaintDetail from "@/features/admin/components/TransactionComponents/ComplaintDetail.jsx";
 
 export default function AppRoutes() {
   return (
@@ -55,7 +56,10 @@ export default function AppRoutes() {
             <Route path="wallet" element={<WalletSection />} />
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
-            <Route path="returns/:orderId" element={<ReturnOrderDetailPage />} />
+            <Route
+              path="returns/:orderId"
+              element={<ReturnOrderDetailPage />}
+            />
           </Route>
           <Route path={ROUTES.CHECKOUT} element={<CheckoutPage />} />
           <Route path={ROUTES.POSTS} element={<PostPage />} />
@@ -82,6 +86,7 @@ export default function AppRoutes() {
             <Route path="deposit-orders" element={<DepositOrder />} />
             <Route path="complaint-orders" element={<ComplaintOrder />} />
             <Route path="return-orders" element={<ReturnOrder />} />
+            <Route path="complaint-detail/:id" element={<ComplaintDetail />} />
           </Route>
         </Route>
         <Route path={"chat"} element={<ChatPage />} />

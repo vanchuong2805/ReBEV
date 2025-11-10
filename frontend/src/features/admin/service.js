@@ -214,7 +214,7 @@ export const getOrders = async (type) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
     const res = await axios.get(
-      `${baseAPI}/orders?page=1&limit=20&order_type=${type}`,
+      `${baseAPI}/orders?page=1&limit=20&order_type=${type}&priority=DELIVERING`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -228,6 +228,22 @@ export const getOrders = async (type) => {
     console.error("Error fetching orders:", err.response?.data || err.message);
     throw err;
   }
+};
+
+export const updateOrderStatus = async (id, status) => {
+  const token = localStorage.getItem("accessToken");
+
+  const res = await axios.post(
+    `${baseAPI}/orders/${id}/status`,
+    { status: status },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    }
+  );
+  return res.data;
 };
 
 //.---
@@ -267,3 +283,46 @@ export const getStaticPage = async (year) => {
     throw err;
   }
 };
+
+// Complaint
+export const getComplaints = async () => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/complaints`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    });
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export const changeComplaintStatus = async (id, status) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.patch(
+      `${baseAPI}/complaints/${id}/status`,
+      { status: status },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Updated complaint:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error(
+      "Error updating complaint:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
+};
+///

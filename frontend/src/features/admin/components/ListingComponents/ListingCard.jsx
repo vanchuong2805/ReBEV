@@ -3,9 +3,6 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
-import { useEffect, useState } from "react";
-import { fetchUsers } from "../../service";
-import StatsCard from "../StatsCard";
 
 export default function ListingCard({
   listing,
@@ -13,16 +10,6 @@ export default function ListingCard({
   onApprove,
   onReject,
 }) {
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    fetchUsers().then(setUsers);
-  }, []);
-
-  const getUserById = (userId) => {
-    const user = users.find((user) => user.id === userId);
-    return user ? user.display_name : "Unknown User";
-  };
-
   const STATUS = { PENDING: 0, APPROVED: 1, REJECTED: 2 };
 
   const media = JSON.parse(listing.media || "[]");
@@ -136,9 +123,7 @@ export default function ListingCard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
             <div>
               <p className="text-sm text-gray-500">Người bán</p>
-              <p className="font-medium">
-                {getUserById(listing.seller_contact_id)}
-              </p>
+              <p className="font-medium">{listing?.user?.display_name}</p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Giá</p>

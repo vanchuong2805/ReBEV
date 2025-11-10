@@ -1,36 +1,13 @@
 import { useState, useEffect } from "react";
 import { BarChart3, TrendingUp, Users, DollarSign } from "lucide-react";
 import { Card } from "../../../components/ui/card";
-import { statsData } from "../../../data/data";
 import StatsCards from "../components/StatsCards";
 import TitlePage from "../components/TitlePage";
 import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
-import reportService from "../functions/reportService";
-import { fetchPost, fetchUsers, getStaticPage } from "../service";
+import { getStaticPage } from "../service";
 const ReportsStatistics = () => {
-  const [stats] = useState(statsData);
   const [selectedYear, setSelectedYear] = useState("2025");
-  const [monthlyData, setMonthlyData] = useState([]);
-
-  // Cập nhật dữ liệu khi năm thay đổi
-  const [listings, setListings] = useState([]);
-  useEffect(() => {
-    fetchPost().then((data) => setListings(data));
-  }, []);
-  console.log("Listings data:", listings);
-  const number_Listing = listings.filter(
-    (listing) => listing.status == 1
-  ).length;
-
-  useEffect(() => {
-    const yearData = reportService.getDataByYear(selectedYear);
-    setMonthlyData(yearData);
-  }, [selectedYear]);
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    fetchUsers().then((data) => setUsers(data));
-  }, []);
 
   const [data, setData] = useState({});
   useEffect(() => {
@@ -44,6 +21,11 @@ const ReportsStatistics = () => {
   console.log(
     data.revenue?.reduce((sum, item) => sum + item.transaction_sum, 0)
   );
+  // Hàm dịch mảng lùi 1 bước
+  const shiftArrayBackOne = (arr) => {
+    if (!arr || arr.length === 0) return arr;
+    return [...arr.slice(1), arr[0]];
+  };
 
   return (
     <div className="p-6">
@@ -92,10 +74,12 @@ const ReportsStatistics = () => {
         <Card className="p-4">
           <div className="h-80">
             <BarChartComponent
-              data={data.monthlyRevenues?.map((month) =>
-                month.reduce(
-                  (sum, transaction) => sum + transaction.transaction_sum,
-                  0
+              data={shiftArrayBackOne(
+                data.monthlyRevenues?.map((month) =>
+                  month.reduce(
+                    (sum, transaction) => sum + transaction.transaction_sum,
+                    0
+                  )
                 )
               )}
               title="Doanh thu theo tháng (VND)"
@@ -108,7 +92,7 @@ const ReportsStatistics = () => {
         <Card className="p-4">
           <div className="h-80">
             <BarChartComponent
-              data={data.monthlyTransactions}
+              data={shiftArrayBackOne(data.monthlyTransactions)}
               title="Số lượng giao dịch theo tháng"
               color="rgba(255, 99, 132, 0.8)"
               year={selectedYear}
