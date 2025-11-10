@@ -37,6 +37,7 @@ import ForgotPhonePage from "@/features/auth/pages/ForgotPhonePage.jsx";
 import NewPasswordPage from "@/features/auth/pages/NewPasswordPage.jsx";
 import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
+import ComplaintDetail from "@/features/admin/components/TransactionComponents/ComplaintDetail.jsx";
 import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 
 export default function AppRoutes() {
@@ -153,6 +154,7 @@ export default function AppRoutes() {
             <Route path="deposit-orders" element={<DepositOrder />} />
             <Route path="complaint-orders" element={<ComplaintOrder />} />
             <Route path="return-orders" element={<ReturnOrder />} />
+            <Route path="complaint-detail/:id" element={<ComplaintDetail />} />
           </Route>
         </Route>
         <Route path={"chat"} element={<ChatPage />} />

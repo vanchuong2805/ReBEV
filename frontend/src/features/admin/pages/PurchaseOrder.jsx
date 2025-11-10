@@ -14,9 +14,6 @@ export default function PurchaseOrder() {
   const orderSortOptions = [
     { value: "status", label: "Trạng thái (mặc định)" },
     { value: "date", label: "Ngày hoàn thành" },
-    { value: "price", label: "Giá tiền" },
-    { value: "buyer", label: "Tên người mua" },
-    { value: "orderId", label: "Mã đơn hàng" },
   ];
 
   useEffect(() => {
@@ -33,6 +30,7 @@ export default function PurchaseOrder() {
       {/* Search */}
 
       <FilterBar
+        searchPlaceholder="Mã đơn hàng..."
         selects={[
           {
             key: "status",
@@ -64,7 +62,7 @@ export default function PurchaseOrder() {
         </div>
       </div>
       {/* Orders List */}
-      <OrderTable allOrders={allOrders} />
+      <OrderTable allOrders={allOrders} setAllOrders={setAllOrders} />
     </div>
   );
 }

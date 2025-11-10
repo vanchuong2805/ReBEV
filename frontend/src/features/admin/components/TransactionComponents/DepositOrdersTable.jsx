@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { getOrders, updateContractFile } from "../../service";
+import {
+  getOrders,
+  updateContractFile,
+  updateOrderStatus,
+} from "../../service";
 import { useUpload } from "@/hooks/posts/useUpload";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +25,28 @@ export default function DepositOrdersTable() {
     const data = await upload(file);
     const url = data?.url?.split(" ")[1];
     await updateContractFile(id, url);
+  };
+
+  const handleUpdateStatus = async (id, status) => {
+    await updateOrderStatus(id, status);
+
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              order_statuses: [
+                {
+                  ...(order.order_statuses?.[0] || {}),
+                  status, // cập nhật đúng chỗ UI đang đọc
+                  create_at: new Date().toISOString(),
+                },
+                ...(order.order_statuses?.slice(1) || []),
+              ],
+            }
+          : order
+      )
+    );
   };
 
   const getStatusBadge = (status) => {
@@ -218,6 +244,9 @@ export default function DepositOrdersTable() {
                     {st?.status?.toUpperCase() === "CONFIRMED" && (
                       <div className="flex flex-col gap-1 ">
                         <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "CUSTOMER_CANCELLED");
+                          }}
                           className={
                             "bg-orange-600 text-white hover:bg-orange-700 px-2 py-1"
                           }
@@ -225,6 +254,9 @@ export default function DepositOrdersTable() {
                           Bên mua hủy
                         </Button>
                         <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "SELLER_CANCELLED");
+                          }}
                           className={
                             "bg-red-600 text-white hover:bg-red-700 px-2 py-1"
                           }
@@ -232,6 +264,9 @@ export default function DepositOrdersTable() {
                           Bên bán hủy
                         </Button>
                         <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "COMPLETED");
+                          }}
                           className={
                             "bg-green-600 text-white hover:bg-green-700 px-2 py-1"
                           }
