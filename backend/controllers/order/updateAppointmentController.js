@@ -56,10 +56,10 @@ const updateAppointmentTime = async (req, res) => {
                 .json({ message: 'Forbidden: You can only update your own orders' });
         }
         const orderStatus = await orderStatusService.getCurrentStatus(orderId);
-        if (orderStatus?.status !== ORDER_STATUS.PENDING) {
+        if (orderStatus?.status !== ORDER_STATUS.PAID) {
             return res
                 .status(400)
-                .json({ message: 'Only orders with PENDING status can update appointment time' });
+                .json({ message: 'Only orders with PAID status can update appointment time' });
         }
         // Update appointment time
         await orderDetailService.updateAppointmentTime(orderId, appointment_time);
