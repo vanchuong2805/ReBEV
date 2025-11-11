@@ -118,7 +118,7 @@ const createPackage = async (req, res) => {
             duration
         } = req.body;
 
-        if (!name || !price || !description || !duration) {
+        if (!name || price == undefined || !description || duration == undefined) {
             return res.status(400).json({
                 error: ERROR_MESSAGE.BLANK_INFORMATION
             });
