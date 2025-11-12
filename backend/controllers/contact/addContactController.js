@@ -6,11 +6,19 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * @swagger
  * /api/contacts/add:
  *   post:
- *     summary: Thêm một contact mới cho user
- *     description: API cho phép thêm địa chỉ liên lạc mới cho người dùng.
- *     tags: [Contacts]
+ *     summary: Add a new contact for a user
+ *     description: >
+ *       This API allows adding a new contact address for a specific user.  
+ *       - Each user can have multiple contacts.  
+ *       - Required fields must be provided: `user_id`, `detail`, `ward_code`, `ward_name`, `district_id`, `district_name`, `province_id`, `province_name`, `name`, `phone`.  
+ *       - The optional field `is_default` can be provided to mark this contact as the default one. Default is `false`.  
+ *       - The API validates that the user exists and that all required fields are not empty.  
+ *       - Returns the newly created contact object upon success.
+ *     tags:
+ *       - Contacts
  *     requestBody:
  *       required: true
+ *       description: Information of the contact to add
  *       content:
  *         application/json:
  *           schema:
@@ -29,51 +37,51 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *             properties:
  *               user_id:
  *                 type: integer
- *                 description: ID của người dùng
+ *                 description: The ID of the user to whom the contact belongs
  *                 example: 10
  *               detail:
  *                 type: string
- *                 description: Địa chỉ chi tiết
- *                 example: "123 Lê Lợi, P. Bến Nghé"
+ *                 description: Detailed street address
+ *                 example: "123 Le Loi, Ben Nghe Ward"
  *               ward_code:
  *                 type: string
- *                 description: Mã phường/xã
+ *                 description: Administrative ward code
  *                 example: "001"
  *               ward_name:
  *                 type: string
- *                 description: Tên phường/xã
- *                 example: "Bến Nghé"
+ *                 description: Name of the ward
+ *                 example: "Ben Nghe"
  *               district_id:
  *                 type: integer
- *                 description: Mã quận/huyện
+ *                 description: Administrative district ID
  *                 example: 1
  *               district_name:
  *                 type: string
- *                 description: Tên quận/huyện
- *                 example: "Quận 1"
+ *                 description: Name of the district
+ *                 example: "District 1"
  *               province_id:
  *                 type: integer
- *                 description: Mã tỉnh/thành phố
+ *                 description: Province or city ID
  *                 example: 79
  *               province_name:
  *                 type: string
- *                 description: Tên tỉnh/thành phố
- *                 example: "TP. Hồ Chí Minh"
+ *                 description: Name of the province or city
+ *                 example: "Ho Chi Minh City"
  *               name:
  *                 type: string
- *                 description: Tên người nhận
- *                 example: "Nguyễn Văn A"
+ *                 description: Full name of the contact person
+ *                 example: "Nguyen Van A"
  *               phone:
  *                 type: string
- *                 description: Số điện thoại
+ *                 description: Phone number of the contact
  *                 example: "0909123456"
  *               is_default:
  *                 type: boolean
- *                 description: Có phải địa chỉ mặc định hay không
+ *                 description: Indicates if this contact is the default one for the user
  *                 example: false
  *     responses:
  *       200:
- *         description: Thêm contact thành công
+ *         description: Contact added successfully
  *         content:
  *           application/json:
  *             schema:
@@ -93,28 +101,28 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                       example: 10
  *                     detail:
  *                       type: string
- *                       example: "123 Lê Lợi, P. Bến Nghé"
+ *                       example: "123 Le Loi, Ben Nghe Ward"
  *                     ward_code:
  *                       type: string
  *                       example: "001"
  *                     ward_name:
  *                       type: string
- *                       example: "Bến Nghé"
+ *                       example: "Ben Nghe"
  *                     district_id:
  *                       type: integer
  *                       example: 1
  *                     district_name:
  *                       type: string
- *                       example: "Quận 1"
+ *                       example: "District 1"
  *                     province_id:
  *                       type: integer
  *                       example: 79
  *                     province_name:
  *                       type: string
- *                       example: "TP. Hồ Chí Minh"
+ *                       example: "Ho Chi Minh City"
  *                     name:
  *                       type: string
- *                       example: "Nguyễn Văn A"
+ *                       example: "Nguyen Van A"
  *                     phone:
  *                       type: string
  *                       example: "0909123456"
@@ -124,9 +132,8 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                     is_deleted:
  *                       type: boolean
  *                       example: false
- *
  *       400:
- *         description: Dữ liệu yêu cầu không hợp lệ (thiếu thông tin hoặc sai định dạng)
+ *         description: Invalid input data or missing required fields
  *         content:
  *           application/json:
  *             schema:
@@ -136,10 +143,9 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                   type: array
  *                   items:
  *                     type: string
- *                   example: ["User not found", "Detail cannot be empty"]
- *
+ *                   example: ["User not found", "Detail cannot be empty", "Phone cannot be empty"]
  *       404:
- *         description: Không tìm thấy user với user_id được cung cấp
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
@@ -148,9 +154,8 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                 message:
  *                   type: string
  *                   example: "User not found"
- *
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:

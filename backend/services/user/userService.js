@@ -1,5 +1,5 @@
 import { Op, Sequelize } from 'sequelize';
-import models from '../../models/index.js';
+import models, { sequelize } from '../../models/index.js';
 const { users } = models;
 import bcrypt from 'bcrypt';
 import { ROLE } from '../../config/constants.js';
@@ -7,7 +7,7 @@ import postService from '../post/postService.js';
 import orderDetailService from '../order/orderDetailService.js';
 import userReviewService from './userReviewService.js';
 
-const getUsers = async ({ page = 1, limit = 10 }) => {
+const getUsers = async ({ page = 1, limit = 10, search = "", hasPackage, sort = "DESC", isLocked }) => {
 
     page = parseInt(page);
     limit = parseInt(limit);
@@ -18,12 +18,39 @@ const getUsers = async ({ page = 1, limit = 10 }) => {
 
     const offset = (page - 1) * limit;
 
+    const whereCondition = {};
+
+    if (search) {
+        const escapedSearch = sequelize.escape(`%${search}%`);
+        whereCondition[Op.and] = sequelize.literal(
+            `(users.display_name COLLATE SQL_Latin1_General_CP1_CI_AI LIKE ${escapedSearch})`
+        );
+    }
+
+    if (hasPackage === "true") {
+        whereCondition.package_id = {
+            [Op.ne]: null
+        };
+    } else if (hasPackage === "false") {
+        whereCondition.package_id = null;
+    }
+
+    if (isLocked === "true") {
+        whereCondition.is_locked = true;
+    } else if (isLocked === "false") {
+        whereCondition.is_locked = false;
+    }
+
+    const order = [['create_at', sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];
+
     const {
-         count, rows
-         } = await users.findAndCountAll({
+        count, rows
+    } = await users.findAndCountAll({
+        where: whereCondition,
         offset,
         limit,
-        raw: true
+        raw: true,
+        order
     });
 
     for (const user of rows) {

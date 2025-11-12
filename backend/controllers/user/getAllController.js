@@ -158,9 +158,9 @@ import userService from "../../services/user/userService.js";
 
 const getAll = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, search = "", hasPackage, sort = "DESC", isLocked } = req.query;
 
-        const users = await userService.getUsers({ page, limit });
+        const users = await userService.getUsers({ page, limit, search, hasPackage, sort, isLocked });
 
         res.status(200).json(users);
 
