@@ -56,7 +56,6 @@ export default function ListingActions({
     }
   }
 
-  // === SẢN PHẨM ĐÃ BÁN ===
   if (Number(listing.status) === 3) {
     return (
       <div className="flex flex-col gap-3 mt-4">
@@ -95,7 +94,6 @@ export default function ListingActions({
     )
   }
 
-  // === SẢN PHẨM ĐANG ĐƯỢC MUA (status = 7) ===
   if (Number(listing.status) === 7) {
     return (
       <div className="flex flex-col gap-3 mt-4">

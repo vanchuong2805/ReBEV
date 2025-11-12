@@ -1,9 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Heart, Calendar, MapPin } from "lucide-react";
-import { addFavorite,getFavoritesByUserId,removeFavorite } from "../service";
-import { useUser } from "@/contexts/UserContext";
-import { useState,useEffect } from "react";
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 
 function currency(v) {
@@ -12,11 +10,10 @@ function currency(v) {
 
 export default function ListingCard({
   item,
-  //isFavorite = false,
-  onFavoriteToggle,
   viewMode = "list",
   
-}) {
+}
+) {
    const { isFavorite, toggleFavorite } = useFavorite();
   // List view - hiển thị theo dạng danh sách ngang
   if (viewMode === "list") {
