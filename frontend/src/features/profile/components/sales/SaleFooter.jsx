@@ -68,7 +68,7 @@ export default function SaleFooter({
         )}
 
         {/* Đơn cọc (xe) → sau khi xác nhận thì chuyển sang bàn giao */}
-        {status === "CONFIRMED" && isDeposit && (
+        {status === "CONFIRMED" && !isDeposit && (
           <Button
             size="sm"
             className="bg-green-600 hover:bg-green-700 text-white"

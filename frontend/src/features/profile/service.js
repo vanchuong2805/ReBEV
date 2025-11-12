@@ -194,7 +194,7 @@ export const getOrderByCustomer = async () => {
 export const getOrderBySeller = async () => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.get(
-    `${API_BASE_URL}/orders?type=seller&order_type=1&order_type=2`,
+    `${API_BASE_URL}/orders?type=seller&order_type=1&order_type=2&priority=PAID`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -346,3 +346,8 @@ export const updateAppointmentTim = async (order_id,appointment_time) => {
   );
   return res.data;
 };
+//packages
+export const getPackages = async () => {
+  const res = await axios.get(`${API_BASE_URL}/packages`);
+  return res.data;
+}

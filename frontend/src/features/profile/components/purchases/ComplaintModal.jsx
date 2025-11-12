@@ -1,21 +1,26 @@
 import React, { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ImagePlus, X, Loader2 } from "lucide-react"
 import { createComplaint } from "@/features/profile/service"
 import { useUpload } from "@/hooks/posts/useUpload"
 
-export default function ComplaintModal({ open, onClose, purchase }) {
+export default function ComplaintModal({ open, onClose, purchase, onSubmitComplaint }) {
   const [description, setDescription] = useState("")
   const [images, setImages] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const { upload } = useUpload()
 
-  // === Upload ảnh thật lên Cloudinary ===
+  // === Upload ảnh lên Cloudinary ===
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
@@ -32,9 +37,9 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         uploaded.push({ url: data.url.split(" ")[1] })
       }
       setImages((prev) => [...prev, ...uploaded])
-      alert(" Tải ảnh lên thành công!")
+      alert("Tải ảnh lên thành công!")
     } catch (err) {
-      console.error(" Lỗi khi tải ảnh lên:", err)
+      console.error("Lỗi khi tải ảnh lên:", err)
       alert("Không thể tải ảnh lên Cloudinary.")
     } finally {
       setUploading(false)
@@ -58,11 +63,14 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         description,
         media: images,
       })
-      onClose()
+
+      alert("✅ Gửi khiếu nại thành công!")
       setDescription("")
       setImages([])
+      onClose()
+      onSubmitComplaint?.() 
     } catch (err) {
-      console.error(" Lỗi gửi khiếu nại:", err)
+      console.error("Lỗi gửi khiếu nại:", err)
       alert("Không thể gửi khiếu nại.")
     } finally {
       setIsSubmitting(false)
@@ -77,7 +85,6 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         </DialogHeader>
 
         <div className="space-y-4">
-
           {/* Mô tả */}
           <div>
             <Label>Mô tả chi tiết</Label>
@@ -131,7 +138,9 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         </div>
 
         <DialogFooter className="mt-5">
-          <Button variant="outline" onClick={onClose}>Hủy</Button>
+          <Button variant="outline" onClick={onClose}>
+            Hủy
+          </Button>
           <Button disabled={isSubmitting || uploading} onClick={handleSubmit}>
             {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu"}
           </Button>

@@ -76,7 +76,7 @@ const SalesSection = () => {
   const handleDelivering = async (order) => {
     await changeOrderStatus(order.id, "DELIVERING", "Đơn hàng đã bàn giao")
     updateOrderStatus(order.id, "DELIVERING")
-    alert("Đơn hàng đã được chuyển sang trạng thái 'Đang giao'.")
+    alert("Đơn hàng đã được chuyển sang trạng thái 'Đang vận chuyển'.")
   }
 
   const handleComplete = async (order) => {

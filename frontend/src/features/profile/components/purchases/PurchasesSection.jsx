@@ -13,7 +13,7 @@ import {
   getOrderByCustomer,
   changeOrderStatus,
   getComplaintByUserId,
-  updateAppointmentTim, // 🆕 import hàm cập nhật lịch hẹn
+  updateAppointmentTim,
 } from "@/features/profile/service"
 
 import ReviewModal from "@/features/profile/components/ReviewModal"
@@ -38,9 +38,16 @@ const PurchasesSection = () => {
   const navigate = useNavigate()
   const { user } = useUser()
 
-  const getStatus = (order) => order?.order_statuses?.at(-1)?.status || ""
+  // ✅ Hàm lấy trạng thái hoạt động cho cả đơn hàng thường và đơn hoàn
+  const getStatus = (order) => {
+    if (!order) return ""
+    if (order.order_statuses?.length)
+      return order.order_statuses.at(-1).status
+    if (order.order_status?.length)
+      return order.order_status.at(-1).status
+    return ""
+  }
 
-  // 🧩 Lấy danh sách đơn hàng và khiếu nại
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user?.id) return
@@ -61,8 +68,10 @@ const PurchasesSection = () => {
 
         setOrders(withReviewed)
         setComplaints(res1)
+        console.log("Đơn hàng đã tải:", withReviewed)
+        console.log("Khiếu nại đã tải:", res1)
       } catch (error) {
-        console.error("❌ Lỗi tải đơn hàng:", error)
+        console.error("Lỗi tải đơn hàng:", error)
       } finally {
         setLoading(false)
       }
@@ -71,20 +80,17 @@ const PurchasesSection = () => {
     fetchOrders()
   }, [user])
 
-  // 🔹 Mở modal đánh giá
   const handleReview = (purchase, reviewed) => {
     setSelectedOrder(purchase)
     setShowReview(true)
     setReviewed(reviewed)
   }
 
-  // 🔹 Mở modal khiếu nại
   const handleComplaint = (purchase) => {
     setSelectedOrder(purchase)
     setShowComplaint(true)
   }
 
-  // 🔹 Huỷ đơn
   const handleCancel = async (order) => {
     if (!window.confirm("Bạn có chắc muốn huỷ đơn hàng này không?")) return
     try {
@@ -103,7 +109,6 @@ const PurchasesSection = () => {
     }
   }
 
-  // 🔹 Hoàn tất đơn
   const handleComplete = async (order) => {
     if (!window.confirm("Bạn có chắc muốn hoàn tất đơn hàng này không?")) return
     try {
@@ -122,13 +127,31 @@ const PurchasesSection = () => {
     }
   }
 
-  // 🆕 🔹 Cập nhật lịch hẹn (chỉ xe, trạng thái PAID)
-  const handleUpdateAppointment = async (order, appointment_time) => {
+  // ✅ Cập nhật đúng logic bàn giao hàng hoàn trả
+  const handleReturn = async (order) => {
+    if (!window.confirm("Xác nhận bạn đã bàn giao hàng hoàn trả?")) return
+    try {
+      await changeOrderStatus(order.return_order_id, "RETURNING", "Người mua đã bàn giao hàng hoàn trả")
+      setComplaints((prev) =>
+        prev.map((c) =>
+          c.id === order.order_detail_id
+            ? { ...c, order_status: [...c.order_status, { status: "RETURNING" }] }
+            : c
+        )
+      )
+      console.log("Đơn hoàn trả đã cập nhật:", order.order_detail_id)
+      alert("Trạng thái đơn đã cập nhật sang 'Đang bàn giao hàng'.")
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
+      alert("Cập nhật trạng thái thất bại, vui lòng thử lại.")
+    }
+  }
+
+  const handleUpdateAppointmente = async (order, appointment_time) => {
     try {
       await updateAppointmentTim(order.id, appointment_time)
-      alert("✅ Cập nhật lịch hẹn thành công!")
+      alert("Cập nhật lịch hẹn thành công!")
 
-      // Cập nhật lại state để hiển thị ngày mới
       setOrders((prev) =>
         prev.map((o) =>
           o.id === order.id
@@ -143,19 +166,18 @@ const PurchasesSection = () => {
         )
       )
     } catch (err) {
-      console.error("❌ Lỗi cập nhật lịch hẹn:", err)
+      console.error("Lỗi cập nhật lịch hẹn:", err)
       alert("Cập nhật lịch hẹn thất bại.")
     }
   }
 
-  // 🔹 Xem chi tiết đơn
   const handleView = (order) => {
     navigate(`/profile/purchases/${order.id}`, {
       state: { from: `/profile/purchases?type=${type}` },
     })
   }
 
-  // 🔹 Lọc theo trạng thái
+  // === Nhóm đơn hàng theo trạng thái ===
   const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
   const shippingOrders = orders.filter((o) => getStatus(o) === "DELIVERING")
@@ -167,10 +189,10 @@ const PurchasesSection = () => {
       getStatus(o)
     )
   )
+
   const refundedOrders = complaints
   const total = orders.length
 
-  // 🔹 Render từng đơn hàng
   const renderPurchaseCard = (order) => {
     const status = getStatus(order)
 
@@ -185,9 +207,9 @@ const PurchasesSection = () => {
           const product = detail.post
           return (
             <GenericPurchaseCard
-              order={detail}
+              detail={detail}
               key={detail.id}
-              purchase={product}
+              post={product}
               status={status}
               reviewed={order.reviewed}
               type={
@@ -210,14 +232,13 @@ const PurchasesSection = () => {
           )
         })}
 
-        {/* ✅ Footer có cập nhật lịch hẹn */}
         <PurchaseFooter
           order={order}
           status={status}
           onCancel={handleCancel}
           onComplete={handleComplete}
           onView={handleView}
-          onUpdateAppointment={handleUpdateAppointment} // 🔹 truyền vào Footer
+          onUpdateAppointment={handleUpdateAppointmente}
         />
       </div>
     )
@@ -237,9 +258,7 @@ const PurchasesSection = () => {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Đơn mua của tôi</CardTitle>
-              <CardDescription>
-                Quản lý tất cả đơn mua theo trạng thái
-              </CardDescription>
+              <CardDescription>Quản lý tất cả đơn mua theo trạng thái</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -253,15 +272,13 @@ const PurchasesSection = () => {
               <TabsTrigger value="shipping">Đang vận chuyển</TabsTrigger>
               <TabsTrigger value="success">Hoàn tất</TabsTrigger>
               <TabsTrigger value="canceled">Đã huỷ</TabsTrigger>
-              <TabsTrigger value="refunded">Hoàn tiền</TabsTrigger>
+              <TabsTrigger value="refunded">Hoàn trả</TabsTrigger>
             </TabsList>
 
-            {/* Các tab trạng thái */}
+            {/* === Các tab trạng thái === */}
             <TabsContent value="all" className="space-y-4">
               {total === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  Chưa có đơn mua
-                </div>
+                <div className="text-center py-12 text-gray-500">Chưa có đơn mua</div>
               ) : (
                 orders.map(renderPurchaseCard)
               )}
@@ -307,44 +324,64 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* ✅ Tab Hoàn trả - hiển thị đúng 3 trạng thái */}
             <TabsContent value="refunded" className="space-y-4">
               {refundedOrders.length === 0 ? (
-                <div className="text-gray-500">Không có đơn hoàn tiền</div>
+                <div className="text-gray-500">Không có đơn hoàn trả</div>
               ) : (
-                refundedOrders.map((item) => (
-                  <div
-                    key={item.id}
-                    className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
-                  >
-                    <PurchaseHeader order={item} seller={item.seller} />
-                    <GenericPurchaseCard
-                      type="refunded"
-                      purchase={item.order_detail?.post || { title: "Không rõ sản phẩm" }}
-                      onView={() =>
-                        navigate(`/profile/returns/${item.order_detail?.order_id}`, {
-                          state: { order: item },
-                        })
-                      }
-                    />
-                    <PurchaseFooter
-                      order={item}
-                      price={item.order_detail?.price}
-                      status="REFUNDED"
-                      onView={() =>
-                        navigate(`/profile/returns/${item.order_detail?.order_id}`, {
-                          state: { order: item },
-                        })
-                      }
-                    />
-                  </div>
-                ))
+                refundedOrders.map((item) => {
+                  const status = getStatus(item)
+                  return (
+                    <div
+                      key={item.id}
+                      className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
+                    >
+                      <PurchaseHeader order={item} seller={item.seller} />
+
+                      <p className="text-sm text-gray-600 mb-2 ml-1">
+                        Trạng thái hoàn hàng:{" "}
+                        <span className="font-medium text-gray-800">
+                          {status === "PENDING"
+                            ? "Chờ bàn giao hàng"
+                            : status === "RETURNING"
+                            ? "Đang bàn giao hàng"
+                            : status === "RETURNED"
+                            ? "Đã hoàn hàng"
+                            : "Không rõ"}
+                        </span>
+                      </p>
+
+                      <GenericPurchaseCard
+                        type="refunded"
+                        order={item}
+                        post={item.order_detail?.post || { title: "Không rõ sản phẩm" }}
+                        onView={() =>
+                          navigate(`/profile/returns/${item.order_detail?.order_id}`, {
+                            state: { order: item },
+                          })
+                        }
+                      />
+
+                      <PurchaseFooter
+                        order={item}
+                        price={item.order_detail?.price}
+                        status={status}
+                        onReturn={handleReturn}
+                        onView={() =>
+                          navigate(`/profile/returns/${item.order_detail?.order_id}`, {
+                            state: { order: item },
+                          })
+                        }
+                      />
+                    </div>
+                  )
+                })
               )}
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
 
-      {/* Modal đánh giá */}
       <ReviewModal
         reviewed={reviewed}
         open={showReview}
@@ -353,11 +390,27 @@ const PurchasesSection = () => {
         onSubmit={() => setShowReview(false)}
       />
 
-      {/* Modal khiếu nại */}
       <ComplaintModal
         open={showComplaint}
         onClose={() => setShowComplaint(false)}
         purchase={selectedOrder}
+        onSubmitComplaint={() => {
+          setShowComplaint(false)
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.order_details.some((d) => d.id === selectedOrder.id)
+                ? {
+                    ...o,
+                    order_details: o.order_details.map((d) =>
+                      d.id === selectedOrder.id
+                        ? { ...d, complaints: [{ id: Date.now() }] }
+                        : d
+                    ),
+                  }
+                : o
+            )
+          )
+        }}
       />
     </>
   )
