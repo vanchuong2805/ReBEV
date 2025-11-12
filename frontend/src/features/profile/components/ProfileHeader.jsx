@@ -1,11 +1,25 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { Shield, Mail, Phone, Calendar, Award, CheckCircle2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useUser } from "@/contexts/UserContext"
+import { getPackages } from "@/features/profile/service"
 
 const ProfileHeader = () => {
   const { user, loading } = useUser()
+  const [packages, setPackages] = useState([])
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const data = await getPackages();
+        setPackages(data);
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+      }
+    }
+    fetchPackages();
+  }, []);
+
 
   if (loading) {
     return (
@@ -26,6 +40,8 @@ const ProfileHeader = () => {
       </Card>
     )
   }
+  const userPackage = packages.find(p => p.id === user.package_id)
+  const packageName = userPackage ? userPackage.name : "Basic"
 
   return (
     <Card className="mb-8 border-slate-200 shadow-sm">
@@ -42,9 +58,6 @@ const ProfileHeader = () => {
                   alt="Profile"
                   className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md relative"
                 />
-                <div className="absolute -bottom-1 -right-1 bg-emerald-500 w-7 h-7 rounded-full border-2 border-white shadow-md flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
               </div>
             </div>
 
@@ -59,7 +72,7 @@ const ProfileHeader = () => {
                   className="bg-slate-900 text-white border-0 px-3 py-1 w-fit mx-auto lg:mx-0 hover:bg-slate-800"
                 >
                   <Award className="w-3.5 h-3.5 mr-1.5" />
-                  {user.package_id ? `VIP ${user.package_id}` : "Basic"}
+                  {packageName}
                 </Badge>
               </div>
             </div>
@@ -108,10 +121,10 @@ const ProfileHeader = () => {
                 <p className="text-sm text-slate-900">
                   {user.create_at
                     ? new Date(user.create_at).toLocaleDateString("vi-VN", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })
                     : "—"}
                 </p>
               </div>

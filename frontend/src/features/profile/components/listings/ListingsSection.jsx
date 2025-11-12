@@ -104,10 +104,6 @@ const ListingsSection = () => {
                                 Tất cả tin đăng xe và pin của bạn
                             </CardDescription>
                         </div>
-                        <Button className="bg-red-600 hover:bg-red-700">
-                            <Car className="w-4 h-4 mr-2" />
-                            Đăng tin mới
-                        </Button>
                     </div>
                 </CardHeader>
 
