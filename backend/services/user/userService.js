@@ -7,16 +7,14 @@ import postService from '../post/postService.js';
 import orderDetailService from '../order/orderDetailService.js';
 import userReviewService from './userReviewService.js';
 
-const getUsers = async ({ page = 1, limit = 10, search = "", hasPackage, sort = "DESC", isLocked }) => {
+const getUsers = async ({ page, limit, search = "", hasPackage, sort = "DESC", isLocked }) => {
 
-    page = parseInt(page);
-    limit = parseInt(limit);
-
-    if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
-        throw new Error('Invalid query parameters');
+    let offset;
+    if (page && limit) {
+        page = parseInt(page);
+        limit = parseInt(limit);
+        offset = (page - 1) * limit;
     }
-
-    const offset = (page - 1) * limit;
 
     const whereCondition = {};
 
@@ -43,15 +41,18 @@ const getUsers = async ({ page = 1, limit = 10, search = "", hasPackage, sort = 
 
     const order = [['create_at', sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];
 
-    const {
-        count, rows
-    } = await users.findAndCountAll({
+    const options = {
         where: whereCondition,
-        offset,
-        limit,
-        raw: true,
-        order
-    });
+        order,
+        raw: true
+    };
+
+    if (page && limit) {
+        options.offset = offset;
+        options.limit = limit;
+    }
+
+    const { count, rows } = await users.findAndCountAll(options);
 
     for (const user of rows) {
         const {
@@ -65,9 +66,9 @@ const getUsers = async ({ page = 1, limit = 10, search = "", hasPackage, sort = 
 
     return {
         total: count,
-        page,
-        limit,
-        totalPages: Math.ceil(count / limit),
+        page: page ? parseInt(page) : null,
+        limit: limit ? parseInt(limit) : null,
+        totalPages: limit ? Math.ceil(count / limit) : 1,
         users: rows
     }
 };
