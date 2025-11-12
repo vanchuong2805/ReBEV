@@ -206,7 +206,7 @@ const updateContact = async (req, res) => {
             province_id,
             province_name,
             name,
-            phone
+            phone,
         } = req.body;
 
         const contact_id = await userContactService.getUserContact(id);
