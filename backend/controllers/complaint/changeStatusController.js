@@ -52,6 +52,7 @@ const changeStatus = async (req, res) => {
         }
 
         await complaintService.updateStatus(id, status, { transaction: t });
+        await complaintService.updateComplaint(id, { moderator: req.user.id }, { transaction: t });
         await complaintService.handleStatus(complaint.id, complaint.order_detail_id, status, t);
         await t.commit();
         return res.status(200).json({ message: 'Complaint status updated successfully' });
