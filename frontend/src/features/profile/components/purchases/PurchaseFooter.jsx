@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import { FileDown } from "lucide-react"
 
 export default function PurchaseFooter({
   order,
@@ -11,14 +12,13 @@ export default function PurchaseFooter({
   onComplete,
   onView,
   onUpdateAppointment,
+  onReturn,
 }) {
   const [open, setOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(null)
 
-  // 🔹 1 = xe (cọc), khác = pin
-  const isDeposit = order.order_type === 2
+  const isDeposit = order.order_type === 2||false
 
-  // 🔹 Hiển thị giá
   const displayPrice =
     price != null
       ? price.toLocaleString("vi-VN")
@@ -26,7 +26,6 @@ export default function PurchaseFooter({
 
   const totalLabel = isDeposit ? "Tiền cọc" : "Tổng tiền"
 
-  // 🔹 Lấy lịch hẹn (nếu có)
   const appointmentTime = order?.order_details?.[0]?.appointment_time
   const appointmentLabel = isDeposit
     ? "Lịch hẹn lấy xe"
@@ -34,13 +33,12 @@ export default function PurchaseFooter({
 
   const formattedDate = appointmentTime
     ? new Date(appointmentTime).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
     : null
 
-  // 🔹 Cập nhật lịch hẹn
   const handleConfirmDate = async () => {
     if (!selectedDate) return alert("Vui lòng chọn ngày hẹn!")
     const appointment_time = new Date(selectedDate).toISOString()
@@ -111,7 +109,7 @@ export default function PurchaseFooter({
 
         {/* 🟢 Khi hàng đã giao mà chưa có khiếu nại */}
         {status === "DELIVERED" &&
-          !order?.order_details?.[0]?.complaints?.length > 0 && (
+          
             <Button
               size="sm"
               className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
@@ -119,7 +117,30 @@ export default function PurchaseFooter({
             >
               Xác nhận
             </Button>
-          )}
+          }
+
+        {/* 🧾 Khi đơn hàng đã hoàn tất => tải hợp đồng */}
+        {status === "COMPLETED" && order?.order_details?.[0]?.contract_file && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-gray-300 text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            onClick={() =>
+              window.open(order.order_details[0].contract_file, "_blank")
+            }
+          >
+            Tải hợp đồng
+          </Button>
+        )}
+        {status === "PENDING" && (
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
+            onClick={() => onReturn(order)}
+          >
+            Bàn giao
+          </Button>
+        )}
 
         {/* 🔵 Nút xem chi tiết */}
         <Button

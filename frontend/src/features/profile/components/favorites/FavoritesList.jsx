@@ -21,10 +21,6 @@ export default function FavoriteList() {
               Các tin đăng bạn đã thêm vào danh sách yêu thích
             </CardDescription>
           </div>
-          <Button variant="outline" className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-pink-500" />
-            <span>Thêm tin mới</span>
-          </Button>
         </div>
       </CardHeader>
 

@@ -64,7 +64,7 @@ export default function ReturnOrderDetailPage() {
             thumbnailUrl = thumb?.url?.replace(/^image\s+/i, "") || thumbnailUrl
           }
         } catch (err) {
-          console.warn("⚠️ Lỗi parse media:", err)
+          console.warn(" Lỗi parse media:", err)
         }
 
         return {
