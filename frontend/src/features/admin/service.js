@@ -67,36 +67,40 @@ export const deletePackage = async (packageId) => {
     throw err;
   }
 };
-export const updatePackage = async (packages) => {
-  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
-  console.log("Updating package with ID:", packages.id);
-  console.log("Using token:", token);
+export const getCategory = async () => {
+  try {
+    const res = await axios.get(`${baseAPI}/categories`);
+    return res.data;
+  } catch (err) {
+    console.error("Axios error:", err.response?.data ?? err.message);
+  }
+};
+
+export const updateCategory = async (categoryId, numb) => {
+  const token = localStorage.getItem("accessToken");
   try {
     const res = await axios.put(
-      `${baseAPI}/packages/${packages.id}/update`,
+      `${baseAPI}/categories/${categoryId}/rate`,
       {
-        name: packages.name,
-        description: packages.description,
-        price: packages.price,
-        highlight: packages.highlight,
-        top: packages.top,
-        duration: packages.duration,
+        rate: numb,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // thêm token vào header
+          Authorization: `Bearer ${token}`,
         },
       }
     );
-    console.log("Package updated:", res.data);
+    console.log("Category updated:", res.data);
     return res.data;
   } catch (err) {
-    console.error("Error updating package:", err.response?.data || err.message);
+    console.error(
+      "Error updating category:",
+      err.response?.data || err.message
+    );
     throw err;
   }
 };
-
 //_________________________________________
 
 // GET all users

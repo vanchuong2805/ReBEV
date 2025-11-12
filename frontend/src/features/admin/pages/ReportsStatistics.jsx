@@ -12,6 +12,7 @@ import TitlePage from "../components/TitlePage";
 import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
 import { getStaticPage } from "../service";
+import { el } from "date-fns/locale";
 
 const nf = new Intl.NumberFormat("vi-VN");
 const formatMoney = (v) => (typeof v === "number" ? nf.format(v) : "0");
@@ -72,6 +73,31 @@ const ReportsStatistics = () => {
     [data.monthlyTransactions]
   );
 
+  const revenueSystem = () => {
+    let revenues = 0;
+    data.revenue?.map((item) => {
+      if (item.transaction_type === 4) {
+        revenues += item.transaction_sum;
+      } else if (item.transaction_type === 5) {
+        revenues += item.transaction_sum;
+        revenues += item.commission_sum;
+      }
+    });
+    return revenues;
+  };
+  const revenueOffice = () => {
+    let revenues = 0;
+    data.revenue?.map((item) => {
+      if (item.transaction_type === 4) {
+        revenues += item.transaction_sum;
+      } else if (item.transaction_type === 5) {
+        revenues += item.commission_sum;
+      }
+    });
+    return revenues;
+  };
+
+  console.log(data);
   return (
     <div className="p-6 bg-gradient-to-b from-slate-50 to-slate-100 min-h-screen">
       {/* Title */}
@@ -114,9 +140,16 @@ const ReportsStatistics = () => {
               icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
               className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />
+            <br />
             <StatsCards
-              title="Tổng doanh thu (VNĐ)"
-              number={formatMoney(totals.revenue)}
+              title="Doanh thu hệ thống (VNĐ)"
+              number={formatMoney(revenueSystem())}
+              icon={<DollarSign className="h-6 w-6 text-purple-600" />}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
+            />
+            <StatsCards
+              title="Doanh thu doanh nghiệp (VNĐ)"
+              number={formatMoney(revenueOffice())}
               icon={<DollarSign className="h-6 w-6 text-purple-600" />}
               className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />

@@ -10,6 +10,7 @@ export default function ReturnOrder() {
   useEffect(() => {
     const fetchReturnOrders = async () => {
       const response = await getOrders(3);
+      console.log(response);
       setReturnOrders(response.orders);
     };
     fetchReturnOrders();
