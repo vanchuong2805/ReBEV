@@ -3,7 +3,6 @@ import { Plus } from "lucide-react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import TitlePage from "../components/TitlePage";
-import StatsCard from "../components/StatsCard";
 import FilterBar from "../components/FilterBar";
 import UserInfo from "../components/UserComponents/UserInfo";
 import CreateStaff from "../components/UserComponents/CreateStaff";
@@ -29,15 +28,13 @@ const UserManagement = () => {
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
-    fetchUsers().then((data) => {
-      setUsers(data.users);
-    });
+    const data = async () => {
+      const fresh = await fetchUsers();
+      setUsers(fresh.users);
+    };
+    data();
   }, []);
 
-  const refreshUsers = async () => {
-    const fresh = await fetchUsers();
-    setUsers(fresh);
-  };
   //---------------------------------------------
   const getStatusColor = (is_locked) => {
     switch (is_locked) {
@@ -81,18 +78,27 @@ const UserManagement = () => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await lockUserAccount(userId);
-      await refreshUsers();
+      setUsers((prevUsers) =>
+        prevUsers?.map((user) =>
+          user.id === userId ? { ...user, is_locked: true } : user
+        )
+      );
       toast.success(`Đã khóa tài khoản: ${userId}`);
     } catch (err) {
       toast.error(`Lỗi khi khóa tài khoản: ${err.message}`);
     }
   };
 
+  console.log(users);
   const handleUnlockUser = async (userId) => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await unLockUserAccount(userId);
-      await refreshUsers();
+      setUsers((prevUsers) =>
+        prevUsers?.map((user) =>
+          user.id === userId ? { ...user, is_locked: false } : user
+        )
+      );
       toast.success(`Đã mở khóa tài khoản: ${userId}`);
     } catch (err) {
       toast.error(`Lỗi khi mở khóa tài khoản: ${err.message}`);
@@ -116,7 +122,7 @@ const UserManagement = () => {
 
     await createStaffAccount({ email: staff.email, phone: staff.phone })
       .then(() => {
-        refreshUsers();
+        setUsers((prevUsers) => [...prevUsers, staff]);
         handleCloseStaffForm();
         alert("Tài khoản nhân viên đã được tạo thành công!");
       })
@@ -127,35 +133,6 @@ const UserManagement = () => {
   };
 
   // removed password change handlers
-
-  const filteredUsers = users.filter((user) => {
-    // Xử lý trường hợp display_name không tồn tại
-    const userName = user.display_name || "";
-    const userEmail = user.email || "";
-    const matchesSearch =
-      searchTerm === "" ||
-      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.phone && user.phone.includes(searchTerm));
-
-    // Xử lý statusFilter dựa vào is_locked
-    const userStatus = user.is_locked == false ? "active" : "locked";
-    const matchesStatus = statusFilter === "all" || userStatus === statusFilter;
-
-    // Xử lý roleFilter
-    const userRole =
-      typeof user.role === "number"
-        ? user.role === 0
-          ? "user"
-          : user.role === 1
-          ? "staff"
-          : "admin"
-        : user.role;
-
-    const matchesRole = roleFilter === "all" || userRole === roleFilter;
-
-    return matchesSearch && matchesStatus && matchesRole;
-  });
 
   return (
     <div className="p-6">
@@ -205,7 +182,7 @@ const UserManagement = () => {
       />
       {/* Users List */}
       <div className="space-y-4">
-        {filteredUsers.map((user) => (
+        {users.map((user) => (
           <UserInfo
             key={user.id}
             user={user}
@@ -217,7 +194,7 @@ const UserManagement = () => {
           />
         ))}
       </div>
-      {filteredUsers.length === 0 && (
+      {users.length === 0 && (
         <Card className="p-8 text-center">
           <p className="text-gray-500">
             Không tìm thấy người dùng nào phù hợp với tiêu chí của bạn.

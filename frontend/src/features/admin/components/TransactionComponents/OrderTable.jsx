@@ -3,79 +3,25 @@ import { updateOrderStatus } from "../../service";
 
 export default function OrderTable({ allOrders, setAllOrders }) {
   // utils/getStatusBadge.js
+  const STATUS_STYLES = {
+    DELIVERING: "bg-amber-500 text-white",
+    PAID: "bg-emerald-600 text-white",
+    CONFIRMED: "bg-indigo-600 text-white",
+    DELIVERED: "bg-cyan-600 text-white",
+    CANCELLED: "bg-rose-600 text-white",
+    FAIL_PAY: "bg-rose-600 text-white",
+    PENDING: "bg-yellow-500 text-white",
+    COMPLETED: "bg-blue-600 text-white",
+  };
+
   const getBadgeStatus = (status) => {
     const base =
-      "px-3 py-1 rounded-full text-sm font-medium inline-flex items-center justify-center";
+      "px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center justify-center uppercase tracking-wide";
 
-    switch (status) {
-      case "DELIVERING":
-        return (
-          <span
-            className={`${base} bg-yellow-100 text-yellow-800 border border-yellow-300`}
-          >
-            'DELIVERING'
-          </span>
-        );
+    const style = STATUS_STYLES[status] || "bg-gray-400 text-white";
+    const label = status || "UNKNOWN";
 
-      case "PAID":
-        return (
-          <span
-            className={`${base} bg-green-100 text-green-800 border border-green-300`}
-          >
-            'PAID'
-          </span>
-        );
-
-      case "CONFIRMED":
-        return (
-          <span
-            className={`${base} bg-red-100 text-red-800 border border-red-300`}
-          >
-            'CONFIRMED'
-          </span>
-        );
-      case "DELIVERED":
-        return (
-          <span
-            className={`${base} bg-red-100 text-red-800 border border-red-300`}
-          >
-            'DELIVERED'
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span
-            className={`${base} bg-red-100 text-red-800 border border-red-300`}
-          >
-            'CANCELLED'
-          </span>
-        );
-      case "FAIL_PAY":
-        return (
-          <span
-            className={`${base} bg-red-100 text-red-800 border border-red-300`}
-          >
-            'FAIL_PAY'
-          </span>
-        );
-      case "COMPLETED":
-        return (
-          <span
-            className={`${base} bg-red-100 text-red-800 border border-red-300`}
-          >
-            COMPLETED
-          </span>
-        );
-
-      default:
-        return (
-          <span
-            className={`${base} bg-gray-100 text-gray-700 border border-gray-300`}
-          >
-            Không xác định
-          </span>
-        );
-    }
+    return <span className={`${base} ${style}`}>{label}</span>;
   };
 
   const formatDate = (isoString) => {
@@ -90,30 +36,20 @@ export default function OrderTable({ allOrders, setAllOrders }) {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID Đơn Mua
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Người Mua
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Người Bán
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tổng Tiền
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Trạng Thái
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ngày Chỉnh Sửa
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Người Chỉnh Sửa
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Thao Tác{" "}
-              </th>
+              {[
+                "ID Đơn Mua",
+                "Người Mua",
+                "Người Bán",
+                "Tổng Tiền",
+                "Trạng Thái",
+                "Ngày Chỉnh Sửa",
+                "Người Chỉnh Sửa",
+                "Thao Tác",
+              ].map((text) => (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  {text}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

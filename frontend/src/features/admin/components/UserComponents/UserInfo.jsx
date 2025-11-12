@@ -23,7 +23,10 @@ export default function UserInfo({
     (async () => {
       try {
         setLoading(true);
-        const [pkgs, posts] = await Promise.all([getFullPackage(), fetchPost()]);
+        const [pkgs, posts] = await Promise.all([
+          getFullPackage(),
+          fetchPost(),
+        ]);
         if (!alive) return;
         setPackageList(pkgs || []);
         setListings(posts || []);
@@ -38,7 +41,10 @@ export default function UserInfo({
 
   const userPackageName = useMemo(() => {
     if (!user?.package_id) return null;
-    return packageList.find((p) => p.id === user.package_id)?.name || "Gói chưa xác định";
+    return (
+      packageList.find((p) => p.id === user.package_id)?.name ||
+      "Gói chưa xác định"
+    );
   }, [packageList, user?.package_id]);
 
   const userPostsCount = useMemo(() => {
@@ -131,18 +137,8 @@ export default function UserInfo({
             </div>
 
             {/* metrics cho user thường */}
-            {Number(user.role) === 0 && (
+            {
               <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
-                  <span className="text-slate-500">Tin đăng</span>
-                  <div className="font-semibold text-blue-600">{userPostsCount}</div>
-                </div>
-                <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
-                  <span className="text-slate-500">Giao dịch</span>
-                  <div className="font-semibold text-emerald-600">
-                    {user.totalTransactions || 0}
-                  </div>
-                </div>
                 <div className="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2">
                   <span className="text-slate-500">Ngày tạo</span>
                   <div className="font-medium text-slate-700">
@@ -152,19 +148,9 @@ export default function UserInfo({
                   </div>
                 </div>
               </div>
-            )}
+            }
 
             {/* nếu không phải user thường, vẫn show ngày tạo gọn */}
-            {Number(user.role) !== 0 && (
-              <div className="mt-3 text-sm text-slate-600">
-                <span className="text-slate-500">Ngày tạo:</span>
-                <span className="ml-1">
-                  {user.create_at
-                    ? new Date(user.create_at).toLocaleDateString("vi-VN")
-                    : "N/A"}
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
