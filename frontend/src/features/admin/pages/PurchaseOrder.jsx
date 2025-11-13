@@ -8,11 +8,6 @@ import { getOrders } from "../service";
 import FilterBar from "../components/FilterBar";
 
 export default function PurchaseOrder() {
-  const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
-  const orderSortOptions = [
-    { value: "status", label: "Trạng thái (mặc định)" },
-    { value: "date", label: "Ngày hoàn thành" },
-  ];
   const [filSearch, setFilSearch] = useState({
     searchTerm: "",
     order_status: "",
