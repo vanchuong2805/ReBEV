@@ -119,7 +119,7 @@ export default function CompareListing() {
   const removeProduct = (productId) => {
     const updatedProducts = products.filter((p) => p.id !== productId);
     if (updatedProducts.length === 0) {
-      navigate("/marketplace");
+      navigate("/marketplace/all");
       return;
     }
     const ids = updatedProducts.map((p) => p.id).join(",");
@@ -172,7 +172,9 @@ export default function CompareListing() {
           </Link>
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold text-gray-900">So sánh</h1>
-            <span className="text-xl text-gray-500">{products.length} sản phẩm</span>
+            <span className="text-xl text-gray-500">
+              {products.length} sản phẩm
+            </span>
           </div>
           <label className="flex items-center gap-2 mt-3 text-sm text-gray-600">
             <input type="checkbox" className="w-4 h-4 rounded" />
@@ -183,13 +185,23 @@ export default function CompareListing() {
 
       <div className="container px-4 py-6 mx-auto">
         {/* Product Cards Header */}
-        <div className="grid gap-6 mb-6" style={{ gridTemplateColumns: `200px repeat(${products.length}, 1fr) repeat(${4 - products.length}, 1fr)` }}>
+        <div
+          className="grid gap-6 mb-6"
+          style={{
+            gridTemplateColumns: `200px repeat(${
+              products.length
+            }, 1fr) repeat(${4 - products.length}, 1fr)`,
+          }}
+        >
           {/* Empty space for labels */}
           <div></div>
-          
+
           {/* Product Cards */}
           {products.map((product) => (
-            <div key={product.id} className="relative p-4 bg-white rounded-lg shadow-md">
+            <div
+              key={product.id}
+              className="relative p-4 bg-white rounded-lg shadow-md"
+            >
               <Link to={`/marketplace/listing/${product.id}`} className="block">
                 <img
                   src={getThumb(product.media)}
@@ -200,24 +212,24 @@ export default function CompareListing() {
                   {product.title}
                 </h3>
               </Link>
-              
+
               <div className="mb-3 text-xl font-bold text-red-600">
                 {currency(product.price)}
               </div>
-              
+
               <div className="mb-2 text-xs text-gray-600">
                 <span className="inline-block px-2 py-1 bg-gray-100 rounded">
                   Màu {product.color || "Đen"}
                 </span>
               </div>
-              
+
               <Link
                 to={`/marketplace/listing/${product.id}`}
                 className="block w-full py-2 mb-2 text-center text-white transition-colors bg-black rounded-lg hover:bg-gray-800"
               >
                 Xem ngay
               </Link>
-              
+
               <button
                 onClick={() => removeProduct(product.id)}
                 className="flex items-center justify-center w-full gap-1 py-2 text-center text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -227,10 +239,13 @@ export default function CompareListing() {
               </button>
             </div>
           ))}
-          
+
           {/* Add Product Placeholders */}
           {Array.from({ length: 4 - products.length }).map((_, idx) => (
-            <div key={`placeholder-${idx}`} className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-gray-300">
+            <div
+              key={`placeholder-${idx}`}
+              className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed border-gray-300"
+            >
               <Plus className="w-12 h-12 mb-3 text-blue-500" />
               <p className="font-medium text-blue-500">Thêm sản phẩm khác</p>
             </div>
@@ -240,7 +255,10 @@ export default function CompareListing() {
         {/* Comparison Table */}
         <div className="space-y-6">
           {Object.entries(groupedVariations).map(([category, varIds]) => (
-            <div key={category} className="overflow-hidden bg-white rounded-lg shadow-md">
+            <div
+              key={category}
+              className="overflow-hidden bg-white rounded-lg shadow-md"
+            >
               {/* Section Header */}
               <button
                 onClick={() => toggleSection(category)}
@@ -259,13 +277,21 @@ export default function CompareListing() {
                 <div className="divide-y divide-gray-200">
                   {varIds.map((varId) => {
                     const variationName = getVariationName(varId);
-                    
+
                     return (
-                      <div key={varId} className="grid gap-6 p-4" style={{ gridTemplateColumns: `200px repeat(${products.length}, 1fr) repeat(${4 - products.length}, 1fr)` }}>
+                      <div
+                        key={varId}
+                        className="grid gap-6 p-4"
+                        style={{
+                          gridTemplateColumns: `200px repeat(${
+                            products.length
+                          }, 1fr) repeat(${4 - products.length}, 1fr)`,
+                        }}
+                      >
                         <div className="text-sm font-medium text-gray-700">
                           {variationName}
                         </div>
-                        
+
                         {products.map((product) => {
                           const detail = (product.post_details || []).find(
                             (d) => d.variation_id === varId
@@ -273,7 +299,10 @@ export default function CompareListing() {
 
                           let displayValue;
                           if (detail) {
-                            if (detail.custom_value && detail.custom_value !== "null") {
+                            if (
+                              detail.custom_value &&
+                              detail.custom_value !== "null"
+                            ) {
                               displayValue = detail.custom_value;
                             } else if (detail.variation_value_id) {
                               const varValue = variationValues.find(
@@ -284,16 +313,26 @@ export default function CompareListing() {
                           }
 
                           return (
-                            <div key={product.id} className="text-sm text-gray-900">
-                              {displayValue || <span className="text-gray-400">Không</span>}
+                            <div
+                              key={product.id}
+                              className="text-sm text-gray-900"
+                            >
+                              {displayValue || (
+                                <span className="text-gray-400">Không</span>
+                              )}
                             </div>
                           );
                         })}
-                        
+
                         {/* Empty cells for placeholders */}
-                        {Array.from({ length: 4 - products.length }).map((_, idx) => (
-                          <div key={`empty-${idx}`} className="text-sm text-gray-400"></div>
-                        ))}
+                        {Array.from({ length: 4 - products.length }).map(
+                          (_, idx) => (
+                            <div
+                              key={`empty-${idx}`}
+                              className="text-sm text-gray-400"
+                            ></div>
+                          )
+                        )}
                       </div>
                     );
                   })}
