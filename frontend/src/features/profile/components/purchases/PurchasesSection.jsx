@@ -16,11 +16,12 @@ import {
   updateAppointmentTim,
 } from "@/features/profile/service"
 
-import ReviewModal from "@/features/profile/components/ReviewModal"
+import ReviewModal from "@/features/profile/components/purchases/ReviewModal"
 import ComplaintModal from "@/features/profile/components/purchases/ComplaintModal"
 import PurchaseFooter from "./PurchaseFooter"
 import PurchaseHeader from "./PurchaseHeader"
 import GenericPurchaseCard from "../purchases/GenericPurchaseCard"
+import { toast } from "sonner"
 
 const PurchasesSection = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -38,7 +39,6 @@ const PurchasesSection = () => {
   const navigate = useNavigate()
   const { user } = useUser()
 
-  // ✅ Hàm lấy trạng thái hoạt động cho cả đơn hàng thường và đơn hoàn
   const getStatus = (order) => {
     if (!order) return ""
     if (order.order_statuses?.length)
@@ -80,14 +80,14 @@ const PurchasesSection = () => {
     fetchOrders()
   }, [user])
 
-  const handleReview = (purchase, reviewed) => {
-    setSelectedOrder(purchase)
+  const handleReview = (detail, reviewed) => {
+    setSelectedOrder(detail)
     setShowReview(true)
     setReviewed(reviewed)
   }
 
-  const handleComplaint = (purchase) => {
-    setSelectedOrder(purchase)
+  const handleComplaint = (detail) => {
+    setSelectedOrder(detail)
     setShowComplaint(true)
   }
 
@@ -102,10 +102,10 @@ const PurchasesSection = () => {
             : o
         )
       )
-      alert("Đơn hàng đã được huỷ thành công!")
+      toast.success("Đơn hàng đã được huỷ thành công!")
     } catch (error) {
       console.error("Lỗi khi huỷ đơn:", error)
-      alert("Huỷ đơn thất bại, vui lòng thử lại.")
+      toast.error("Huỷ đơn thất bại, vui lòng thử lại.")
     }
   }
 
@@ -120,14 +120,13 @@ const PurchasesSection = () => {
             : o
         )
       )
-      alert("Đơn hàng đã hoàn tất thành công!")
+      toast.success("Đơn hàng đã hoàn tất thành công!")
     } catch (error) {
       console.error("Lỗi khi hoàn tất đơn:", error)
-      alert("Hoàn tất đơn thất bại, vui lòng thử lại.")
+      toast.error("Hoàn tất đơn thất bại, vui lòng thử lại.")
     }
   }
 
-  // ✅ Cập nhật đúng logic bàn giao hàng hoàn trả
   const handleReturn = async (order) => {
     if (!window.confirm("Xác nhận bạn đã bàn giao hàng hoàn trả?")) return
     try {
@@ -140,17 +139,17 @@ const PurchasesSection = () => {
         )
       )
       console.log("Đơn hoàn trả đã cập nhật:", order.order_detail_id)
-      alert("Trạng thái đơn đã cập nhật sang 'Đang bàn giao hàng'.")
+      toast.success("Trạng thái đơn đã cập nhật sang 'Đang bàn giao hàng'.")
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
-      alert("Cập nhật trạng thái thất bại, vui lòng thử lại.")
+      toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại.")
     }
   }
 
   const handleUpdateAppointmente = async (order, appointment_time) => {
     try {
       await updateAppointmentTim(order.id, appointment_time)
-      alert("Cập nhật lịch hẹn thành công!")
+      toast.success("Cập nhật lịch hẹn thành công!")
 
       setOrders((prev) =>
         prev.map((o) =>
@@ -167,7 +166,7 @@ const PurchasesSection = () => {
       )
     } catch (err) {
       console.error("Lỗi cập nhật lịch hẹn:", err)
-      alert("Cập nhật lịch hẹn thất bại.")
+      toast.error("Cập nhật lịch hẹn thất bại.")
     }
   }
 
@@ -323,8 +322,7 @@ const PurchasesSection = () => {
                 canceledOrders.map(renderPurchaseCard)
               )}
             </TabsContent>
-
-            {/* ✅ Tab Hoàn trả - hiển thị đúng 3 trạng thái */}
+            
             <TabsContent value="refunded" className="space-y-4">
               {refundedOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn hoàn trả</div>
@@ -338,22 +336,10 @@ const PurchasesSection = () => {
                     >
                       <PurchaseHeader order={item} seller={item.seller} />
 
-                      <p className="text-sm text-gray-600 mb-2 ml-1">
-                        Trạng thái hoàn hàng:{" "}
-                        <span className="font-medium text-gray-800">
-                          {status === "PENDING"
-                            ? "Chờ bàn giao hàng"
-                            : status === "RETURNING"
-                            ? "Đang bàn giao hàng"
-                            : status === "RETURNED"
-                            ? "Đã hoàn hàng"
-                            : "Không rõ"}
-                        </span>
-                      </p>
-
                       <GenericPurchaseCard
                         type="refunded"
                         order={item}
+                        status={status}
                         post={item.order_detail?.post || { title: "Không rõ sản phẩm" }}
                         onView={() =>
                           navigate(`/profile/returns/${item.order_detail?.order_id}`, {
@@ -386,14 +372,14 @@ const PurchasesSection = () => {
         reviewed={reviewed}
         open={showReview}
         onClose={() => setShowReview(false)}
-        purchase={selectedOrder}
+        detail={selectedOrder}
         onSubmit={() => setShowReview(false)}
       />
 
       <ComplaintModal
         open={showComplaint}
         onClose={() => setShowComplaint(false)}
-        purchase={selectedOrder}
+        detail={selectedOrder}
         onSubmitComplaint={() => {
           setShowComplaint(false)
           setOrders((prev) =>

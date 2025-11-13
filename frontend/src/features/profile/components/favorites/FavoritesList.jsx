@@ -1,9 +1,6 @@
 import FavoritesCard from './FavoritesCard'
-import { Car, Heart } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useUser } from '@/contexts/UserContext'
-import { useState, useEffect } from 'react'
 import { useFavorite } from '@/contexts/FavoritesContexts.jsx'
 
 export default function FavoriteList() {

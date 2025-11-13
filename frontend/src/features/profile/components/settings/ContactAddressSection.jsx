@@ -5,6 +5,7 @@ import { Pencil, Trash2, CheckCircle } from "lucide-react"
 import AddAddressModal from "./AddAddressModal"
 import { useUser } from "@/contexts/UserContext"
 import { getContactByUserId, deleteContact } from "@/features/profile/service"
+import { toast } from "sonner"
 
 export default function ContactAddressSection() {
   const { user, loading } = useUser()
@@ -52,10 +53,10 @@ export default function ContactAddressSection() {
     try {
       await deleteContact(id)
       setContacts(prev => prev.filter(c => c.id !== id))
-      alert("Đã xoá địa chỉ thành công!")
+      toast.success("Đã xoá địa chỉ thành công!")
     } catch (err) {
       console.error(" Lỗi xoá contact:", err)
-      alert("Xoá thất bại, vui lòng thử lại.")
+      toast.error("Xoá thất bại, vui lòng thử lại.")
     }
   }
 

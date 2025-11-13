@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { FileDown } from "lucide-react"
+import { toast } from "sonner"
 
 export default function PurchaseFooter({
   order,
@@ -17,7 +18,7 @@ export default function PurchaseFooter({
   const [open, setOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(null)
 
-  const isDeposit = order.order_type === 2||false
+  const isDeposit = order.order_type === 2 || false
 
   const displayPrice =
     price != null
@@ -40,7 +41,7 @@ export default function PurchaseFooter({
     : null
 
   const handleConfirmDate = async () => {
-    if (!selectedDate) return alert("Vui lòng chọn ngày hẹn!")
+    if (!selectedDate) return toast.error("Vui lòng chọn ngày hẹn!")
     const appointment_time = new Date(selectedDate).toISOString()
     await onUpdateAppointment(order, appointment_time)
     setOpen(false)
@@ -65,7 +66,7 @@ export default function PurchaseFooter({
 
       {/* Nút hành động */}
       <div className="flex flex-wrap justify-center sm:justify-end gap-2">
-        {/* 🔴 Khi đơn hàng đang ở trạng thái PAID */}
+        {/* Trạng thái PAID */}
         {status === "PAID" && (
           <>
             <Button
@@ -76,7 +77,7 @@ export default function PurchaseFooter({
               Huỷ đơn
             </Button>
 
-            {/* 🗓️ Chỉ xe mới có thể đổi lịch */}
+            {/* Chỉ xe mới có thể đổi lịch */}
             {isDeposit && (
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
@@ -107,19 +108,19 @@ export default function PurchaseFooter({
           </>
         )}
 
-        {/* 🟢 Khi hàng đã giao mà chưa có khiếu nại */}
+        {/*  Khi hàng đã giao */}
         {status === "DELIVERED" &&
-          
-            <Button
-              size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
-              onClick={() => onComplete(order)}
-            >
-              Xác nhận
-            </Button>
-          }
 
-        {/* 🧾 Khi đơn hàng đã hoàn tất => tải hợp đồng */}
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
+            onClick={() => onComplete(order)}
+          >
+            Xác nhận
+          </Button>
+        }
+
+        {/*  Khi đơn hàng đã hoàn tất => tải hợp đồng */}
         {status === "COMPLETED" && order?.order_details?.[0]?.contract_file && (
           <Button
             size="sm"
@@ -142,7 +143,7 @@ export default function PurchaseFooter({
           </Button>
         )}
 
-        {/* 🔵 Nút xem chi tiết */}
+        {/* Nút xem chi tiết */}
         <Button
           size="sm"
           variant="outline"
