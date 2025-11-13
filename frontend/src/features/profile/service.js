@@ -66,6 +66,20 @@ export const updateContact = async (id, data) => {
   );
   return res.data;
 };
+export const setDefaultContact = async (id) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.patch(
+    `${API_BASE_URL}/contacts/${id}/set-default`,
+    {},
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return res.data;
+};
 //  USER
 export const updateProfile = async (id, data) => {
   const token = localStorage.getItem("accessToken");

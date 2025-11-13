@@ -4,7 +4,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Pencil, Trash2, CheckCircle } from "lucide-react"
 import AddAddressModal from "./AddAddressModal"
 import { useUser } from "@/contexts/UserContext"
-import { getContactByUserId, deleteContact } from "@/features/profile/service"
+import {
+  getContactByUserId,
+  deleteContact,
+  setDefaultContact
+} from "@/features/profile/service"
 import { toast } from "sonner"
 
 export default function ContactAddressSection() {
@@ -13,17 +17,16 @@ export default function ContactAddressSection() {
   const [showModal, setShowModal] = useState(false)
   const [editing, setEditing] = useState(null)
 
- 
   const loadContact = async () => {
     if (!user?.id) return
     try {
       const data = await getContactByUserId(user.id)
       const activeContacts = Array.isArray(data)
-        ? data.filter(contact => !contact.is_deleted)
+        ? data.filter((c) => !c.is_deleted)
         : []
       setContacts(activeContacts)
     } catch (err) {
-      console.error(" Lỗi tải contact:", err)
+      console.error("Lỗi tải contact:", err)
       setContacts([])
     }
   }
@@ -32,10 +35,23 @@ export default function ContactAddressSection() {
     loadContact()
   }, [user])
 
-  const setDefault = (id) => {
-    setContacts(prev =>
-      prev.map(c => ({ ...c, is_default: c.id === id ? 1 : 0 }))
-    )
+  const handleSetDefault = async (id) => {
+    try {
+      await setDefaultContact(id)
+
+    
+      setContacts((prev) =>
+        prev.map((c) => ({
+          ...c,
+          is_default: c.id === id
+        }))
+      )
+
+      toast.success("Đã đặt làm địa chỉ mặc định!")
+    } catch (err) {
+      console.error("Lỗi đặt mặc định:", err)
+      toast.error("Không thể đặt mặc định, vui lòng thử lại.")
+    }
   }
 
   const handleAdd = () => {
@@ -50,12 +66,13 @@ export default function ContactAddressSection() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xoá địa chỉ này không?")) return
+
     try {
       await deleteContact(id)
-      setContacts(prev => prev.filter(c => c.id !== id))
+      setContacts((prev) => prev.filter((c) => c.id !== id))
       toast.success("Đã xoá địa chỉ thành công!")
     } catch (err) {
-      console.error(" Lỗi xoá contact:", err)
+      console.error("Lỗi xoá contact:", err)
       toast.error("Xoá thất bại, vui lòng thử lại.")
     }
   }
@@ -63,19 +80,22 @@ export default function ContactAddressSection() {
   if (loading) {
     return (
       <Card className="mb-8">
-        <CardContent className="p-8 text-gray-500">Đang tải thông tin...</CardContent>
+        <CardContent className="p-8 text-gray-500">
+          Đang tải thông tin...
+        </CardContent>
       </Card>
     )
   }
 
   return (
     <div className="space-y-4">
-      {contacts?.length === 0 ? (
+      {/* Không có địa chỉ */}
+      {contacts.length === 0 ? (
         <p className="py-4 text-center text-gray-500">
           Bạn chưa có địa chỉ nào. Hãy thêm mới bên dưới.
         </p>
       ) : (
-        contacts.map(c => (
+        contacts.map((c) => (
           <Card key={c.id} className="flex items-start justify-between p-4">
             <div>
               <p className="font-medium">{c.name}</p>
@@ -95,7 +115,7 @@ export default function ContactAddressSection() {
                 <Button
                   variant="link"
                   className="p-0 mt-1 text-sm text-blue-600"
-                  onClick={() => setDefault(c.id)}
+                  onClick={() => handleSetDefault(c.id)}
                 >
                   Đặt làm mặc định
                 </Button>
@@ -106,6 +126,7 @@ export default function ContactAddressSection() {
               <Button variant="outline" size="icon" onClick={() => handleEdit(c)}>
                 <Pencil className="w-4 h-4" />
               </Button>
+
               <Button
                 variant="outline"
                 size="icon"
@@ -118,6 +139,7 @@ export default function ContactAddressSection() {
         ))
       )}
 
+      {/* Nút thêm mới */}
       <Button
         className="w-full mt-2 bg-[#007BFF] hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm"
         onClick={handleAdd}
@@ -125,6 +147,7 @@ export default function ContactAddressSection() {
         + Thêm địa chỉ mới
       </Button>
 
+      {/* Modal Add/Edit */}
       <AddAddressModal
         open={showModal}
         onClose={() => {
