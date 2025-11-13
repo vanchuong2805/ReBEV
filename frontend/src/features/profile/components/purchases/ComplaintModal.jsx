@@ -1,21 +1,27 @@
 import React, { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ImagePlus, X, Loader2 } from "lucide-react"
 import { createComplaint } from "@/features/profile/service"
 import { useUpload } from "@/hooks/posts/useUpload"
+import { toast } from "sonner"
 
-export default function ComplaintModal({ open, onClose, purchase }) {
+export default function ComplaintModal({ open, onClose, detail, onSubmitComplaint }) {
   const [description, setDescription] = useState("")
   const [images, setImages] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
   const { upload } = useUpload()
 
-  // === Upload ảnh thật lên Cloudinary ===
+  // === Upload ảnh lên Cloudinary ===
   const handleImageChange = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
@@ -25,17 +31,17 @@ export default function ComplaintModal({ open, onClose, purchase }) {
       const uploaded = []
       for (const file of files) {
         if (!file.type.startsWith("image/")) {
-          alert("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
+          toast.error("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
           continue
         }
         const data = await upload(file)
         uploaded.push({ url: data.url.split(" ")[1] })
       }
       setImages((prev) => [...prev, ...uploaded])
-      alert(" Tải ảnh lên thành công!")
+      toast.success("Tải ảnh lên thành công!")
     } catch (err) {
-      console.error(" Lỗi khi tải ảnh lên:", err)
-      alert("Không thể tải ảnh lên Cloudinary.")
+      console.error("Lỗi khi tải ảnh lên:", err)
+      toast.error("Không thể tải ảnh lên Cloudinary.")
     } finally {
       setUploading(false)
     }
@@ -47,23 +53,26 @@ export default function ComplaintModal({ open, onClose, purchase }) {
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      alert("Vui lòng nhập mô tả khiếu nại.")
+      toast.error("Vui lòng nhập mô tả chi tiết khiếu nại.")
       return
     }
     setIsSubmitting(true)
 
     try {
       await createComplaint({
-        order_detail_id: purchase.id,
+        order_detail_id: detail.id,
         description,
         media: images,
       })
-      onClose()
+
+      toast.success("Yêu cầu khiếu nại đã được gửi thành công!")
       setDescription("")
       setImages([])
+      onClose()
+      onSubmitComplaint?.() 
     } catch (err) {
-      console.error(" Lỗi gửi khiếu nại:", err)
-      alert("Không thể gửi khiếu nại.")
+      console.error("Lỗi gửi khiếu nại:", err)
+      toast.error("Gửi khiếu nại thất bại. Vui lòng thử lại.")
     } finally {
       setIsSubmitting(false)
     }
@@ -77,7 +86,6 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         </DialogHeader>
 
         <div className="space-y-4">
-
           {/* Mô tả */}
           <div>
             <Label>Mô tả chi tiết</Label>
@@ -131,7 +139,9 @@ export default function ComplaintModal({ open, onClose, purchase }) {
         </div>
 
         <DialogFooter className="mt-5">
-          <Button variant="outline" onClick={onClose}>Hủy</Button>
+          <Button variant="outline" onClick={onClose}>
+            Hủy
+          </Button>
           <Button disabled={isSubmitting || uploading} onClick={handleSubmit}>
             {isSubmitting ? "Đang gửi..." : "Gửi yêu cầu"}
           </Button>

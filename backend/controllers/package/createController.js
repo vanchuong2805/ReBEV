@@ -135,7 +135,15 @@ const createPackage = async (req, res) => {
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.CREATE_PACKAGE_SUCCESS,
-            package: newPackage,
+            package: {
+                id: newPackage.id,
+                name: newPackage.name,
+                price: newPackage.price,
+                description: newPackage.description,
+                highlight: newPackage.highlight,
+                top: newPackage.top,
+                duration: newPackage.duration,
+            }
         });
 
     } catch (error) {

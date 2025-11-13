@@ -1,9 +1,6 @@
 import FavoritesCard from './FavoritesCard'
-import { Car, Heart } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { useUser } from '@/contexts/UserContext'
-import { useState, useEffect } from 'react'
 import { useFavorite } from '@/contexts/FavoritesContexts.jsx'
 
 export default function FavoriteList() {
@@ -21,10 +18,6 @@ export default function FavoriteList() {
               Các tin đăng bạn đã thêm vào danh sách yêu thích
             </CardDescription>
           </div>
-          <Button variant="outline" className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-pink-500" />
-            <span>Thêm tin mới</span>
-          </Button>
         </div>
       </CardHeader>
 

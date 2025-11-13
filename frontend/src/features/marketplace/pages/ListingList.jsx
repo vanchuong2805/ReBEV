@@ -6,10 +6,11 @@ import {
   useLocation,
   useSearchParams,
 } from "react-router-dom";
-import { Heart, Filter, MapPin } from "lucide-react";
+import { Heart, Filter } from "lucide-react";
 import { getFeaturedProducts } from "@/features/home/service";
 import { toast } from "sonner";
 import FilterSearch from "../components/FilterSearch";
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx"; // ✅ Thêm dòng này
 
 function currency(v) {
   return Number(v || 0).toLocaleString("vi-VN") + " ₫";
@@ -34,17 +35,15 @@ export default function ListingList() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // ✅ Dùng context yêu thích
+  const { isFavorite, toggleFavorite } = useFavorite();
+
   // Lấy search từ URL query params
   const searchFromUrl = searchParams.get("search") || "";
 
-  // Sort + favorites
+  // Sort
   const [sortBy, setSortBy] = useState("newest");
   const [displayCount, setDisplayCount] = useState(10);
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
-
   const observerTarget = useRef(null);
 
   // Fetch API với filter params
@@ -53,7 +52,6 @@ export default function ListingList() {
       try {
         setLoading(true);
 
-        // Build query params từ URL
         const queryParams = {};
 
         // Category từ route hoặc từ searchParams
@@ -125,11 +123,9 @@ export default function ListingList() {
     })();
   }, [category, searchParams, searchFromUrl]);
 
-  // Chỉ sort items từ BE, không lọc nữa (BE đã lọc rồi)
+  // Sort
   const filteredItems = useMemo(() => {
     let items = [...allItems];
-
-    // Sort
     if (sortBy === "price-asc") {
       items.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === "price-desc") {
@@ -142,19 +138,8 @@ export default function ListingList() {
           new Date(a.created_at || 0).getTime()
       );
     }
-
     return items;
   }, [allItems, sortBy]);
-
-  // Calculate price range từ filtered items
-  const { priceMin, priceMax } = useMemo(() => {
-    if (filteredItems.length === 0) return { priceMin: 0, priceMax: 0 };
-    const prices = filteredItems.map((item) => Number(item.price) || 0);
-    return {
-      priceMin: Math.min(...prices),
-      priceMax: Math.max(...prices),
-    };
-  }, [filteredItems]);
 
   // Infinite scroll
   useEffect(() => {
@@ -175,23 +160,6 @@ export default function ListingList() {
   }, [filteredItems.length, displayCount]);
 
   const displayItems = filteredItems.slice(0, displayCount);
-
-  // Favorites
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      toast.dismiss();
-      if (prev.includes(id)) {
-        toast.info("Đã xóa khỏi yêu thích");
-        return prev.filter((x) => x !== id);
-      } else {
-        toast.success("Đã thêm vào yêu thích");
-        return [...prev, id];
-      }
-    });
-  };
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
 
   const categoryTitle =
     category === "xe"
@@ -228,7 +196,7 @@ export default function ListingList() {
       <div className="container px-4 py-6 mx-auto">
         <div className="flex gap-6">
           {/* Filter Sidebar */}
-          <FilterSearch priceMin={priceMin} priceMax={priceMax} />
+          <FilterSearch />
 
           {/* Main */}
           <div className="flex-1">
@@ -310,26 +278,38 @@ export default function ListingList() {
                         </div>
 
                         <div className="flex gap-2">
+                          {/* ❤️ Nút yêu thích dùng useFavorite */}
                           <button
-                            onClick={() => toggleFavorite(item.id)}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg ${
-                              favorites.includes(item.id)
-                                ? "bg-red-50 text-red-600"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleFavorite(item);
+                              toast.dismiss();
+                              toast.success(
+                                isFavorite(item.id)
+                                  ? "Đã xoá khỏi yêu thích"
+                                  : "Đã thêm vào yêu thích"
+                              );
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                              isFavorite(item.id)
+                                ? "bg-red-50 text-red-600 hover:bg-red-100"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
                             <Heart
-                              className={`w-4 h-4 ${
-                                favorites.includes(item.id)
-                                  ? "fill-current"
+                              className={`w-4 h-4 transition-transform ${
+                                isFavorite(item.id)
+                                  ? "fill-current scale-110"
                                   : ""
                               }`}
                             />
-                            {favorites.includes(item.id)
+                            {isFavorite(item.id)
                               ? "Đã thích"
                               : "Yêu thích"}
                           </button>
 
+                          {/* 🔍 Xem chi tiết */}
                           <Link
                             to={`/marketplace/listing/${item.id}`}
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"

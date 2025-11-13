@@ -1,4 +1,7 @@
-import React, { useState } from "react"
+import React from "react"
+import { useFormik } from "formik"
+import * as Yup from "yup"
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -9,163 +12,263 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"
-import { ArrowDownToLine } from "lucide-react"
+
+const WithdrawSchema = Yup.object().shape({
+  amount: Yup.number()
+    .required("Vui lòng nhập số tiền.")
+    .min(50000, "Số tiền tối thiểu là 50.000₫."),
+  method: Yup.string().oneOf(["momo", "bank"]).required(),
+
+  momoPhone: Yup.string().when("method", {
+    is: "momo",
+    then: (schema) =>
+      schema.required("Vui lòng nhập số điện thoại MoMo."),
+  }),
+
+  momoName: Yup.string().when("method", {
+    is: "momo",
+    then: (schema) =>
+      schema.required("Vui lòng nhập tên chủ tài khoản MoMo."),
+  }),
+
+  bankName: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) =>
+      schema.required("Vui lòng chọn ngân hàng."),
+  }),
+
+  bankNumber: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) =>
+      schema.required("Vui lòng nhập số tài khoản."),
+  }),
+
+  bankOwner: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) =>
+      schema.required("Vui lòng nhập tên chủ tài khoản."),
+  }),
+})
 
 export default function WithdrawForm({ balance, onCancel, onConfirm }) {
-  const [method, setMethod] = useState("momo")
-  const [amount, setAmount] = useState("")
-  const [formData, setFormData] = useState({})
+  const formik = useFormik({
+    initialValues: {
+      amount: "",
+      method: "momo",
 
-  const handleSubmit = () => {
-    const numericAmount = Number(amount)
+      momoPhone: "",
+      momoName: "",
 
-    if (!numericAmount || numericAmount <= 0) {
-      alert("Vui lòng nhập số tiền hợp lệ.")
-      return
-    }
+      bankName: "",
+      bankNumber: "",
+      bankOwner: "",
+    },
 
-    if (numericAmount < 50000) {
-      alert("Số tiền rút tối thiểu là 50.000₫.")
-      return
-    }
+    validationSchema: WithdrawSchema,
 
-    if (numericAmount > balance) {
-      alert("Số tiền vượt quá số dư khả dụng.")
-      return
-    }
+    onSubmit: (values) => {
+      onConfirm({
+        amount: Number(values.amount),
+        method: values.method,
+        ...values,
+      })
+    },
+  })
 
-    onConfirm({ amount: numericAmount, method, ...formData })
+  const formatAmount = (v) =>
+    v ? Number(v).toLocaleString("vi-VN") : ""
+
+  const handleAmountChange = (e) => {
+    let raw = e.target.value.replace(/\D/g, "")
+    if (!raw) return formik.setFieldValue("amount", "")
+    let numeric = Number(raw)
+    if (numeric > balance) numeric = balance
+    formik.setFieldValue("amount", numeric)
   }
 
   return (
-    <Card className="border-2 border-blue-200 shadow-xl animate-in slide-in-from-top-4 duration-300">
-      <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-        <CardTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-          <ArrowDownToLine className="w-5 h-5 text-blue-600" />
+    <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white">
+      <CardHeader className="px-6 py-5 border-b bg-gray-50 rounded-t-2xl">
+        <CardTitle className="text-xl font-semibold text-gray-900">
           Yêu cầu rút tiền
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="p-6 space-y-5">
-        {/* Số tiền */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+      <CardContent className="px-6 py-6 space-y-7">
+        {/* AMOUNT */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-800">
             Số tiền muốn rút
           </label>
-          <div className="relative">
-            <Input
-              className="h-12 pl-8 text-lg font-semibold border-2 focus:border-blue-500"
-              placeholder="0"
-              type="number"
-              value={amount}
-              onChange={(e) => {
-                const value = Number(e.target.value)
-                if (value <= balance) {
-                  setAmount(value)
-                } else {
-                  alert("Không thể nhập số tiền vượt quá số dư khả dụng.")
-                }
-              }}
-            />
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">
-              ₫
-            </span>
-          </div>
 
-          {/* Gợi ý giới hạn */}
-          <p
-            className={`text-xs mt-1 ${
-              amount && amount < 50000
-                ? "text-red-500 font-medium"
-                : "text-gray-500"
+          <Input
+            name="amount"
+            placeholder="0"
+            type="text"
+            className={`h-12 text-lg font-semibold rounded-xl w-full ${
+              formik.errors.amount && formik.touched.amount
+                ? "border-red-400 focus:border-red-500"
+                : "border-gray-300 focus:border-blue-500"
             }`}
-          >
-            💡 Tối thiểu: 50.000₫ — Tối đa: ₫{balance.toLocaleString("vi-VN")}
-          </p>
+            value={formatAmount(formik.values.amount)}
+            onChange={handleAmountChange}
+            onBlur={formik.handleBlur}
+          />
 
-          <p className="text-xs text-gray-500 mt-1">
-            Số dư khả dụng: ₫{balance.toLocaleString("vi-VN")}
+          {formik.errors.amount && formik.touched.amount && (
+            <p className="text-xs text-red-500">{formik.errors.amount}</p>
+          )}
+
+          <p className="text-xs text-gray-500">
+            Tối thiểu 50.000₫ — Tối đa {balance.toLocaleString("vi-VN")}₫
           </p>
         </div>
 
-        {/* Phương thức */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        {/* METHOD */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-800">
             Phương thức thanh toán
           </label>
-          <Select value={method} onValueChange={setMethod}>
-            <SelectTrigger className="h-12 border-2 focus:border-blue-500">
+
+          <Select
+            value={formik.values.method}
+            onValueChange={(val) => formik.setFieldValue("method", val)}
+          >
+            <SelectTrigger className="h-12 w-full rounded-xl border-gray-300 focus:border-blue-500">
               <SelectValue placeholder="Chọn phương thức" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-xl">
               <SelectItem value="momo">Ví MoMo</SelectItem>
               <SelectItem value="bank">Ngân hàng</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
-        {/* Form phụ thuộc phương thức */}
-        {method === "momo" ? (
-          <>
-            <Input
-              placeholder="Số điện thoại MoMo"
-              className="h-12 border-2 focus:border-blue-500"
-              onChange={(e) =>
-                setFormData({ ...formData, momoPhone: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Tên chủ tài khoản"
-              className="h-12 border-2 focus:border-blue-500"
-              onChange={(e) =>
-                setFormData({ ...formData, momoName: e.target.value })
-              }
-            />
-          </>
+        {/* SUB FORM */}
+        {formik.values.method === "momo" ? (
+          <div className="space-y-4">
+            {/* momoPhone */}
+            <div>
+              <Input
+                placeholder="Số điện thoại MoMo"
+                name="momoPhone"
+                className={`h-12 rounded-xl w-full ${
+                  formik.errors.momoPhone && formik.touched.momoPhone
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.errors.momoPhone && formik.touched.momoPhone && (
+                <p className="text-xs text-red-500">{formik.errors.momoPhone}</p>
+              )}
+            </div>
+
+            {/* momoName */}
+            <div>
+              <Input
+                placeholder="Tên chủ tài khoản"
+                name="momoName"
+                className={`h-12 rounded-xl w-full ${
+                  formik.errors.momoName && formik.touched.momoName
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.errors.momoName && formik.touched.momoName && (
+                <p className="text-xs text-red-500">{formik.errors.momoName}</p>
+              )}
+            </div>
+          </div>
         ) : (
-          <>
-            <Select
-              onValueChange={(value) =>
-                setFormData({ ...formData, bankName: value })
-              }
-            >
-              <SelectTrigger className="h-12 border-2 focus:border-blue-500">
-                <SelectValue placeholder="Chọn ngân hàng" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="MB Bank">MB Bank</SelectItem>
-                <SelectItem value="Vietcombank">Vietcombank</SelectItem>
-                <SelectItem value="Techcombank">Techcombank</SelectItem>
-                <SelectItem value="ACB">ACB</SelectItem>
-              </SelectContent>
-            </Select>
-            <Input
-              placeholder="Số tài khoản"
-              className="h-12 border-2 focus:border-blue-500"
-              onChange={(e) =>
-                setFormData({ ...formData, bankNumber: e.target.value })
-              }
-            />
-            <Input
-              placeholder="Tên chủ tài khoản"
-              className="h-12 border-2 focus:border-blue-500"
-              onChange={(e) =>
-                setFormData({ ...formData, bankOwner: e.target.value })
-              }
-            />
-          </>
+          <div className="space-y-4">
+            {/* bankName */}
+            <div>
+              <Select
+                onValueChange={(val) =>
+                  formik.setFieldValue("bankName", val)
+                }
+              >
+                <SelectTrigger
+                  className={`h-12 w-full rounded-xl ${
+                    formik.errors.bankName && formik.touched.bankName
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-gray-300 focus:border-blue-500"
+                  }`}
+                >
+                  <SelectValue placeholder="Chọn ngân hàng" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MB Bank">MB Bank</SelectItem>
+                  <SelectItem value="Vietcombank">Vietcombank</SelectItem>
+                  <SelectItem value="Techcombank">Techcombank</SelectItem>
+                  <SelectItem value="ACB">ACB</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {formik.errors.bankName && formik.touched.bankName && (
+                <p className="text-xs text-red-500 mt-1">{formik.errors.bankName}</p>
+              )}
+            </div>
+
+            {/* bankNumber */}
+            <div>
+              <Input
+                placeholder="Số tài khoản"
+                name="bankNumber"
+                className={`h-12 rounded-xl w-full ${
+                  formik.errors.bankNumber && formik.touched.bankNumber
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.errors.bankNumber && formik.touched.bankNumber && (
+                <p className="text-xs text-red-500 mt-1">{formik.errors.bankNumber}</p>
+              )}
+            </div>
+
+            {/* bankOwner */}
+            <div>
+              <Input
+                placeholder="Tên chủ tài khoản"
+                name="bankOwner"
+                className={`h-12 rounded-xl w-full ${
+                  formik.errors.bankOwner && formik.touched.bankOwner
+                    ? "border-red-400 focus:border-red-500"
+                    : "border-gray-300 focus:border-blue-500"
+                }`}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              {formik.errors.bankOwner && formik.touched.bankOwner && (
+                <p className="text-xs text-red-500 mt-1">{formik.errors.bankOwner}</p>
+              )}
+            </div>
+          </div>
         )}
 
-        {/* Buttons */}
-        <div className="flex gap-3 pt-4">
-          <Button variant="outline" className="flex-1 h-12" onClick={onCancel}>
-            Hủy bỏ
-          </Button>
+        {/* BUTTONS */}
+        <div className="flex gap-4 pt-2">
           <Button
-            className="flex-1 h-12 bg-blue-600 text-white hover:bg-blue-700"
-            onClick={handleSubmit}
+            type="button"
+            variant="outline"
+            className="flex-1 h-12 rounded-xl border-gray-300 hover:bg-gray-100"
+            onClick={onCancel}
           >
-            Xác nhận rút tiền
+            Hủy
+          </Button>
+
+          <Button
+            type="button"
+            className="flex-1 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+            onClick={formik.handleSubmit}
+          >
+            Xác nhận
           </Button>
         </div>
       </CardContent>

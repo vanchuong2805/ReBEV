@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { getPackage, createRegisterPackage } from "../service"
 import { useUser } from "@/contexts/UserContext"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 const cardAccents = [
   { bg: "bg-white", accent: "border-gray-200", hover: "hover:border-gray-300" },
@@ -21,49 +22,53 @@ export default function MembershipPackage() {
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(false)
+  const [currentUserPackage, setCurrentUserPackage] = useState(null)
   const { user, setUser } = useUser()
   const navigate = useNavigate()
 
-  // 🔹 Lấy danh sách gói và sắp xếp theo giá tăng dần
   useEffect(() => {
     const fetchPackages = async () => {
       try {
         const data = await getPackage()
-        const activePackages = data
-          .filter((pkg) => pkg.is_deleted === false)
+
+        const filteredPackages = data
+          .filter(pkg => !pkg.is_deleted || pkg.id === user?.package_id)
           .sort((a, b) => a.price - b.price)
-        setPackages(activePackages)
-        console.log("Gói đã tải:", activePackages)
+
+        setPackages(filteredPackages)
+
+        const current = data.find(p => p.id === user?.package_id)
+        setCurrentUserPackage(current)
       } catch (error) {
         console.error("Lỗi tải gói:", error)
       }
     }
     fetchPackages()
-  }, [])
+  }, [user])
 
   const currentPlan = packages.find((p) => p.id === selectedPlan)
 
-  // 🔹 Xử lý chọn gói
   const handleChoose = async () => {
     if (!user) {
-      alert("Vui lòng đăng nhập trước khi nâng cấp gói!")
+      toast.error("Vui lòng đăng nhập trước khi nâng cấp gói!")
       navigate("/login")
       return
     }
 
     if (!currentPlan) {
-      alert("Vui lòng chọn gói thành viên!")
+      toast.error("Vui lòng chọn gói thành viên!")
+      return
+    }
+
+    if (currentUserPackage && currentPlan.price <= currentUserPackage.price) {
+      toast.error("Bạn chỉ có thể nâng cấp lên gói cao hơn gói hiện tại!")
       return
     }
 
     try {
       setLoading(true)
-      console.log("Chọn gói:", currentPlan, "cho user:", user.id)
-
       const data = await createRegisterPackage(user.id, currentPlan.id)
-      console.log("Yêu cầu thanh toán đã tạo:", data)
 
-      // ✅ Cập nhật user trong localStorage trước khi chuyển hướng
       const updatedUser = { ...user, package_id: currentPlan.id }
       localStorage.setItem("user", JSON.stringify(updatedUser))
       if (setUser) setUser(updatedUser)
@@ -71,11 +76,11 @@ export default function MembershipPackage() {
       if (data.payUrl) {
         window.location.href = data.payUrl
       } else {
-        alert("Không tìm thấy đường dẫn thanh toán. Vui lòng thử lại.")
+        toast.error("Không tìm thấy đường dẫn thanh toán.")
       }
     } catch (error) {
       console.error("Lỗi khi chọn gói:", error)
-      alert("Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.")
+      toast.error("Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.")
     } finally {
       setLoading(false)
     }
@@ -94,35 +99,50 @@ export default function MembershipPackage() {
           </p>
         </div>
 
-        {/* Package Grid */}
+        {/* Danh sách gói */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {packages.map((pkg, index) => {
             const isSelected = selectedPlan === pkg.id
+            const isCurrent = pkg.id === user?.package_id
+            const isLowerPlan =
+              currentUserPackage && pkg.price <= currentUserPackage.price
+
             const style = cardAccents[index % cardAccents.length]
 
             return (
               <Card
                 key={pkg.id}
+                onClick={() => {
+                  if (isLowerPlan) return
+                  setSelectedPlan(pkg.id)
+                }}
                 className={`relative flex flex-col justify-between min-h-[470px] transition-all duration-300 cursor-pointer
-                  ${style.bg} border-2 ${
-                    isSelected
-                      ? "border-blue-600 shadow-xl shadow-blue-100"
-                      : `${style.accent} ${style.hover} hover:shadow-lg`
-                  }`}
-                onClick={() => setSelectedPlan(pkg.id)}
+                  ${style.bg} border-2 ${isSelected
+                    ? "border-blue-600 shadow-xl shadow-blue-100"
+                    : `${style.accent} ${style.hover} hover:shadow-lg`
+                  } ${isLowerPlan ? "opacity-60 cursor-not-allowed" : ""}`}
               >
-                {/* Selected Badge */}
-                {isSelected && (
-                  <div
-                    className="absolute -top-3 left-1/2 -translate-x-1/2"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span className="bg-blue-600 text-white text-xs font-semibold px-4 py-1.5 rounded-full shadow-md cursor-default select-none">
-                      Đã chọn
+                {/* Badge hiển thị */}
+                {(isSelected || isCurrent) && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span
+                      className={`text-xs font-semibold px-4 py-1.5 rounded-full shadow-md ${isCurrent
+                          ? pkg.is_deleted
+                            ? "bg-gray-500 text-white"
+                            : "bg-green-600 text-white"
+                          : "bg-blue-600 text-white"
+                        }`}
+                    >
+                      {isCurrent
+                        ? pkg.is_deleted
+                          ? "Gói hiện tại (đã ngừng)"
+                          : "Gói hiện tại"
+                        : "Đã chọn"}
                     </span>
                   </div>
                 )}
 
+                {/* Header */}
                 <CardHeader className="text-center pb-6 pt-8">
                   <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
                     {pkg.name}
@@ -132,10 +152,10 @@ export default function MembershipPackage() {
                   </p>
                 </CardHeader>
 
+                {/* Nội dung */}
                 <CardContent className="pt-0 flex flex-col justify-between h-full">
-                  {/* Pricing + Features */}
+                  {/* Giá */}
                   <div>
-                    {/* Pricing */}
                     <div className="text-center mb-6 pb-6 border-b border-gray-100">
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-4xl font-bold text-gray-900">
@@ -154,7 +174,7 @@ export default function MembershipPackage() {
                       )}
                     </div>
 
-                    {/* Features */}
+                    {/* Tính năng */}
                     <div className="space-y-3 mb-6 min-h-[70px]">
                       {pkg.highlight && (
                         <div className="flex items-center gap-3 text-sm text-gray-700">
@@ -183,23 +203,26 @@ export default function MembershipPackage() {
                     </div>
                   </div>
 
-                  {/* Action Button */}
+                  {/* Nút hành động */}
                   <Button
                     onClick={handleChoose}
-                    disabled={loading}
+                    disabled={loading || isLowerPlan || isCurrent}
                     className={`w-full h-11 font-medium rounded-lg transition-all duration-200 mt-auto
-                      ${
-                        isSelected
+                      ${isCurrent
+                        ? "bg-green-600 text-white cursor-default"
+                        : isSelected
                           ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
                           : "bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300"
                       }`}
                   >
-                    {loading
-                      ? "Đang xử lý..."
-                      : isSelected
-                      ? "Nâng cấp ngay"
-                      : "Chọn gói"}
-                    {!loading && <ArrowRight className="w-4 h-4 ml-2" />}
+                    {isCurrent
+                      ? "Đang sử dụng"
+                      : loading
+                        ? "Đang xử lý..."
+                        : isSelected
+                          ? "Nâng cấp ngay"
+                          : "Chọn gói"}
+                    {!loading && !isCurrent && <ArrowRight className="w-4 h-4 ml-2" />}
                   </Button>
                 </CardContent>
               </Card>
@@ -207,7 +230,7 @@ export default function MembershipPackage() {
           })}
         </div>
 
-        {/* Trust Section */}
+        {/* Footer nhỏ */}
         <div className="mt-16 text-center">
           <p className="text-sm text-gray-500">
             Thanh toán an toàn • Hỗ trợ 24/7 • Hoàn tiền nếu không hài lòng

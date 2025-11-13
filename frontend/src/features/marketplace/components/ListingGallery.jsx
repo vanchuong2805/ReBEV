@@ -1,50 +1,37 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
-import ColorThief from "colorthief";
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useState } from "react"
 
 export default function ListingGallery({ listing, currentImageIndex, setCurrentImageIndex }) {
-  const [bgColor, setBgColor] = useState("#f3f4f6"); // nền mặc định sáng
+  const [transitioning, setTransitioning] = useState(false)
 
-  useEffect(() => {
-    if (!listing?.media?.length) return;
+  const nextImage = () => {
+    if (transitioning) return
+    setTransitioning(true)
+    setTimeout(() => setTransitioning(false), 500)
+    setCurrentImageIndex((i) => (i + 1) % listing.media.length)
+  }
 
-    const img = new Image();
-    img.crossOrigin = "Anonymous";
-    img.src = listing.media[currentImageIndex]?.url?.replace(/^image\s+|^video\s+/i, "");
-
-    img.onload = () => {
-      try {
-        const colorThief = new ColorThief();
-        const color = colorThief.getColor(img);
-        setBgColor(`rgb(${color[0]}, ${color[1]}, ${color[2]})`);
-      } catch {
-        setBgColor("#f3f4f6");
-      }
-    };
-  }, [listing, currentImageIndex]);
-
-  const nextImage = () => setCurrentImageIndex((i) => (i + 1) % listing.media.length);
-  const prevImage = () => setCurrentImageIndex((i) => (i - 1 + listing.media.length) % listing.media.length);
+  const prevImage = () => {
+    if (transitioning) return
+    setTransitioning(true)
+    setTimeout(() => setTransitioning(false), 500)
+    setCurrentImageIndex((i) => (i - 1 + listing.media.length) % listing.media.length)
+  }
 
   return (
-    <div className="overflow-hidden rounded-xl shadow-md bg-white">
-      <div
-        className="relative flex items-center justify-center aspect-video transition-all duration-700"
-        style={{
-          background: `linear-gradient(135deg, ${bgColor} 0%, #ffffff 80%)`,
-        }}
-      >
+    <div className="overflow-hidden rounded-xl bg-white">
+      <div className="relative flex items-center justify-center aspect-video bg-white transition-all duration-700 ease-in-out">
         <AnimatePresence mode="wait">
           <motion.img
             key={listing.media[currentImageIndex]?.url}
             src={listing.media[currentImageIndex]?.url?.replace(/^image\s+|^video\s+/i, "")}
             alt={listing.title}
-            className="object-contain w-full h-full rounded-2xl drop-shadow-[0_0_20px_rgba(0,0,0,0.15)]"
-            initial={{ opacity: 0, scale: 1.05 }}
+            className="object-contain w-full h-full rounded-xl transition-transform duration-700"
+            initial={{ opacity: 0, scale: 1.03 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
           />
         </AnimatePresence>
 
@@ -53,14 +40,14 @@ export default function ListingGallery({ listing, currentImageIndex, setCurrentI
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/40 backdrop-blur-sm hover:bg-white/70 text-gray-800 p-2 rounded-full shadow transition"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-800 p-2 rounded-full shadow-sm transition"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
 
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/40 backdrop-blur-sm hover:bg-white/70 text-gray-800 p-2 rounded-full shadow transition"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm hover:bg-white text-gray-800 p-2 rounded-full shadow-sm transition"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -74,13 +61,13 @@ export default function ListingGallery({ listing, currentImageIndex, setCurrentI
               key={i}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                 i === currentImageIndex
-                  ? "bg-white shadow-md scale-125"
-                  : "bg-white/50 hover:bg-white/80"
+                  ? "bg-gray-900 scale-125"
+                  : "bg-gray-300 hover:bg-gray-400"
               }`}
             />
           ))}
         </div>
       </div>
     </div>
-  );
+  )
 }

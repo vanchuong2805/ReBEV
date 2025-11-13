@@ -11,10 +11,8 @@ export default function ReturnOrderDetailPage() {
   const location = useLocation()
   const [posts, setPosts] = useState([])
 
-  // 🧩 Nhận order (pros item) từ PurchasesSection
   const order = location.state?.order
 
-  // 🚫 Nếu reload mà không có dữ liệu
   if (!order) {
     return (
       <div className="text-center py-20 text-gray-500">
@@ -32,17 +30,14 @@ export default function ReturnOrderDetailPage() {
     )
   }
 
-  // 🧠 Xác định trạng thái khiếu nại
-  const complaintStatus = order.complaint_status || 1
+  const complaintStatus = order.complaint_status
   const isApproved = complaintStatus === 1
 
-  // 🧩 Lấy trạng thái đơn hoàn
   const latest = order.order_status?.at(-1)?.status || "PENDING"
   const canceled = ["CANCELLED", "CUSTOMER_CANCELLED", "SELLER_CANCELLED"].includes(latest)
   const returnStatuses = ["PENDING", "RETURNING", "RETURNED"]
   const progress = returnStatuses.indexOf(latest)
 
-  // 🧩 Chuẩn hóa danh sách post và thêm thumbnail
   useEffect(() => {
     const normalizePosts = () => {
       const rawPosts = Array.isArray(order.order_details)
@@ -64,7 +59,7 @@ export default function ReturnOrderDetailPage() {
             thumbnailUrl = thumb?.url?.replace(/^image\s+/i, "") || thumbnailUrl
           }
         } catch (err) {
-          console.warn("⚠️ Lỗi parse media:", err)
+          console.warn(" Lỗi parse media:", err)
         }
 
         return {
@@ -79,7 +74,6 @@ export default function ReturnOrderDetailPage() {
     normalizePosts()
   }, [order])
 
-  // 🧱 UI
   return (
     <OrderLayout
       title={`HOÀN TIỀN - MÃ ĐƠN: ${order.id}`}

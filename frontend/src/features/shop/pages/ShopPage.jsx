@@ -151,7 +151,7 @@ export default function ShopPage() {
         <div className="flex gap-6 border-b mb-8">
           {[
             { key: "active", label: "Đang bán", count: activePosts.length },
-            { key: "reserved", label: "Đặt trước", count: reservedPosts.length },
+            { key: "reserved", label: "Đang giao dịch", count: reservedPosts.length },
             { key: "sold", label: "Đã bán", count: soldPosts.length },
           ].map((t) => (
             <button
@@ -203,7 +203,7 @@ export default function ShopPage() {
                     )}
                     {tab === "reserved" && (
                       <div className="absolute inset-0 bg-yellow-100/80 flex items-center justify-center">
-                        <span className="text-yellow-800 text-sm font-medium">Đặt trước</span>
+                        <span className="text-yellow-800 text-sm font-medium">Đang giao dịch</span>
                       </div>
                     )}
                   </div>

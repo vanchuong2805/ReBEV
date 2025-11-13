@@ -110,12 +110,43 @@ const deleteUserContact = async ({
     return updatedContact;
 }
 
+const setDefaultContact = async ({
+    id,
+    user_id
+}) => {
+    const contact = await contacts.findOne({
+        where: {
+            id, user_id
+        }
+    });
+
+    if (!contact) throw new Error("Contact not found");
+
+    await contacts.update({
+        is_default: false
+    }, {
+        where: {
+            user_id
+        }
+    });
+
+
+    contact.is_default = true;
+    await contact.save();
+
+    return contact;
+
+}
+
+
 export default {
     getUserContacts,
+    setDefaultContact,
     getUserContact,
     getUserContactsByUserId,
     createUserContact,
     updateUserContact,
     getUserById,
-    deleteUserContact
+    deleteUserContact,
+    setDefaultContact
 };

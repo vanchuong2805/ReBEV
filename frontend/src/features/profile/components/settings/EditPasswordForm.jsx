@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Eye, EyeOff } from "lucide-react"
 import { useUser } from "@/contexts/UserContext"
 import { changePassword } from "@/features/profile/service"
+import { toast } from "sonner"
 
 export default function EditPasswordForm() {
     const { user, loading, updateUser } = useUser()
@@ -26,17 +27,17 @@ export default function EditPasswordForm() {
     e.preventDefault()
 
     if (!form.old_password || !form.new_password || !form.confirm_password) {
-      alert("Vui lòng điền đầy đủ tất cả các trường.")
+      toast.error("Vui lòng điền đầy đủ tất cả các trường.")
       return
     }
 
     if (form.new_password !== form.confirm_password) {
-      alert("Mật khẩu xác nhận không trùng khớp.")
+      toast.error("Mật khẩu xác nhận không trùng khớp.")
       return
     }
 
     if (form.new_password.length < 6) {
-      alert("Mật khẩu mới phải có ít nhất 6 ký tự.")
+      toast.error("Mật khẩu mới phải có ít nhất 6 ký tự.")
       return
     }
     setForm({
@@ -48,9 +49,9 @@ export default function EditPasswordForm() {
     const res = await changePassword(user.id, form.old_password, form.new_password)
 
     if (res.status == "200") {
-      alert("Đổi mật khẩu thành công!")
+      toast.success("Đổi mật khẩu thành công!")
     } else {
-      alert("Đổi mật khẩu thất bại. Vui lòng thử lại.")
+      toast.error("Đổi mật khẩu thất bại. Vui lòng thử lại.")
     }
   }
 
