@@ -15,25 +15,29 @@ import {
 import { toast } from "sonner";
 
 const UserManagement = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
   const [showStaffForm, setShowStaffForm] = useState(false);
   // removed staff password modal: password changes are handled elsewhere (or via API)
   const [staffFormData, setStaffFormData] = useState({
     email: "",
     phone: "",
   });
+  //
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    hasPackage: "",
+    isLocked: "",
+  });
+  const searchKey = `?hasPackage=${filSearch.hasPackage}&isLocked=${filSearch.isLocked}&search=${filSearch.searchTerm}`;
 
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
     const data = async () => {
-      const fresh = await fetchUsers();
+      const fresh = await fetchUsers(searchKey);
       setUsers(fresh.users);
     };
     data();
-  }, []);
+  }, [filSearch]);
 
   //---------------------------------------------
   const getStatusColor = (is_locked) => {
@@ -153,29 +157,28 @@ const UserManagement = () => {
       </div>
       {/* Filters */}
       <FilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="Tìm kiếm theo ID, tên hoặc email..."
+        setFilSearch={setFilSearch}
+        filSearch={filSearch}
+        searchPlaceholder="Tìm kiếm ..."
         selects={[
           {
-            key: "status",
-            value: statusFilter,
-            onChange: setStatusFilter,
+            key: "hasPackage",
+            value: filSearch.hasPackage,
+            onChange: (v) => setFilSearch((pre) => ({ ...pre, hasPackage: v })),
             options: [
-              { value: "all", label: "Tất cả trạng thái" },
-              { value: "active", label: "Hoạt động" },
-              { value: "locked", label: "Bị khóa" },
+              { value: "", label: "Tất cả" },
+              { value: "true", label: "Đã đăng kí gói" },
+              { value: "false", label: "Chưa đăng kí gói" },
             ],
           },
           {
-            key: "role",
-            value: roleFilter,
-            onChange: setRoleFilter,
+            key: "isLocked",
+            value: filSearch.isLocked,
+            onChange: (v) => setFilSearch((pre) => ({ ...pre, isLocked: v })),
             options: [
-              { value: "all", label: "Tất cả vai trò" },
-              { value: "user", label: "Người dùng" },
-              { value: "staff", label: "Nhân viên" },
-              { value: "admin", label: "Quản trị viên" },
+              { value: "", label: "Tất cả" },
+              { value: "true", label: "Bị khóa" },
+              { value: "false", label: "Không bị khóa" },
             ],
           },
         ]}

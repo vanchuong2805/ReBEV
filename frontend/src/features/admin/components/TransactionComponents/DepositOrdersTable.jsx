@@ -1,23 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  getOrders,
-  updateContractFile,
-  updateOrderStatus,
-} from "../../service";
+import React, { useRef } from "react";
+import { updateContractFile, updateOrderStatus } from "../../service";
 import { useUpload } from "@/hooks/posts/useUpload";
 import { Button } from "@/components/ui/button";
 
-export default function DepositOrdersTable() {
+export default function DepositOrdersTable({ orders, setOrders }) {
   const { upload } = useUpload();
   const fileRef = useRef(null);
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    (async () => {
-      const data = await getOrders(2);
-      setOrders(data.orders || []);
-    })();
-  }, []);
 
   const handleAddContract = async (e, id) => {
     const file = e.target.files?.[0];

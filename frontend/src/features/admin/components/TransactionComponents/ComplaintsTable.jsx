@@ -1,17 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { changeComplaintStatus, getComplaints } from "../../service";
+import React from "react";
+import { changeComplaintStatus } from "../../service";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 
-export default function ComplaintsTable() {
-  const [complaints, setComplaints] = useState([]);
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getComplaints();
-      setComplaints(data?.complaints || []);
-    };
-    fetchData();
-  }, []);
+export default function ComplaintsTable({ complaints, setComplaints }) {
   const formatDate = (isoString) => {
     return new Date(isoString).toLocaleString("vi-VN", {
       hour12: false,
@@ -20,8 +12,14 @@ export default function ComplaintsTable() {
   };
   const handleChangStatus = async (id, status) => {
     await changeComplaintStatus(id, status);
-    const data = await getComplaints();
-    setComplaints(data?.complaints || []);
+    setComplaints((prev) =>
+      prev.map((complaint) => {
+        if (complaint.id === id) {
+          return { ...complaint, complaint_status: status };
+        }
+        return complaint;
+      })
+    );
   };
   const getStatusBadge = (status) => {
     const base =
@@ -117,7 +115,7 @@ export default function ComplaintsTable() {
                       ? item.moderator_user.display_name
                       : "N/A"}
                   </td>
-                  {item.complaint_status == "PENDING" && (
+                  {item.complaint_status == 0 && (
                     <td className=" whitespace-nowrap text-sm text-gray-900 flex flex-col space-y-2 lg:w-36">
                       <Button
                         size="sm"
@@ -135,7 +133,7 @@ export default function ComplaintsTable() {
                         variant="outline"
                         className="border-red-300 text-red-600 hover:bg-red-50"
                         onClick={() => {
-                          handleChangStatus(item.id, "REJECTED");
+                          handleChangStatus(item.id, 2);
                         }}
                       >
                         Từ chối
@@ -145,7 +143,7 @@ export default function ComplaintsTable() {
                         size="sm"
                         className="bg-green-600 hover:bg-green-700"
                         onClick={() => {
-                          handleChangStatus(item.id, "RESOLVED");
+                          handleChangStatus(item.id, 1);
                         }}
                       >
                         Phê duyệt
@@ -162,7 +160,7 @@ export default function ComplaintsTable() {
                   className="px-6 py-8 text-sm text-gray-500 text-center"
                   colSpan={9}
                 >
-                  Không có đơn đặt cọc nào.
+                  Không có đơn khiếu nại nào.
                 </td>
               </tr>
             )}
