@@ -16,7 +16,6 @@ import {
 import { useUser } from "@/contexts/UserContext";
 import { useCart } from "@/contexts/CartContext";
 
-// === Import các components con ===
 import ListingGallery from "../components/ListingGallery";
 import ListingDescription from "../components/ListingDescription";
 import ListingActions from "../components/ListingActions";
@@ -50,10 +49,15 @@ const ListingDetail = () => {
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [listingId]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const postRes = await getPostById(listingId);
+
         const [varRes, cateRes, baseRes, userRes, contactRes, varValRes] =
           await Promise.all([
             getVariations(),
@@ -120,7 +124,6 @@ const ListingDetail = () => {
       month: "2-digit",
       year: "numeric",
     }).format(new Date(date));
-
 
   const handleBuyNow = async () => {
     if (!user) {
@@ -219,6 +222,7 @@ const ListingDetail = () => {
     name: "Người bán",
     avatar: listing.user_avatar,
   };
+
   const categoryInfo = categories.find((c) => c.id === listing.category_id);
   const baseInfo = bases.find((b) => b.id === listing.base_id);
 
@@ -246,7 +250,6 @@ const ListingDetail = () => {
             />
           </motion.div>
 
-          {/* RIGHT: Sidebar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -17,12 +17,11 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null)
   const [posts, setPosts] = useState([])
 
-  // === Gọi API lấy chi tiết đơn và sản phẩm ===
   useEffect(() => {
     async function fetchOrderAndPosts() {
       try {
         const data = await getOrderById(orderId)
-        console.log("✅ Dữ liệu đơn hàng:", data)
+        console.log("Dữ liệu đơn hàng:", data)
         setOrder(data)
 
         const postIds = data?.order_details?.map((d) => d.post_id) || []
@@ -45,7 +44,7 @@ export default function OrderDetailPage() {
                     thumb?.url?.replace(/^image\s+/i, "") || thumbnailUrl
                 }
               } catch (e) {
-                console.error("❌ Lỗi parse media:", e)
+                console.error(" Lỗi parse media:", e)
               }
 
               return {
@@ -60,14 +59,14 @@ export default function OrderDetailPage() {
           console.log(" Dữ liệu bài đăng:", order)
         }
       } catch (err) {
-        console.error("❌ Lỗi tải dữ liệu đơn hàng:", err)
+        console.error(" Lỗi tải dữ liệu đơn hàng:", err)
       }
     }
 
     fetchOrderAndPosts()
   }, [orderId])
 
-  // === Nếu chưa tải xong ===
+
   if (!order)
     return (
       <div className="text-center py-20 text-gray-500">
@@ -75,7 +74,6 @@ export default function OrderDetailPage() {
       </div>
     )
 
-  // === Xác định trạng thái đơn hàng ===
   const latestStatus = order.order_statuses?.at(-1)?.status || "PAID"
   const statusFlow = ["PAID", "CONFIRMED", "DELIVERING","DELIVERED", "COMPLETED"]
 
@@ -101,7 +99,6 @@ export default function OrderDetailPage() {
   const progressIndex = Math.max(statusFlow.indexOf(latestStatus), 0)
   const isCanceled = canceledStatuses.includes(latestStatus)
 
-  // === Địa chỉ người nhận ===
   let toContact = {}
   try {
     toContact = JSON.parse(order.to_contact || "{}")
@@ -115,13 +112,11 @@ export default function OrderDetailPage() {
     fromContact = {}
   }
 
-  // === Timeline trạng thái đơn ===
   const timeline =
     order.order_statuses
       ?.slice()
       ?.sort((a, b) => new Date(b.create_at) - new Date(a.create_at)) || []
 
-  // === Render ===
   return (
     <OrderLayout
       title={`MÃ ĐƠN HÀNG: ${order.id}`}
@@ -136,7 +131,7 @@ export default function OrderDetailPage() {
       {/* === Địa chỉ + Timeline === */}
       <Card className="p-6 bg-white">
         <div className="grid grid-cols-2 gap-8">
-          <OrderAddress toContact={toContact} fromContact={fromContact} type={order.type} />
+          <OrderAddress toContact={toContact} fromContact={fromContact} type={order.order_type} />
           <OrderTimeline timeline={timeline} isCanceled={isCanceled} />
         </div>
       </Card>
