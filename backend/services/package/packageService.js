@@ -2,9 +2,12 @@ import models from "../../models/index.js";
 const { packages } = models;
 
 const getPackages = async () => {
-    const data = await packages.findAll();
+    const data = await packages.findAll({
+        order: [
+            ['is_deleted', 'ASC'],
+        ]
+    });
     return data;
-
 
 }
 

@@ -60,7 +60,7 @@ export default function ProtectedRoute({
     if (userRole === ROLES.ADMIN) {
       redirectPath = ROUTES.ADMIN.DASHBOARD;
     } else if (userRole === ROLES.STAFF) {
-      redirectPath = ROUTES.STAFF.DASHBOARD;
+      redirectPath = ROUTES.ADMIN.DASHBOARD;
     }
 
     return <Navigate to={redirectPath} replace />;

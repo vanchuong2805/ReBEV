@@ -22,6 +22,7 @@ function DepositPage() {
       total_amount: orderData.total_amount,
       redirectUrl: `${window.location.origin}`,
     };
+    console.log(paymentInfo);
     const orders = [orderData];
     const { payUrl } = await createOrder({ orders, paymentInfo });
     console.log(payUrl);

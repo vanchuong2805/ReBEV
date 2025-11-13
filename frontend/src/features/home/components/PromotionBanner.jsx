@@ -1,4 +1,4 @@
-// src/features/home/components/PromotionBanner.jsx
+﻿// src/features/home/components/PromotionBanner.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Heart } from "lucide-react";
@@ -17,7 +17,7 @@ export default function PromotionBanner() {
   const [items, setItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { getThumbnail } = useCart();
-  const { user } = useUser(); 
+  const { user } = useUser();
   const visibleCount = 5; // số lượng hiển thị cùng lúc
 
   // Gọi API 1 lần, lọc Approved (status === 1) và ẩn bài đăng của  mình

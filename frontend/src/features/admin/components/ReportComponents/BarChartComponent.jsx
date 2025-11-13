@@ -21,7 +21,7 @@ ChartJS.register(
   Filler
 );
 
-const BarChartComponent = ({ data = [], title, color, year }) => {
+const BarChartComponent = ({ data = [], title, color, year, monthly }) => {
   const chartRef = useRef(null);
 
   // Tạo gradient mềm kiểu Metronic
@@ -75,15 +75,25 @@ const BarChartComponent = ({ data = [], title, color, year }) => {
         padding: 12,
         displayColors: false,
         callbacks: {
+          title: () => "", // 🚀 ẨN title trong tooltip
           label: (ctx) => {
             const value = ctx.raw || 0;
-            return value.toLocaleString("vi-VN") + " VNĐ";
+            return monthly
+              ? value.toLocaleString("vi-VN") + " VND"
+              : value + " giao dịch";
           },
         },
       },
     },
     scales: {
       x: {
+        title: {
+          display: true,
+          text: "Tháng",
+          color: "#64748b",
+          font: { size: 14, weight: "600" },
+          padding: { top: 10 },
+        },
         grid: { display: false },
         ticks: { color: "#64748b", font: { size: 12 } },
       },

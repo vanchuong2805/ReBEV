@@ -17,8 +17,5 @@ export const ROUTES = {
     FEES: "/admin/fees",
     TRANSACTIONS: "/admin/transactions",
   },
-  STAFF: {
-    DASHBOARD: "/staff",
-  },
   NOT_FOUND: "*",
 };

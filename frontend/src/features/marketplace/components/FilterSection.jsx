@@ -1,7 +1,6 @@
 // FilterSection - Component cho mỗi section filter
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
 export default function FilterSection({
@@ -40,10 +39,13 @@ export default function FilterSection({
         <div className={`px-4 pb-4 space-y-3 ${maxHeight} overflow-y-auto`}>
           {items.map((item) => (
             <div key={item.id} className="flex items-center space-x-2">
-              <Checkbox
+              <input
+                type="radio"
                 id={`${filterKey}-${item.id}`}
-                checked={selectedValues.includes(item.value)}
-                onCheckedChange={() => onToggle(filterKey, item.value)}
+                name={filterKey}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded"
+                checked={selectedValues.includes(item.id)}
+                onChange={() => onToggle(filterKey, item.id)}
               />
               <Label
                 htmlFor={`${filterKey}-${item.id}`}

@@ -22,6 +22,7 @@ import FavoritesList from "@/features/profile/components/favorites/FavoritesList
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
 import AdminDashboard from "../features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
+import CompareListing from "@/features/compare/page/CompareListing.jsx";
 import ShopPage from "@/features/shop/pages/ShopPage.jsx";
 import ChatPage from "@/features/chat/pages/ChatPage.jsx";
 import UserManagement from "@/features/admin/pages/UserManagement.jsx";
@@ -39,6 +40,8 @@ import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
 import ComplaintDetail from "@/features/admin/components/TransactionComponents/ComplaintDetail.jsx";
 import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
+import PackageFee from "@/features/admin/components/systemfeesComponents/PackageFee.jsx";
+import SystemFee from "@/features/admin/components/systemfeesComponents/Systemfee.jsx";
 
 export default function AppRoutes() {
   return (
@@ -128,6 +131,7 @@ export default function AppRoutes() {
             }
           />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
+          <Route path="/marketplace/compare" element={<CompareListing />} />
           <Route
             path="/marketplace/listing/:listingId"
             element={<ListingDetail />}
@@ -139,7 +143,7 @@ export default function AppRoutes() {
         <Route
           path={ROUTES.ADMIN.DASHBOARD}
           element={
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STAFF]}>
               <AdminDashboard />
             </ProtectedRoute>
           }
@@ -147,7 +151,10 @@ export default function AppRoutes() {
           <Route path="users" element={<UserManagement />} />
           <Route index element={<ReportsStatistics />} />
           <Route path="listings" element={<ListingManagement />} />
-          <Route path="fees" element={<SystemFeesManagement />} />
+          <Route path="fees" element={<SystemFeesManagement />}>
+            <Route path="package" element={<PackageFee />} />
+            <Route path="system" element={<SystemFee />} />
+          </Route>
           <Route path="transactions" element={<TransactionManagement />}>
             <Route index element={<PurchaseOrder />}></Route>
             <Route path="purchase-orders" element={<PurchaseOrder />} />

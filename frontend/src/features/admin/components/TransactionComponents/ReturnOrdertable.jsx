@@ -99,10 +99,9 @@ export default function ReturnOrdertable({ returnOrders, setReturnOrders }) {
                                     order_statuses: [
                                       {
                                         ...(order.order_statuses?.[0] || {}),
-                                        status, // cập nhật đúng chỗ UI đang đọc
+                                        status: "RETURNED",
                                         create_at: new Date().toISOString(),
                                       },
-                                      ...(order.order_statuses?.slice(1) || []),
                                     ],
                                   }
                                 : order

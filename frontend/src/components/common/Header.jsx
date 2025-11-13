@@ -17,6 +17,7 @@ import {
   Clock,
   Route,
   ChevronDown,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,7 +33,7 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router";
 import { useUser } from "@/contexts/UserContext";
 import { fetchProvinces } from "../../features/profile/service";
 import { getVariationValues } from "@/features/posts/service";
@@ -45,13 +46,29 @@ const Header = () => {
   const { cartItemCount } = useCart();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   // Search state - local state để quản lý input
   const [localSearch, setLocalSearch] = useState("");
 
+  const clearSearch = (e) => {
+    e && e.preventDefault();
+    // Clear local input
+    setLocalSearch("");
+
+    // Remove 'search' from current query and navigate to same pathname so listings refresh
+    const params = new URLSearchParams(searchParams);
+    params.delete("search");
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
+  };
+
   // ====== LOCATION STATES ======
   const [provinces, setProvinces] = useState([]);
   const [selectedProvince, setSelectedProvince] = useState("");
+  // Temp selection inside the dropdown; only apply when user clicks Apply
+  const [selectedProvinceTemp, setSelectedProvinceTemp] = useState("");
 
   const [provLoading, setProvLoading] = useState(false);
   const [provError, setProvError] = useState(null);
@@ -79,22 +96,33 @@ const Header = () => {
       setSelectedProvince(provinceIdFromUrl);
     }
   }, [searchParams]);
+  // When user interacts with the select, we only update the TEMP value.
+  // The change only takes effect when they click Apply.
+  const handleProvinceChange = (e) => {
+    setSelectedProvinceTemp(e.target.value);
+  };
 
-  const handleProvinceChange = async (e) => {
-    const id = e.target.value;
+  const applyProvinceSelection = () => {
+    const id = selectedProvinceTemp;
     setSelectedProvince(id);
+    const params = new URLSearchParams(searchParams);
+    if (id) params.set("province_id", id);
+    else params.delete("province_id");
 
-    // Navigate đến marketplace với province_id trong URL
-    if (id) {
-      const params = new URLSearchParams(searchParams);
-      params.set("province_id", id);
-      navigate(`/marketplace/all?${params.toString()}`);
-    } else {
-      // Nếu chọn "Chọn tỉnh thành" (clear selection)
-      const params = new URLSearchParams(searchParams);
-      params.delete("province_id");
-      navigate(`/marketplace/all?${params.toString()}`);
-    }
+    // Update the current page's URL so components on that page (e.g. Home) pick up the filter
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
+  };
+
+  const clearProvinceSelection = () => {
+    setSelectedProvinceTemp("");
+    setSelectedProvince("");
+    const params = new URLSearchParams(searchParams);
+    params.delete("province_id");
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
   };
 
   // ===== VARIATIONS =====
@@ -218,9 +246,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/all?categories=1&${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/all?categories=1&variation_value_id=${item.id}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -275,9 +301,7 @@ const Header = () => {
                                   {group.data.map((item) => (
                                     <Link
                                       key={item.id}
-                                      to={`/marketplace/all?categories=2&${name.toLowerCase()}=${encodeURIComponent(
-                                        item.value
-                                      )}`}
+                                      to={`/marketplace/all?categories=2&variation_value_id=${item.id}`}
                                       className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                     >
                                       {item.value}
@@ -301,7 +325,7 @@ const Header = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 console.log("🔎 Submitting search:", localSearch);
-                // Chuyển sang trang marketplace/all với 
+                // Chuyển sang trang marketplace/all với
                 const searchQuery = localSearch.trim();
                 const params = new URLSearchParams(searchParams);
 
@@ -324,6 +348,20 @@ const Header = () => {
                   onChange={(e) => setLocalSearch(e.target.value)}
                   className="h-12 pl-10 pr-4 text-gray-700 border-0 rounded-md focus-visible:ring-0 placeholder:text-gray-400"
                 />
+                {localSearch && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      clearSearch(e);
+                    }}
+                    className="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {/* Dropdown chọn tỉnh*/}
@@ -333,6 +371,9 @@ const Header = () => {
                     variant="outline"
                     className="flex items-center h-10 gap-2 px-4 border rounded-md shadow-sm hover:bg-gray-50"
                     disabled={provLoading}
+                    onClick={() =>
+                      setSelectedProvinceTemp(selectedProvince || "")
+                    }
                   >
                     <MapPin className="h-4 w-4 text-[#007BFF]" />
                     <span className="font-medium text-gray-700">
@@ -369,7 +410,7 @@ const Header = () => {
                         Tỉnh/Thành *
                       </label>
                       <select
-                        value={selectedProvince}
+                        value={selectedProvinceTemp}
                         onChange={handleProvinceChange}
                         disabled={provLoading}
                         className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
@@ -383,6 +424,24 @@ const Header = () => {
                           </option>
                         ))}
                       </select>
+                    </div>
+
+                    {/* Apply / Clear buttons */}
+                    <div className="flex items-center gap-2 mt-3">
+                      <button
+                        type="button"
+                        onClick={applyProvinceSelection}
+                        className="px-4 py-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0056b3]"
+                      >
+                        Áp dụng
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearProvinceSelection}
+                        className="px-3 py-2 text-sm text-gray-600 hover:text-red-600"
+                      >
+                        Xóa
+                      </button>
                     </div>
                   </div>
                 </DropdownMenuContent>

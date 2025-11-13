@@ -5,7 +5,7 @@ import { ROUTES } from "@/constants/routes";
 // Định nghĩa các route mặc định cho từng role
 export const DEFAULT_ROUTES = {
   [ROLES.ADMIN]: ROUTES.ADMIN.DASHBOARD,
-  [ROLES.STAFF]: ROUTES.STAFF.DASHBOARD,
+  [ROLES.STAFF]: ROUTES.ADMIN.DASHBOARD,
   [ROLES.MEMBER]: ROUTES.HOME,
 };
 
@@ -68,7 +68,7 @@ export const canAccessRoute = (userRole, route) => {
 
   // Member không thể truy cập /admin và /staff
   if (userRole === ROLES.MEMBER) {
-    return !route.startsWith("/admin") && !route.startsWith("/staff");
+    return !route.startsWith("/admin");
   }
 
   return false;
@@ -98,7 +98,7 @@ export const isAdmin = (user) => {
  * @returns {boolean}
  */
 export const isStaff = (user) => {
-  return user?.role === ROLES.STAFF;
+  return user?.role === ROLES.ADMIN;
 };
 
 /**
