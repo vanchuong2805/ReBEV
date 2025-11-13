@@ -22,6 +22,7 @@ import FavoritesList from "@/features/profile/components/favorites/FavoritesList
 import WalletSection from "@/features/profile/components/wallet/WalletSection.jsx";
 import AdminDashboard from "../features/admin/pages/AdminPage.jsx";
 import ListingList from "@/features/marketplace/pages/ListingList.jsx";
+import CompareListing from "@/features/compare/page/CompareListing.jsx";
 import ShopPage from "@/features/shop/pages/ShopPage.jsx";
 import ChatPage from "@/features/chat/pages/ChatPage.jsx";
 import UserManagement from "@/features/admin/pages/UserManagement.jsx";
@@ -127,6 +128,7 @@ export default function AppRoutes() {
             }
           />
           <Route path={ROUTES.MARKETPLACE_CATEGORY} element={<ListingList />} />
+          <Route path="/marketplace/compare" element={<CompareListing />} />
           <Route
             path="/marketplace/listing/:listingId"
             element={<ListingDetail />}
@@ -138,7 +140,7 @@ export default function AppRoutes() {
         <Route
           path={ROUTES.ADMIN.DASHBOARD}
           element={
-            <ProtectedRoute allowedRoles={[ROLES.ADMIN]}>
+            <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.STAFF]}>
               <AdminDashboard />
             </ProtectedRoute>
           }

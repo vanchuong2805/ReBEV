@@ -59,10 +59,15 @@ export function CartProvider({ children }) {
   const deleteItem = async (item_id) => {
     try {
       await deleteCartItem(item_id);
+      let newItems = items.map((p) => ({
+        ...p,
+        items: p.items.filter((it) => it.post_id !== item_id),
+      }));
+      newItems = newItems.filter((p) => p.items.length > 0);
+      setItems(newItems);
     } catch (error) {
       console.log(error);
     }
-    setRefresh((prev) => prev + 1);
   };
 
   // --- LOGIC MỚI CHO VIỆC LỰA CHỌN SẢN PHẨM ---

@@ -130,8 +130,8 @@ const ListingDetail = () => {
       return;
     }
     try {
+      setBuyNowItem(() => listing.id);
       await addToCart(user.id, listing.id);
-      setBuyNowItem(listing.id);
       navigate("/checkout");
     } catch (error) {
       console.log(error);
@@ -187,7 +187,7 @@ const ListingDetail = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="mt-4 text-gray-500 text-sm">Đang tải sản phẩm...</p>
+        <p className="mt-4 text-sm text-gray-500">Đang tải sản phẩm...</p>
       </div>
     );
   }
@@ -196,14 +196,14 @@ const ListingDetail = () => {
   if (!listing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-2xl flex items-center justify-center">
+        <div className="max-w-md text-center">
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-2xl">
             <span className="text-4xl">📦</span>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="mb-2 text-2xl font-semibold text-gray-900">
             Sản phẩm không tồn tại
           </h2>
-          <p className="text-gray-500 mb-8 text-sm">
+          <p className="mb-8 text-sm text-gray-500">
             Sản phẩm này có thể đã bị xóa hoặc không khả dụng
           </p>
           <button
@@ -228,16 +228,16 @@ const ListingDetail = () => {
 
   // ====== Render chính ======
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* ==== MAIN CONTENT ==== */}
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* LEFT: Gallery & Description */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-8 space-y-8"
+            className="space-y-8 lg:col-span-8"
           >
             <ListingGallery
               listing={listing}
@@ -258,7 +258,7 @@ const ListingDetail = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-4"
           >
-            <div className="lg:sticky lg:top-24 space-y-6">
+            <div className="space-y-6 lg:sticky lg:top-24">
               {/* === Product Info Card === */}
               <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="p-6 space-y-4">
@@ -291,7 +291,7 @@ const ListingDetail = () => {
                   />
                 </div>
 
-                <div className="border-t border-gray-100 p-5">
+                <div className="p-5 border-t border-gray-100">
                   <ListingSellerInfo
                     seller={seller}
                     listing={listing}
@@ -313,7 +313,7 @@ const ListingDetail = () => {
       </div>
 
       {/* ==== RELATED LISTINGS ==== */}
-      <div className="bg-gradient-to-b from-gray-50 to-white border-t border-gray-100 mt-20">
+      <div className="mt-20 border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14">
           <RelatedListings
             seller={seller}
