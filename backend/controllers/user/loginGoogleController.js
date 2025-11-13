@@ -235,8 +235,7 @@ const loginUserByGoogle = async (req, res) => {
                 phone: user.phone,
                 package_id: user.package_id,
                 package_start: user.package_start,
-
-
+                create_at: user.create_at
             },
             token: accessToken,
         });

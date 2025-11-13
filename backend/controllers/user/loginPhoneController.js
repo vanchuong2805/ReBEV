@@ -192,6 +192,7 @@ const loginUserByPhone = async (req, res) => {
             avatar: accountUser.avatar,
             package_id: accountUser.package_id,
             package_start: accountUser.package_start,
+            create_at: accountUser.create_at,
         };
 
         const accessToken = jwtService.createAccessToken(payload);
