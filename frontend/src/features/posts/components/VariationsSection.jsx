@@ -45,7 +45,15 @@ export default function VariationsSection({
                 label: o.value,
               }))}
               value={selectedByVar[varId] || ""}
-              onChange={(v) => onUpdateSelection(varId, v)}
+              onChange={(v) => {
+                if (meta?.is_number) {
+                  // chỉ giữ số cho các trường dạng number (vd: số km)
+                  const numeric = v.replace(/\D/g, "");
+                  onUpdateSelection(varId, numeric);
+                } else {
+                  onUpdateSelection(varId, v);
+                }
+              }}
               placeholder={placeholder}
               allowFreeText={options.length === 0}
               disabled={disabled}

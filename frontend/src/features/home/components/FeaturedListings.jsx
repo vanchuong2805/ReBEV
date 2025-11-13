@@ -45,6 +45,8 @@ export default function FeaturedListings() {
           page,
           limit,
           status: 1,
+          is_hidden: false,
+          is_featured: false,
           ...(searchQuery && { search: searchQuery }),
           ...(user?.id && { iUser_id: user.id }),
           ...(provinceId && { province_id: provinceId }),
@@ -66,7 +68,7 @@ export default function FeaturedListings() {
         setLoading(false);
       }
     })();
-  }, [page, limit, searchQuery, searchParams]); // Re-fetch khi province thay đổi
+  }, [page, limit, searchQuery, searchParams]);
 
   const goToPage = (nextPage) => {
     const np = Math.min(Math.max(nextPage, 1), totalPages);

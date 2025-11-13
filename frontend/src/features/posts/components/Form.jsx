@@ -64,6 +64,18 @@ export default function Form({
   // success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  const handlePriceChange = (e) => {
+    let raw = e.target.value.replace(/\D/g, ""); // bỏ dấu và chữ
+
+    if (!raw) {
+      setPrice("");
+      return;
+    }
+
+    let formatted = Number(raw).toLocaleString("vi-VN");
+    setPrice(formatted);
+  };
+
   // Load variation values (re-fetch khi đổi categoryId)
   useEffect(() => {
     (async () => {
@@ -279,12 +291,11 @@ export default function Form({
               Giá bán <span className="text-red-500">*</span>
             </label>
             <input
-              type="number"
+              type="text"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={handlePriceChange}
               placeholder="Nhập giá bán (VND)"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 form-input [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]"
-              onWheel={(e) => e.target.blur()}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -320,8 +331,8 @@ export default function Form({
 
       {/* Warning nếu không có package */}
       {(!user?.package_id || user.package_id === null) && (
-        <div className="p-4 mt-4 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
-          ⚠️ Bạn cần đăng ký gói trước khi có thể đăng tin
+        <div className="p-4 mt-4 text-sm text-red-700 border border-red-200 rounded-lg bg-red-50">
+          Bạn cần đăng ký gói trước khi có thể đăng tin
         </div>
       )}
 
