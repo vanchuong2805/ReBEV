@@ -94,6 +94,7 @@ const getPosts = async (req, res) => {
         const posts = await postService.getPosts(filters);
         res.status(200).json(posts);
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: 'Failed to retrieve posts',
             error: error.message || 'Internal Server Error',
