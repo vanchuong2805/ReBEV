@@ -1,4 +1,3 @@
-// components/favorites/FavoriteCard.jsx
 import { Button } from '@/components/ui/button'
 import Frame, { formatVND } from '../CardFrame'
 import { useNavigate } from "react-router-dom"

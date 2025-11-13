@@ -108,6 +108,12 @@ export default function OrderDetailPage() {
   } catch {
     toContact = {}
   }
+  let fromContact = {}
+  try {
+    fromContact = JSON.parse(order.from_contact || "{}")
+  } catch {
+    fromContact = {}
+  }
 
   // === Timeline trạng thái đơn ===
   const timeline =
@@ -130,7 +136,7 @@ export default function OrderDetailPage() {
       {/* === Địa chỉ + Timeline === */}
       <Card className="p-6 bg-white">
         <div className="grid grid-cols-2 gap-8">
-          <OrderAddress toContact={toContact} />
+          <OrderAddress toContact={toContact} fromContact={fromContact} type={order.type} />
           <OrderTimeline timeline={timeline} isCanceled={isCanceled} />
         </div>
       </Card>

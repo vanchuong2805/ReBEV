@@ -18,6 +18,7 @@ import {
 import GenericSaleCard from "@/features/profile/components/sales/GenericSaleCard"
 import SaleHeader from "@/features/profile/components/sales/SaleHeader"
 import SaleFooter from "@/features/profile/components/sales/SaleFooter"
+import { toast } from "sonner"
 
 const SalesSection = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -64,25 +65,25 @@ const SalesSection = () => {
   const handleAccept = async (order) => {
     await changeOrderStatus(order.id, "CONFIRMED", "Người bán đã xác nhận đơn hàng")
     updateOrderStatus(order.id, "CONFIRMED")
-    alert("Đã xác nhận đơn hàng thành công!")
+    toast.success("Đã xác nhận đơn hàng thành công!")
   }
 
   const handleCancel = async (order) => {
     await changeOrderStatus(order.id, "CANCELLED", "Người bán đã huỷ đơn hàng")
     updateOrderStatus(order.id, "CANCELLED")
-    alert("Đơn hàng đã được huỷ thành công.")
+    toast.success("Đơn hàng đã được huỷ thành công.")
   }
 
   const handleDelivering = async (order) => {
     await changeOrderStatus(order.id, "DELIVERING", "Đơn hàng đã bàn giao")
     updateOrderStatus(order.id, "DELIVERING")
-    alert("Đơn hàng đã được chuyển sang trạng thái 'Đang vận chuyển'.")
+    toast.success("Đơn hàng đã được chuyển sang trạng thái 'Đang vận chuyển'.")
   }
 
   const handleComplete = async (order) => {
     await changeOrderStatus(order.id, "COMPLETED", "Người bán đã hoàn tất đơn hàng")
     updateOrderStatus(order.id, "COMPLETED")
-    alert("Đơn hàng đã được đánh dấu là hoàn tất.")
+    toast.success("Đơn hàng đã được đánh dấu là hoàn tất.")
   }
 
   const handleView = (order) => {
@@ -126,14 +127,14 @@ const SalesSection = () => {
                 status === "PAID"
                   ? "pending"
                   : status === "CONFIRMED"
-                  ? "processing"
-                  : status === "DELIVERING"
-                  ? "shipping"
-                  : ["COMPLETED", "DELIVERED"].includes(status)
-                  ? "success"
-                  : ["CANCELLED", "CUSTOMER_CANCELLED", "SELLER_CANCELLED", "FAIL_PAY"].includes(status)
-                  ? "canceled"
-                  : "refunded"
+                    ? "processing"
+                    : status === "DELIVERING"
+                      ? "shipping"
+                      : ["COMPLETED", "DELIVERED"].includes(status)
+                        ? "success"
+                        : ["CANCELLED", "CUSTOMER_CANCELLED", "SELLER_CANCELLED", "FAIL_PAY"].includes(status)
+                          ? "canceled"
+                          : "refunded"
               }
             />
           )
@@ -153,27 +154,31 @@ const SalesSection = () => {
   }
 
   // === Render đơn hoàn trả ===
-  const renderRefundCard = (item) => (
-    <div
-      key={item.id}
-      className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
-    >
-      <SaleHeader customer={item.customer} />
-      <GenericSaleCard
-        sale={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
-        type="refunded"
-      />
-      <SaleFooter
-        order={item}
-        status="REFUNDED"
-        onView={() =>
-          navigate(`/profile/returns/${item.id}`, {
-            state: { order: item },
-          })
-        }
-      />
-    </div>
-  )
+  const renderRefundCard = (item) => {
+    const status = getStatus(item)
+    return (
+      <div
+        key={item.id}
+        className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
+      >
+        <SaleHeader customer={item.customer} />
+        <GenericSaleCard
+          sale={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
+          status={status}
+          type="refunded"
+        />
+        <SaleFooter
+          order={item}
+          status="REFUNDED"
+          onView={() =>
+            navigate(`/profile/returns/${item.id}`, {
+              state: { order: item },
+            })
+          }
+        />
+      </div>
+    )
+  }
 
   // === Khi đang tải ===
   if (loading)

@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label"
 import { ImagePlus, X, Loader2 } from "lucide-react"
 import { createComplaint } from "@/features/profile/service"
 import { useUpload } from "@/hooks/posts/useUpload"
+import { toast } from "sonner"
 
-export default function ComplaintModal({ open, onClose, purchase, onSubmitComplaint }) {
+export default function ComplaintModal({ open, onClose, detail, onSubmitComplaint }) {
   const [description, setDescription] = useState("")
   const [images, setImages] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -30,17 +31,17 @@ export default function ComplaintModal({ open, onClose, purchase, onSubmitCompla
       const uploaded = []
       for (const file of files) {
         if (!file.type.startsWith("image/")) {
-          alert("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
+          toast.error("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
           continue
         }
         const data = await upload(file)
         uploaded.push({ url: data.url.split(" ")[1] })
       }
       setImages((prev) => [...prev, ...uploaded])
-      alert("Tải ảnh lên thành công!")
+      toast.success("Tải ảnh lên thành công!")
     } catch (err) {
       console.error("Lỗi khi tải ảnh lên:", err)
-      alert("Không thể tải ảnh lên Cloudinary.")
+      toast.error("Không thể tải ảnh lên Cloudinary.")
     } finally {
       setUploading(false)
     }
@@ -52,26 +53,26 @@ export default function ComplaintModal({ open, onClose, purchase, onSubmitCompla
 
   const handleSubmit = async () => {
     if (!description.trim()) {
-      alert("Vui lòng nhập mô tả khiếu nại.")
+      toast.error("Vui lòng nhập mô tả chi tiết khiếu nại.")
       return
     }
     setIsSubmitting(true)
 
     try {
       await createComplaint({
-        order_detail_id: purchase.id,
+        order_detail_id: detail.id,
         description,
         media: images,
       })
 
-      alert("✅ Gửi khiếu nại thành công!")
+      toast.success("Yêu cầu khiếu nại đã được gửi thành công!")
       setDescription("")
       setImages([])
       onClose()
       onSubmitComplaint?.() 
     } catch (err) {
       console.error("Lỗi gửi khiếu nại:", err)
-      alert("Không thể gửi khiếu nại.")
+      toast.error("Gửi khiếu nại thất bại. Vui lòng thử lại.")
     } finally {
       setIsSubmitting(false)
     }

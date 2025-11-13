@@ -6,8 +6,6 @@ import {
     CardContent,
 } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Car } from "lucide-react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useUser } from "@/contexts/UserContext"

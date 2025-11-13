@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { getPackage, createRegisterPackage } from "../service"
 import { useUser } from "@/contexts/UserContext"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 const cardAccents = [
   { bg: "bg-white", accent: "border-gray-200", hover: "hover:border-gray-300" },
@@ -49,18 +50,18 @@ export default function MembershipPackage() {
 
   const handleChoose = async () => {
     if (!user) {
-      alert("Vui lòng đăng nhập trước khi nâng cấp gói!")
+      toast.error("Vui lòng đăng nhập trước khi nâng cấp gói!")
       navigate("/login")
       return
     }
 
     if (!currentPlan) {
-      alert("Vui lòng chọn gói thành viên!")
+      toast.error("Vui lòng chọn gói thành viên!")
       return
     }
 
     if (currentUserPackage && currentPlan.price <= currentUserPackage.price) {
-      alert("Bạn chỉ có thể nâng cấp lên gói cao hơn gói hiện tại!")
+      toast.error("Bạn chỉ có thể nâng cấp lên gói cao hơn gói hiện tại!")
       return
     }
 
@@ -75,11 +76,11 @@ export default function MembershipPackage() {
       if (data.payUrl) {
         window.location.href = data.payUrl
       } else {
-        alert("Không tìm thấy đường dẫn thanh toán.")
+        toast.error("Không tìm thấy đường dẫn thanh toán.")
       }
     } catch (error) {
       console.error("Lỗi khi chọn gói:", error)
-      alert("Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.")
+      toast.error("Không thể tạo yêu cầu thanh toán. Vui lòng thử lại.")
     } finally {
       setLoading(false)
     }
@@ -116,23 +117,21 @@ export default function MembershipPackage() {
                   setSelectedPlan(pkg.id)
                 }}
                 className={`relative flex flex-col justify-between min-h-[470px] transition-all duration-300 cursor-pointer
-                  ${style.bg} border-2 ${
-                    isSelected
-                      ? "border-blue-600 shadow-xl shadow-blue-100"
-                      : `${style.accent} ${style.hover} hover:shadow-lg`
+                  ${style.bg} border-2 ${isSelected
+                    ? "border-blue-600 shadow-xl shadow-blue-100"
+                    : `${style.accent} ${style.hover} hover:shadow-lg`
                   } ${isLowerPlan ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 {/* Badge hiển thị */}
                 {(isSelected || isCurrent) && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span
-                      className={`text-xs font-semibold px-4 py-1.5 rounded-full shadow-md ${
-                        isCurrent
+                      className={`text-xs font-semibold px-4 py-1.5 rounded-full shadow-md ${isCurrent
                           ? pkg.is_deleted
                             ? "bg-gray-500 text-white"
                             : "bg-green-600 text-white"
                           : "bg-blue-600 text-white"
-                      }`}
+                        }`}
                     >
                       {isCurrent
                         ? pkg.is_deleted
@@ -209,10 +208,9 @@ export default function MembershipPackage() {
                     onClick={handleChoose}
                     disabled={loading || isLowerPlan || isCurrent}
                     className={`w-full h-11 font-medium rounded-lg transition-all duration-200 mt-auto
-                      ${
-                        isCurrent
-                          ? "bg-green-600 text-white cursor-default"
-                          : isSelected
+                      ${isCurrent
+                        ? "bg-green-600 text-white cursor-default"
+                        : isSelected
                           ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
                           : "bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300"
                       }`}
@@ -220,10 +218,10 @@ export default function MembershipPackage() {
                     {isCurrent
                       ? "Đang sử dụng"
                       : loading
-                      ? "Đang xử lý..."
-                      : isSelected
-                      ? "Nâng cấp ngay"
-                      : "Chọn gói"}
+                        ? "Đang xử lý..."
+                        : isSelected
+                          ? "Nâng cấp ngay"
+                          : "Chọn gói"}
                     {!loading && !isCurrent && <ArrowRight className="w-4 h-4 ml-2" />}
                   </Button>
                 </CardContent>

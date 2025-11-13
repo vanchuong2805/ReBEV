@@ -22,6 +22,7 @@ import ListingDescription from "../components/ListingDescription";
 import ListingActions from "../components/ListingActions";
 import ListingSellerInfo from "../components/ListingSellerInfo";
 import RelatedListings from "../components/RelatedListings";
+import { toast } from "sonner";
 
 const ListingDetail = () => {
   const { user } = useUser();
@@ -94,8 +95,8 @@ const ListingDetail = () => {
           }),
         ]);
 
-        setOtherPosts(otherRes);
-        setSimilarPosts(similarRes);
+        setOtherPosts(otherRes.filter((p) => p.id !== postRes.id));
+        setSimilarPosts(similarRes.filter((p) => p.id !== postRes.id));
         setVariationValuesId(varValRes);
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
@@ -123,7 +124,7 @@ const ListingDetail = () => {
 
   const handleBuyNow = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để mua hàng");
+      toast.error("Bạn cần đăng nhập để mua hàng");
       return;
     }
     try {

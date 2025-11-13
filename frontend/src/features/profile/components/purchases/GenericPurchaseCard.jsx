@@ -9,10 +9,7 @@ export default function GenericPurchaseCard({
     onComplaint,
     onReview,
     onView,
-    order,
     post,
-    onCancel,
-    onSupport,
 }) {
     const isCar = post?.category_id === 1
 
@@ -21,8 +18,8 @@ export default function GenericPurchaseCard({
             tone: "warning",
             badgeText: "Chờ xác nhận",
             note: isCar
-                ?  "Đơn đang chờ người bán xác nhận lịch hẹn xem xe."
-                :  "Đơn hàng đang chờ xác nhận và chuẩn bị giao pin.",
+                ? "Đơn đang chờ người bán xác nhận lịch hẹn xem xe."
+                : "Đơn hàng đang chờ xác nhận và chuẩn bị giao pin.",
         },
         processing: {
             tone: "accent",
@@ -35,7 +32,7 @@ export default function GenericPurchaseCard({
         shipping: {
             tone: "muted",
             badgeText: "Đang vận chuyển",
-            note:  "Đơn hàng đang được vận chuyển đến bạn.",
+            note: "Đơn hàng đang được vận chuyển đến bạn.",
         },
         success: {
             tone: "success",
@@ -56,35 +53,48 @@ export default function GenericPurchaseCard({
                                 size="lg"
                                 variant="outline"
                                 className="h-10 w-full"
-                                onClick={() => onComplaint?.(detail) }
+                                onClick={() => onComplaint?.(detail)}
                             >
                                 Khiếu nại
                             </Button>,
                         ] : status === "COMPLETED" && !detail.complaints?.length > 0 ? [
-                        <Button
-                            key="review"
-                            size="lg"
-                            variant="outline"
-                            className="h-10 w-full"
-                            onClick={() => onReview?.(detail, reviewed)}
-                        >
-                            {reviewed ? "Cập nhật đánh giá" : "Đánh giá"}
-                        </Button>,
-                    ] : [],
+                            <Button
+                                key="review"
+                                size="lg"
+                                variant="outline"
+                                className="h-10 w-full"
+                                onClick={() => onReview?.(detail, reviewed)}
+                            >
+                                {reviewed ? "Cập nhật đánh giá" : "Đánh giá"}
+                            </Button>,
+                        ] : [],
 
         },
         canceled: {
             tone: "danger",
             badgeText: "Đã huỷ",
-            note:  "Đơn hàng đã bị huỷ.",
+            note: "Đơn hàng đã bị huỷ.",
         },
         refunded: {
             tone: "accent",
-            badgeText: "Hoàn trả đang xử lý",
+            badgeText:
+                status === "PENDING"
+                    ? "Chờ bàn giao hàng"
+                    : status === "RETURNING"
+                        ? "Đang bàn giao hàng"
+                        : status === "RETURNED"
+                            ? "Đã hoàn hàng"
+                            : "Đơn đã huỷ",
             note:
-
-                "Đơn hàng đã được yêu cầu hoàn trả. Vui lòng chờ hệ thống xử lý."
+                status === "PENDING"
+                    ? "Vui lòng mang hàng tới điểm hẹn để bàn giao."
+                    : status === "RETURNING"
+                        ? "Đơn hoàn đang trong quá trình bàn giao."
+                        : status === "RETURNED"
+                            ? "Hàng đã được hoàn trả thành công."
+                            : "Đơn hàng đã bị huỷ.",
         },
+
     }
 
     const cfg = config[type] || {}

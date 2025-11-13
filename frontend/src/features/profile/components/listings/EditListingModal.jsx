@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { getPostById, updatePostById } from "@/features/profile/service"
 import TiptapEditor from "@/components/common/TiptapEditor"
+import { toast } from "sonner"
 
 export default function EditListingModal({ open, onClose, listing, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -20,7 +21,6 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
   const [loading, setLoading] = useState(false)
   const [loadingData, setLoadingData] = useState(false)
 
-  // 🔄 Load dữ liệu khi mở modal
   useEffect(() => {
     const fetchPost = async () => {
       if (!listing?.id) return
@@ -33,7 +33,7 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
           price: data.price || 0,
         })
       } catch (error) {
-        console.error("❌ Lỗi khi tải bài viết:", error)
+        console.error(" Lỗi khi tải bài viết:", error)
       } finally {
         setLoadingData(false)
       }
@@ -41,18 +41,18 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
     if (open) fetchPost()
   }, [open, listing])
 
-  // 🧠 Thay đổi dữ liệu form
+  
   const handleChange = (field, value) =>
     setFormData((prev) => ({ ...prev, [field]: value }))
 
-  // 💾 Lưu dữ liệu
+
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
-      alert("Vui lòng nhập tiêu đề bài viết!")
+      toast.error("Vui lòng nhập tiêu đề bài viết!")
       return
     }
     if (formData.price < 50000) {
-      alert("Giá phải lớn hơn hoặc bằng 50.000₫!")
+      toast.error("Giá phải lớn hơn hoặc bằng 50.000₫!")
       return
     }
 
@@ -66,11 +66,11 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
 
       await updatePostById(listing.id, updatedData)
       onUpdate({ ...listing, ...updatedData })
-      alert("✅ Cập nhật bài viết thành công!")
+      toast.success(" Cập nhật bài viết thành công!")
       onClose()
     } catch (error) {
-      console.error("❌ Lỗi khi cập nhật bài viết:", error)
-      alert("Cập nhật thất bại! Vui lòng thử lại.")
+      console.error(" Lỗi khi cập nhật bài viết:", error)
+      toast.error("Cập nhật thất bại! Vui lòng thử lại.")
     } finally {
       setLoading(false)
     }

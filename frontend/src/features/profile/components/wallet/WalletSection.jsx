@@ -6,6 +6,7 @@ import { useUser } from "@/contexts/UserContext"
 import { getUserById, createWithdraw } from "../../service"
 import WithdrawForm from "./WithdrawForm"
 import ConfirmBill from "./ConfirmBill"
+import { toast } from "sonner"
 
 export default function WalletSection() {
   const { user } = useUser()
@@ -27,7 +28,7 @@ export default function WalletSection() {
     if (!user || !user.id) return
     const data = await createWithdraw(user.id, amount)
     setBalance(data.balance)
-    console.log("Withdraw successful:", data)
+    toast.success("Yêu cầu rút tiền đã được gửi thành công!")
   }
 
   return (

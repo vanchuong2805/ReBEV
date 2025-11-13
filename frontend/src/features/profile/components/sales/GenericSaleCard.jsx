@@ -1,6 +1,6 @@
 import Frame from '../CardFrame'
 
-export default function GenericSaleCard({ type, sale }) {
+export default function GenericSaleCard({ type, sale, status }) {
   const isCar = sale?.category_id === 1
 
 
@@ -31,10 +31,15 @@ export default function GenericSaleCard({ type, sale }) {
       note:   'Đơn đã bị huỷ.',
     },
     refunded: {
-      tone: 'accent',
-      badgeText: 'Hoàn tiền đang xử lý',
-      note:
-        'Đơn hàng đã được yêu cầu hoàn tiền. Vui lòng chờ hệ thống xử lý giao dịch.',
+      tone: "accent",
+            badgeText:
+                status === "PENDING"
+                    ? "Chờ bàn giao hàng"
+                    : status === "RETURNING"
+                        ? "Đang bàn giao hàng"
+                        : status === "RETURNED"
+                            ? "Đã hoàn hàng"
+                            : "Đơn đã huỷ",
     },
     return: {
       tone: 'secondary',
