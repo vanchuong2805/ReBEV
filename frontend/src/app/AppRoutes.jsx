@@ -39,6 +39,8 @@ import OtpPage from "@/features/auth/pages/OtpPage.jsx";
 import ReturnOrderDetailPage from "@/features/profile/components/order/ReturnOrderDetailPage.jsx";
 import ComplaintDetail from "@/features/admin/components/TransactionComponents/ComplaintDetail.jsx";
 import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
+import PackageFee from "@/features/admin/components/systemfeesComponents/PackageFee.jsx";
+import SystemFee from "@/features/admin/components/systemfeesComponents/Systemfee.jsx";
 
 export default function AppRoutes() {
   return (
@@ -147,7 +149,10 @@ export default function AppRoutes() {
           <Route path="users" element={<UserManagement />} />
           <Route index element={<ReportsStatistics />} />
           <Route path="listings" element={<ListingManagement />} />
-          <Route path="fees" element={<SystemFeesManagement />} />
+          <Route path="fees" element={<SystemFeesManagement />}>
+            <Route path="package" element={<PackageFee />} />
+            <Route path="system" element={<SystemFee />} />
+          </Route>
           <Route path="transactions" element={<TransactionManagement />}>
             <Route index element={<PurchaseOrder />}></Route>
             <Route path="purchase-orders" element={<PurchaseOrder />} />

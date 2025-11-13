@@ -1,4 +1,5 @@
 import axios from "axios";
+import { se } from "date-fns/locale";
 
 // hooks/useUserPackages.js
 
@@ -110,8 +111,8 @@ export const fetchUserById = async (userId) => {
   return res.data;
 };
 
-export const fetchUsers = async () => {
-  const res = await axios.get(baseAPI + "/users");
+export const fetchUsers = async (searchKey) => {
+  const res = await axios.get(baseAPI + "/users" + searchKey + "&sort=DESC");
   return res.data;
 };
 
@@ -214,11 +215,12 @@ export const updatePostStatus = async (postId, newStatus) => {
   }
 };
 //-----------------------------------------
-export const getOrders = async (type) => {
+export const getOrders = async (type, searchKey) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
     const res = await axios.get(
-      `${baseAPI}/orders?page=1&limit=20&order_type=${type}&priority=DELIVERING`,
+      `${baseAPI}/orders?order_type=${type}` + searchKey,
+      //?page=1&limit=20&order_type=${type}&priority=DELIVERING
       {
         headers: {
           "Content-Type": "application/json",
@@ -289,10 +291,10 @@ export const getStaticPage = async (year) => {
 };
 
 // Complaint
-export const getComplaints = async () => {
+export const getComplaints = async (searchKey) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
-    const res = await axios.get(`${baseAPI}/complaints`, {
+    const res = await axios.get(`${baseAPI}/complaints${searchKey}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`, // thêm token vào header

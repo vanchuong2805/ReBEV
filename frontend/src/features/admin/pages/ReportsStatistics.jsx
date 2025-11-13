@@ -12,12 +12,21 @@ import TitlePage from "../components/TitlePage";
 import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
 import { getStaticPage } from "../service";
-import { el } from "date-fns/locale";
+import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router";
 
 const nf = new Intl.NumberFormat("vi-VN");
 const formatMoney = (v) => (typeof v === "number" ? nf.format(v) : "0");
 
 const ReportsStatistics = () => {
+  // const { user } = useUser();
+  // console.log(user);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   if (user?.role !== 2) {
+  //     navigate("/admin/transactions"); // Chuyển hướng về trang chủ nếu không phải admin
+  //   }
+  // }, [user]);
   const [selectedYear, setSelectedYear] = useState("2025");
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -49,9 +58,10 @@ const ReportsStatistics = () => {
         const res = await getStaticPage(selectedYear);
         if (!alive) return;
         setData(res?.data || {});
-      } catch (e) {
+      } catch (err) {
         if (!alive) return;
         setErr("Không tải được dữ liệu. Vui lòng thử lại.");
+        console.log(err);
       } finally {
         if (alive) setLoading(false);
       }
@@ -109,7 +119,7 @@ const ReportsStatistics = () => {
       </div>
 
       {/* Top stat cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         {loading ? (
           // Skeletons
           Array.from({ length: 4 }).map((_, i) => (
@@ -140,17 +150,15 @@ const ReportsStatistics = () => {
               icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
               className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />
-            <br />
             <StatsCards
               title="Doanh thu hệ thống (VNĐ)"
               number={formatMoney(revenueSystem())}
-              icon={<DollarSign className="h-6 w-6 text-purple-600" />}
+              icon={""}
               className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />
             <StatsCards
               title="Doanh thu doanh nghiệp (VNĐ)"
               number={formatMoney(revenueOffice())}
-              icon={<DollarSign className="h-6 w-6 text-purple-600" />}
               className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />
           </>
@@ -163,13 +171,6 @@ const ReportsStatistics = () => {
           selectedYear={selectedYear}
           onYearChange={setSelectedYear}
         />
-        <button
-          onClick={() => setSelectedYear((y) => `${y}`)} // trigger refetch nhanh
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm transition"
-          title="Làm mới dữ liệu"
-        >
-          <RefreshCcw size={16} /> Làm mới
-        </button>
       </div>
 
       {/* Error state */}
@@ -195,6 +196,7 @@ const ReportsStatistics = () => {
                 title=""
                 color="rgba(53, 162, 235, 0.8)"
                 year={selectedYear}
+                monthly={true}
               />
             ) : (
               <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl" />
@@ -216,6 +218,7 @@ const ReportsStatistics = () => {
                 title=""
                 color="rgba(255, 99, 132, 0.8)"
                 year={selectedYear}
+                monthly={false}
               />
             ) : (
               <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl" />

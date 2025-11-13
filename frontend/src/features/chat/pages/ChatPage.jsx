@@ -1,7 +1,8 @@
 // pages/ChatPage.jsx
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MessageSquarePlus, Search } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ErrorBoundary } from "../components/ErrorBoundary"; // đường dẫn theo project
 
 import { useUser } from "@/contexts/UserContext";
 import { fetchUsers } from "@/features/admin/service";
@@ -10,6 +11,7 @@ import ChatWindow from "../components/ChatWindow";
 import { getRelatedAppUserIds } from "../lib/chatApi";
 
 export default function ChatPage() {
+  const navigate = useNavigate();
   const [sp] = useSearchParams();
   const [sellerAppId, setSellerAppId] = useState(Number(sp.get("seller")));
 
@@ -24,7 +26,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchUsers().then((data) => {
-      setUsers(data);
+      setUsers(data.users);
     });
   }, []);
 
@@ -104,6 +106,17 @@ export default function ChatPage() {
                 placeholder="Tìm kiếm hội thoại"
                 className="w-full rounded-2xl border border-slate-700 bg-slate-800/80 py-2.5 pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/40"
               />
+            </label>
+          </div>
+          <div className="px-6 pb-4">
+            <label className="relative block">
+              <button
+                onClick={() => {
+                  navigate("/");
+                }}
+              >
+                Về trang chủ
+              </button>
             </label>
           </div>
           <div className="flex-1 space-y-2 overflow-y-auto px-4 pb-8">
@@ -195,13 +208,15 @@ export default function ChatPage() {
             {current ? (
               <div className="flex h-full w-full items-stretch">
                 <div className="flex h-full w-full flex-col overflow-hidden bg-white">
-                  <ChatWindow
-                    key={`${current.buyerAppId}_${current.sellerAppId}`}
-                    buyerAppId={current.buyerAppId}
-                    sellerAppId={
-                      sellerAppId === 0 ? current.sellerAppId : sellerAppId
-                    }
-                  />
+                  <ErrorBoundary>
+                    {current && (
+                      <ChatWindow
+                        key={`${current.buyerAppId}_${current.sellerAppId}`}
+                        buyerAppId={current.buyerAppId}
+                        sellerAppId={current.sellerAppId}
+                      />
+                    )}
+                  </ErrorBoundary>
                 </div>
               </div>
             ) : (

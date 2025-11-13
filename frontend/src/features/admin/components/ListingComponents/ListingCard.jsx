@@ -1,5 +1,16 @@
 import React, { useMemo } from "react";
-import { Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  BadgeCheck,
+  HandCoins,
+  Ban,
+  ShieldCheck,
+  Handshake,
+  HelpCircle,
+} from "lucide-react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
@@ -18,7 +29,8 @@ export default function ListingCard({
     }
   }, [listing.media]);
 
-  const thumbnail = media.find((m) => m.is_thumbnail)?.url || media[0]?.url || "";
+  const thumbnail =
+    media.find((m) => m.is_thumbnail)?.url || media[0]?.url || "";
   const imageUrl = thumbnail?.split(" ")[1] || null;
 
   const getStatusMeta = (status) => {
@@ -27,31 +39,63 @@ export default function ListingCard({
         return {
           text: "Đã Duyệt",
           color: "bg-emerald-100 text-emerald-700",
-          icon: <CheckCircle className="h-4 w-4 text-emerald-500" />,
+          icon: <BadgeCheck className="h-4 w-4 text-emerald-500" />,
         };
+
       case 0:
         return {
           text: "Chờ Duyệt",
           color: "bg-amber-100 text-amber-700",
           icon: <Clock className="h-4 w-4 text-amber-500" />,
         };
+
       case 2:
         return {
           text: "Từ Chối",
           color: "bg-rose-100 text-rose-700",
           icon: <XCircle className="h-4 w-4 text-rose-500" />,
         };
+
       case 3:
         return {
-          text: "Hoàn tất giao dịch",
-          color: "bg-blue-100 text-blue-700",
-          icon: <CheckCircle className="h-4 w-4 text-blue-500" />,
+          text: "Đã Bán",
+          color: "bg-indigo-100 text-indigo-700",
+          icon: <Handshake className="h-4 w-4 text-indigo-500" />,
         };
+
+      case 4:
+        return {
+          text: "Đã Đặt Cọc",
+          color: "bg-blue-100 text-blue-700",
+          icon: <HandCoins className="h-4 w-4 text-blue-500" />,
+        };
+
+      case 5:
+        return {
+          text: "Đã Hủy",
+          color: "bg-gray-100 text-gray-700",
+          icon: <Ban className="h-4 w-4 text-gray-500" />,
+        };
+
+      case 6:
+        return {
+          text: "Đã Xác Minh",
+          color: "bg-green-100 text-green-700",
+          icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+        };
+
+      case 7:
+        return {
+          text: "Đang Giao Dịch",
+          color: "bg-purple-100 text-purple-700",
+          icon: <Handshake className="h-4 w-4 text-purple-500" />,
+        };
+
       default:
         return {
           text: "Không xác định",
           color: "bg-gray-100 text-gray-700",
-          icon: <Clock className="h-4 w-4 text-gray-500" />,
+          icon: <HelpCircle className="h-4 w-4 text-gray-500" />,
         };
     }
   };
@@ -66,7 +110,6 @@ export default function ListingCard({
       ].join(" ")}
     >
       <div className="flex flex-col lg:flex-row gap-6">
-        
         {/* Image */}
         <div className="w-full lg:w-48 h-32 rounded-lg overflow-hidden bg-slate-100 shadow-inner">
           {imageUrl ? (
@@ -84,7 +127,6 @@ export default function ListingCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-
           {/* Title + Status */}
           <div className="flex justify-between items-start mb-3 gap-3">
             <div className="min-w-0">
@@ -126,7 +168,6 @@ export default function ListingCard({
           <p className="text-xs text-slate-400">
             Tạo ngày: {new Date(listing.create_at).toLocaleString("vi-VN")}
           </p>
-
         </div>
 
         {/* Actions */}
@@ -135,7 +176,7 @@ export default function ListingCard({
             size="sm"
             variant="outline"
             className="rounded-xl border-slate-300 hover:bg-slate-50"
-            onClick={() => onViewDetails(listing.id)}
+            onClick={() => onViewDetails(listing)}
           >
             <Eye size={16} className="mr-1" />
             Xem
