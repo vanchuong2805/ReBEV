@@ -4,6 +4,8 @@ const { packages } = models;
 const getPackages = async () => {
     const data = await packages.findAll();
     return data;
+
+
 }
 
 const getPackage = async (id) => {
