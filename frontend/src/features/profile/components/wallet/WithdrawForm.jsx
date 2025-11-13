@@ -13,22 +13,32 @@ import {
   SelectItem,
 } from "@/components/ui/select"
 
+
 const WithdrawSchema = Yup.object().shape({
   amount: Yup.number()
     .required("Vui lòng nhập số tiền.")
     .min(50000, "Số tiền tối thiểu là 50.000₫."),
-  method: Yup.string().oneOf(["momo", "bank"]).required(),
+
+  method: Yup.string().oneOf(["momo", "bank"]).required(""),
 
   momoPhone: Yup.string().when("method", {
     is: "momo",
     then: (schema) =>
-      schema.required("Vui lòng nhập số điện thoại MoMo."),
+      schema
+        .required("Vui lòng nhập số điện thoại MoMo.")
+        .matches(/^[0-9]{10}$/, "Số điện thoại phải gồm đúng 10 chữ số."),
   }),
 
   momoName: Yup.string().when("method", {
     is: "momo",
     then: (schema) =>
-      schema.required("Vui lòng nhập tên chủ tài khoản MoMo."),
+      schema
+        .required("Vui lòng nhập tên chủ tài khoản MoMo.")
+        .test(
+          "has-two-words",
+          "Tên phải gồm ít nhất 2 từ.",
+          (value) => value && value.trim().split(" ").length >= 2
+        ),
   }),
 
   bankName: Yup.string().when("method", {
@@ -40,13 +50,21 @@ const WithdrawSchema = Yup.object().shape({
   bankNumber: Yup.string().when("method", {
     is: "bank",
     then: (schema) =>
-      schema.required("Vui lòng nhập số tài khoản."),
+      schema
+        .required("Vui lòng nhập số tài khoản.")
+        .matches(/^[0-9]{8,16}$/, "Số tài khoản không hợp lệ."),
   }),
 
   bankOwner: Yup.string().when("method", {
     is: "bank",
     then: (schema) =>
-      schema.required("Vui lòng nhập tên chủ tài khoản."),
+      schema
+        .required("Vui lòng nhập tên chủ tài khoản.")
+        .test(
+          "has-two-words",
+          "Tên phải gồm ít nhất 2 từ.",
+          (value) => value && value.trim().split(" ").length >= 2
+        ),
   }),
 })
 
@@ -75,8 +93,7 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
     },
   })
 
-  const formatAmount = (v) =>
-    v ? Number(v).toLocaleString("vi-VN") : ""
+  const formatAmount = (v) => (v ? Number(v).toLocaleString("vi-VN") : "")
 
   const handleAmountChange = (e) => {
     let raw = e.target.value.replace(/\D/g, "")
@@ -95,11 +112,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
       </CardHeader>
 
       <CardContent className="px-6 py-6 space-y-7">
-        {/* AMOUNT */}
+        {/* ===== AMOUNT ===== */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-800">
-            Số tiền muốn rút
-          </label>
+          <label className="text-sm font-medium text-gray-800">Số tiền muốn rút</label>
 
           <Input
             name="amount"
@@ -124,11 +139,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
           </p>
         </div>
 
-        {/* METHOD */}
+        {/* ===== METHOD ===== */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-800">
-            Phương thức thanh toán
-          </label>
+          <label className="text-sm font-medium text-gray-800">Phương thức thanh toán</label>
 
           <Select
             value={formik.values.method}
@@ -137,6 +150,7 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
             <SelectTrigger className="h-12 w-full rounded-xl border-gray-300 focus:border-blue-500">
               <SelectValue placeholder="Chọn phương thức" />
             </SelectTrigger>
+
             <SelectContent className="rounded-xl">
               <SelectItem value="momo">Ví MoMo</SelectItem>
               <SelectItem value="bank">Ngân hàng</SelectItem>
@@ -144,10 +158,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
           </Select>
         </div>
 
-        {/* SUB FORM */}
+        {/* ===== SUBFORM MOMO ===== */}
         {formik.values.method === "momo" ? (
           <div className="space-y-4">
-            {/* momoPhone */}
             <div>
               <Input
                 placeholder="Số điện thoại MoMo"
@@ -165,7 +178,6 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
               )}
             </div>
 
-            {/* momoName */}
             <div>
               <Input
                 placeholder="Tên chủ tài khoản"
@@ -185,12 +197,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
           </div>
         ) : (
           <div className="space-y-4">
-            {/* bankName */}
             <div>
               <Select
-                onValueChange={(val) =>
-                  formik.setFieldValue("bankName", val)
-                }
+                onValueChange={(val) => formik.setFieldValue("bankName", val)}
               >
                 <SelectTrigger
                   className={`h-12 w-full rounded-xl ${
@@ -201,6 +210,7 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
                 >
                   <SelectValue placeholder="Chọn ngân hàng" />
                 </SelectTrigger>
+
                 <SelectContent>
                   <SelectItem value="MB Bank">MB Bank</SelectItem>
                   <SelectItem value="Vietcombank">Vietcombank</SelectItem>
@@ -214,7 +224,6 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
               )}
             </div>
 
-            {/* bankNumber */}
             <div>
               <Input
                 placeholder="Số tài khoản"
@@ -232,7 +241,6 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
               )}
             </div>
 
-            {/* bankOwner */}
             <div>
               <Input
                 placeholder="Tên chủ tài khoản"
@@ -252,7 +260,6 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
           </div>
         )}
 
-        {/* BUTTONS */}
         <div className="flex gap-4 pt-2">
           <Button
             type="button"
@@ -271,6 +278,7 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
             Xác nhận
           </Button>
         </div>
+
       </CardContent>
     </Card>
   )

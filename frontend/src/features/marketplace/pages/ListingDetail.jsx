@@ -16,7 +16,6 @@ import {
 import { useUser } from "@/contexts/UserContext";
 import { useCart } from "@/contexts/CartContext";
 
-// === Import các components con ===
 import ListingGallery from "../components/ListingGallery";
 import ListingDescription from "../components/ListingDescription";
 import ListingActions from "../components/ListingActions";
@@ -50,10 +49,15 @@ const ListingDetail = () => {
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [listingId]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const postRes = await getPostById(listingId);
+
         const [varRes, cateRes, baseRes, userRes, contactRes, varValRes] =
           await Promise.all([
             getVariations(),
@@ -120,7 +124,6 @@ const ListingDetail = () => {
       month: "2-digit",
       year: "numeric",
     }).format(new Date(date));
-
 
   const handleBuyNow = async () => {
     if (!user) {
@@ -219,15 +222,14 @@ const ListingDetail = () => {
     name: "Người bán",
     avatar: listing.user_avatar,
   };
+
   const categoryInfo = categories.find((c) => c.id === listing.category_id);
   const baseInfo = bases.find((b) => b.id === listing.base_id);
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* ==== MAIN CONTENT ==== */}
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-          {/* LEFT: Gallery & Description */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -246,7 +248,6 @@ const ListingDetail = () => {
             />
           </motion.div>
 
-          {/* RIGHT: Sidebar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -254,7 +255,6 @@ const ListingDetail = () => {
             className="lg:col-span-4"
           >
             <div className="lg:sticky lg:top-24 space-y-6">
-              {/* === Product Info Card === */}
               <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="p-6 space-y-4">
                   {categoryInfo && (
@@ -302,7 +302,6 @@ const ListingDetail = () => {
         </div>
       </div>
 
-      {/* ==== RELATED LISTINGS ==== */}
       <div className="bg-gradient-to-b from-gray-50 to-white border-t border-gray-100 mt-20">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14">
           <RelatedListings

@@ -50,7 +50,7 @@ export default function ListingActions({
     }
     try {
       await addToCart(user.id, listing.id)
-      toast.success(`Đã thêm "${listing.title}" vào giỏ hàng thành công!`)
+      toast.success(`Đã thêm vào giỏ hàng thành công!`)
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng:", error)
       toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.")

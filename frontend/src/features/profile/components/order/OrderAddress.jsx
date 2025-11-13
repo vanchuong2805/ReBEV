@@ -6,7 +6,7 @@ export default function OrderAddress({ toContact, fromContact,type }) {
       {fromContact && (
         <div>
           <p className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">
-            {type===1 ? "Địa điểm giao dịch" : "Địa chỉ người bán"}
+            {type===2 ? "Địa điểm giao dịch" : "Địa chỉ người bán"}
           </p>
 
           <p className="font-semibold text-gray-900 mb-1">
