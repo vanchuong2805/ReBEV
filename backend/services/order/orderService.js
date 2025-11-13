@@ -69,8 +69,12 @@ const getOrders = async (options) => {
                         association: 'user_reviews',
                         attributes: ['id', 'rating_value', 'comment'],
                     },
+                    {
+                        association: 'complaints',
+                        attributes: ['id'],
+                    },
                 ],
-                attributes: ['id', 'contract_file'],
+                attributes: ['id', 'contract_file', 'appointment_time'],
             },
             {
                 association: 'customer',
@@ -81,7 +85,7 @@ const getOrders = async (options) => {
                 attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
             },
         ],
-        attributes: ['id', 'total_amount', 'delivery_price'],
+        attributes: ['id', 'total_amount', 'delivery_price', 'order_type'],
         where: {
             ...where,
             ...(order_status ? { '$order_statuses.status$': order_status } : {}),
@@ -94,7 +98,8 @@ const getOrders = async (options) => {
                 Sequelize.literal(`
                 CASE
                     WHEN order_statuses.status = '${priority}' THEN 0
-                    ELSE 1
+                    WHEN order_statuses.status = '${ORDER_STATUS.CONFIRMED}' THEN 1
+                    ELSE 4
                 END`),
                 'ASC',
             ],
@@ -127,17 +132,20 @@ const getOrdersDelivered = async () => {
         (order) =>
             order?.order_statuses[0]?.status === ORDER_STATUS.DELIVERED &&
             new Date(order.order_statuses[0].create_at).getTime() + 7 * 24 * 60 * 60 * 1000 <
-            new Date().getTime()
+                new Date().getTime()
     );
     return ordersList;
 };
 
 const getById = async (id) => {
     const order = await orders.findByPk(id, {
-        include: [{
-            association: 'order_details',
-            include: ['post', 'user_reviews'],
-        }, 'order_statuses'],
+        include: [
+            {
+                association: 'order_details',
+                include: ['post', 'user_reviews'],
+            },
+            'order_statuses',
+        ],
     });
     return order;
 };

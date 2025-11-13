@@ -3,7 +3,6 @@ import { Plus } from "lucide-react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import TitlePage from "../components/TitlePage";
-import StatsCard from "../components/StatsCard";
 import FilterBar from "../components/FilterBar";
 import UserInfo from "../components/UserComponents/UserInfo";
 import CreateStaff from "../components/UserComponents/CreateStaff";
@@ -16,27 +15,30 @@ import {
 import { toast } from "sonner";
 
 const UserManagement = () => {
-  
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
   const [showStaffForm, setShowStaffForm] = useState(false);
   // removed staff password modal: password changes are handled elsewhere (or via API)
   const [staffFormData, setStaffFormData] = useState({
     email: "",
     phone: "",
   });
+  //
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    hasPackage: "",
+    isLocked: "",
+  });
+  const searchKey = `?hasPackage=${filSearch.hasPackage}&isLocked=${filSearch.isLocked}&search=${filSearch.searchTerm}`;
 
   // API User
   const [users, setUsers] = useState([]);
   useEffect(() => {
-    fetchUsers().then(setUsers);
-  }, []);
+    const data = async () => {
+      const fresh = await fetchUsers(searchKey);
+      setUsers(fresh.users);
+    };
+    data();
+  }, [filSearch]);
 
-  const refreshUsers = async () => {
-    const fresh = await fetchUsers();
-    setUsers(fresh);
-  };
   //---------------------------------------------
   const getStatusColor = (is_locked) => {
     switch (is_locked) {
@@ -80,18 +82,27 @@ const UserManagement = () => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await lockUserAccount(userId);
-      await refreshUsers();
+      setUsers((prevUsers) =>
+        prevUsers?.map((user) =>
+          user.id === userId ? { ...user, is_locked: true } : user
+        )
+      );
       toast.success(`Đã khóa tài khoản: ${userId}`);
     } catch (err) {
       toast.error(`Lỗi khi khóa tài khoản: ${err.message}`);
     }
   };
 
+  console.log(users);
   const handleUnlockUser = async (userId) => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await unLockUserAccount(userId);
-      await refreshUsers();
+      setUsers((prevUsers) =>
+        prevUsers?.map((user) =>
+          user.id === userId ? { ...user, is_locked: false } : user
+        )
+      );
       toast.success(`Đã mở khóa tài khoản: ${userId}`);
     } catch (err) {
       toast.error(`Lỗi khi mở khóa tài khoản: ${err.message}`);
@@ -115,7 +126,7 @@ const UserManagement = () => {
 
     await createStaffAccount({ email: staff.email, phone: staff.phone })
       .then(() => {
-        refreshUsers();
+        setUsers((prevUsers) => [...prevUsers, staff]);
         handleCloseStaffForm();
         alert("Tài khoản nhân viên đã được tạo thành công!");
       })
@@ -126,35 +137,6 @@ const UserManagement = () => {
   };
 
   // removed password change handlers
-
-  const filteredUsers = users.filter((user) => {
-    // Xử lý trường hợp display_name không tồn tại
-    const userName = user.display_name || "";
-    const userEmail = user.email || "";
-    const matchesSearch =
-      searchTerm === "" ||
-      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.phone && user.phone.includes(searchTerm));
-
-    // Xử lý statusFilter dựa vào is_locked
-    const userStatus = user.is_locked == false ? "active" : "locked";
-    const matchesStatus = statusFilter === "all" || userStatus === statusFilter;
-
-    // Xử lý roleFilter
-    const userRole =
-      typeof user.role === "number"
-        ? user.role === 0
-          ? "user"
-          : user.role === 1
-          ? "staff"
-          : "admin"
-        : user.role;
-
-    const matchesRole = roleFilter === "all" || userRole === roleFilter;
-
-    return matchesSearch && matchesStatus && matchesRole;
-  });
 
   return (
     <div className="p-6">
@@ -175,36 +157,35 @@ const UserManagement = () => {
       </div>
       {/* Filters */}
       <FilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="Tìm kiếm theo ID, tên hoặc email..."
+        setFilSearch={setFilSearch}
+        filSearch={filSearch}
+        searchPlaceholder="Tìm kiếm ..."
         selects={[
           {
-            key: "status",
-            value: statusFilter,
-            onChange: setStatusFilter,
+            key: "hasPackage",
+            value: filSearch.hasPackage,
+            onChange: (v) => setFilSearch((pre) => ({ ...pre, hasPackage: v })),
             options: [
-              { value: "all", label: "Tất cả trạng thái" },
-              { value: "active", label: "Hoạt động" },
-              { value: "locked", label: "Bị khóa" },
+              { value: "", label: "Tất cả" },
+              { value: "true", label: "Đã đăng kí gói" },
+              { value: "false", label: "Chưa đăng kí gói" },
             ],
           },
           {
-            key: "role",
-            value: roleFilter,
-            onChange: setRoleFilter,
+            key: "isLocked",
+            value: filSearch.isLocked,
+            onChange: (v) => setFilSearch((pre) => ({ ...pre, isLocked: v })),
             options: [
-              { value: "all", label: "Tất cả vai trò" },
-              { value: "user", label: "Người dùng" },
-              { value: "staff", label: "Nhân viên" },
-              { value: "admin", label: "Quản trị viên" },
+              { value: "", label: "Tất cả" },
+              { value: "true", label: "Bị khóa" },
+              { value: "false", label: "Không bị khóa" },
             ],
           },
         ]}
       />
       {/* Users List */}
       <div className="space-y-4">
-        {filteredUsers.map((user) => (
+        {users.map((user) => (
           <UserInfo
             key={user.id}
             user={user}
@@ -216,7 +197,7 @@ const UserManagement = () => {
           />
         ))}
       </div>
-      {filteredUsers.length === 0 && (
+      {users.length === 0 && (
         <Card className="p-8 text-center">
           <p className="text-gray-500">
             Không tìm thấy người dùng nào phù hợp với tiêu chí của bạn.

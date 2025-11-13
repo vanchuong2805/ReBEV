@@ -9,62 +9,72 @@ import FilterBar from "../components/FilterBar";
 
 export default function PurchaseOrder() {
   const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
-  const [allOrders, setAllOrders] = useState([]);
-
   const orderSortOptions = [
     { value: "status", label: "Trạng thái (mặc định)" },
     { value: "date", label: "Ngày hoàn thành" },
-    { value: "price", label: "Giá tiền" },
-    { value: "buyer", label: "Tên người mua" },
-    { value: "orderId", label: "Mã đơn hàng" },
   ];
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    order_status: "",
+    priority: "",
+  });
+  const searchKey = `&order_id=${filSearch.searchTerm}&order_status=${filSearch.order_status}&priority=${filSearch.priority}`;
+  const [allOrders, setAllOrders] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getOrders(1);
+      const data = await getOrders(1, searchKey);
       setAllOrders(data.orders);
     };
     fetchData();
-  }, []);
+  }, [filSearch]);
+  console.log(filSearch);
 
-  console.log(allOrders);
   return (
     <div className="space-y-4">
       {/* Search */}
 
       <FilterBar
+        setFilSearch={setFilSearch}
+        filSearch={filSearch}
+        searchPlaceholder="Tìm kiếm id đơn mua ..."
         selects={[
           {
             key: "status",
-            value: "",
+            value: filSearch.order_status,
+            onChange: (v) =>
+              setFilSearch((pre) => ({ ...pre, order_status: v })),
             options: [
               { value: "", label: "Tất cả trạng thái" },
-              { value: 0, label: "Chờ duyệt" },
-              { value: 1, label: "Đã duyệt" },
-              { value: 2, label: "Từ chối" },
-              { value: 3, label: "Hoàn tất giao dịch" },
-              { value: 4, label: "Đang trong quá trình hoàn tất" },
-              { value: 5, label: "Đã dừng lại" },
-              { value: 6, label: "Đang xác minh" },
-              { value: 7, label: "Đang giao dịch" },
+              { value: "PENDING", label: "PENDING" },
+              { value: "PAID", label: "PAID" },
+              { value: "CONFIRMED", label: "CONFIRMED" },
+              { value: "DELIVERING", label: "DELIVERING" },
+              { value: "DELIVERED", label: "DELIVERED" },
+              { value: "COMPLETED", label: "COMPLETED" },
+              { value: "CANCELLED", label: "CANCELLED" },
+            ],
+          },
+          {
+            key: "priority",
+            value: filSearch.priority,
+            onChange: (v) => setFilSearch((pre) => ({ ...pre, priority: v })),
+            options: [
+              { value: "", label: "Chọn Ưu tiên" },
+              { value: "PENDING", label: "PENDING" },
+              { value: "PAID", label: "PAID" },
+              { value: "CONFIRMED", label: "CONFIRMED" },
+              { value: "DELIVERING", label: "DELIVERING" },
+              { value: "DELIVERED", label: "DELIVERED" },
+              { value: "COMPLETED", label: "COMPLETED" },
+              { value: "CANCELLED", label: "CANCELLED" },
             ],
           },
         ]}
-      ></FilterBar>
-      <div className="flex flex-wrap gap-4 justify-between">
-        <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
-        {/* Sort Selector */}
-        <div className="flex items-center">
-          <ArrowUpDown size={16} className="mr-2 text-gray-500" />
-          <SortSelector
-            value={orderSortOption}
-            onChange={setOrderSortOption}
-            options={orderSortOptions}
-          />
-        </div>
-      </div>
+      />
+
       {/* Orders List */}
-      <OrderTable allOrders={allOrders} />
+      <OrderTable allOrders={allOrders} setAllOrders={setAllOrders} />
     </div>
   );
 }

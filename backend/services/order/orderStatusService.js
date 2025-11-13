@@ -13,6 +13,9 @@ import {
 import transactionService from '../transaction/transactionService.js';
 import complaintService from '../complaint/complaintService.js';
 import orderService from './orderService.js';
+import postDetailService from '../post/postDetailService.js';
+import deliveryService from '../delivery/deliveryService.js';
+const { Sequelize } = models;
 const { order_status } = models;
 
 const getAll = async () => {
@@ -60,59 +63,62 @@ const handleCancelledStatus = async (order, t) => {
 };
 
 const handleDeliveringStatus = async (order, t) => {
-    // Get contact info
-    const from_contact = JSON.parse(order.from_contact);
-    const to_contact = JSON.parse(order.to_contact);
-    // get order weight
-    const orderDetails = await orderDetailService.getByOrderId(order.id);
-    for (const item of orderDetails) {
-        const postDetail = await postDetailService.getWeightByPostId(item.post_id);
-        if (!postDetail) {
-            throw new Error(`Weight detail not found for post ID: ${item.post_id}`);
-        }
-        order.weight = (order.weight || 0) + parseFloat(postDetail.custom_value);
-    }
-    // Create delivery order via external service
-    const deliveryInfo = await deliveryService.createOrder({
-        from_name: from_contact.name,
-        from_phone: from_contact.phone,
-        from_address: `${from_contact.detail}, ${from_contact.ward_name}, ${from_contact.district_name}, ${from_contact.province_name}`,
-        from_ward_name: from_contact.ward_name,
-        from_district_name: from_contact.district_name,
-        from_province_name: from_contact.province_name,
-        to_name: to_contact.name,
-        to_phone: to_contact.phone,
-        to_address: `${to_contact.detail}, ${to_contact.ward_name}, ${to_contact.district_name}, ${to_contact.province_name}`,
-        to_ward_name: to_contact.ward_name,
-        to_district_name: to_contact.district_name,
-        to_province_name: to_contact.province_name,
-        payment_type_id: 2, // Receiver pays
-        service_type_id: 2, // Standard delivery
-        required_note: 'CHOXEMHANGKHONGTHU',
-        weight: order.weight,
-        items: [
-            {
-                name: 'Order Items',
-                code: `${order.id}`,
-                quantity: 1,
-                price: order.total_amount,
-                length: 12,
-                width: 12,
-                height: 12,
-                weight: order.weight,
-            },
-        ],
-    });
-    // check deliveryInfo for errors
-    if (deliveryInfo.code !== 200) {
-        throw new Error(
-            `Failed to create delivery order: ${deliveryInfo.message || 'Unknown error'}`
-        );
-    }
+    // // Get contact info
+    // const from_contact = JSON.parse(order.from_contact);
+    // const to_contact = JSON.parse(order.to_contact);
+    // // get order weight
+    // const orderDetails = await orderDetailService.getByOrderId(order.id);
+    // for (const item of orderDetails) {
+    //     const postDetail = await postDetailService.getWeightByPostId(item.post_id);
+    //     if (!postDetail) {
+    //         throw new Error(`Weight detail not found for post ID: ${item.post_id}`);
+    //     }
+    //     order.weight = (order.weight || 0) + parseFloat(postDetail.custom_value);
+    // }
+    // // Create delivery order via external service
+    // const deliveryInfo = await deliveryService.createOrder({
+    //     from_name: from_contact.name,
+    //     from_phone: from_contact.phone,
+    //     from_address: `${from_contact.detail}, ${from_contact.ward_name}, ${from_contact.district_name}, ${from_contact.province_name}`,
+    //     from_ward_name: from_contact.ward_name,
+    //     from_district_name: from_contact.district_name,
+    //     from_province_name: from_contact.province_name,
+    //     to_name: to_contact.name,
+    //     to_phone: to_contact.phone,
+    //     to_address: `${to_contact.detail}, ${to_contact.ward_name}, ${to_contact.district_name}, ${to_contact.province_name}`,
+    //     to_ward_name: to_contact.ward_name,
+    //     to_district_name: to_contact.district_name,
+    //     to_province_name: to_contact.province_name,
+    //     payment_type_id: 2, // Receiver pays
+    //     service_type_id: 2, // Standard delivery
+    //     required_note: 'CHOXEMHANGKHONGTHU',
+    //     weight: order.weight,
+    //     items: [
+    //         {
+    //             name: 'Order Items',
+    //             code: `${order.id}`,
+    //             quantity: 1,
+    //             price: order.total_amount,
+    //             length: 12,
+    //             width: 12,
+    //             height: 12,
+    //             weight: order.weight,
+    //         },
+    //     ],
+    // });
+    // // check deliveryInfo for errors
+    // if (deliveryInfo.code !== 200) {
+    //     throw new Error(
+    //         `Failed to create delivery order: ${deliveryInfo.message || 'Unknown error'}`
+    //     );
+    // }
 
     // Update order with delivery details
 
-    await orderService.updateOrder(id, { delivery_code: deliveryInfo.data.order_code });
+    // Randomly generate a delivery code for demonstration purposes
+    const deliveryCode = `DEL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    await orderService.updateOrder(order.id, { delivery_code: deliveryCode });
 };
 
 const handleDeliveredStatus = async (order, t) => {};
@@ -189,6 +195,7 @@ const mapStatusHandlers = {
     [ORDER_STATUS.CUSTOMER_CANCELLED]: handleCustomerCancelledStatus,
     [ORDER_STATUS.SELLER_CANCELLED]: handleCancelledStatus,
     [ORDER_STATUS.RETURNED]: handleCompletedStatus,
+    [ORDER_STATUS.RETURNING]: handleDeliveringStatus,
 };
 
 const handleStatus = async (order, status, t) => {

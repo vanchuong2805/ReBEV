@@ -53,6 +53,13 @@ const updateContractFile = async (id, contract_file, options) => {
     return result;
 };
 
+const updateAppointmentTime = async (orderId, appointment_time, options) => {
+    await order_detail.update(
+        { appointment_time },
+        { where: { order_id: orderId }, ...options }
+    );
+}
+
 export default {
     getAll,
     createOrderDetails,
@@ -63,4 +70,5 @@ export default {
     getById,
     getRatingByPost,
     updateContractFile,
+    updateAppointmentTime,
 };

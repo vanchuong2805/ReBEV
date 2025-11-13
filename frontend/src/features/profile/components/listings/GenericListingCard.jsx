@@ -66,20 +66,6 @@ export default function GenericListingCard({
         sold: {
             tone: "muted",
             badgeText: "Đã bán",
-            actions: [
-                <Button
-                    key="contract"
-                    size="lg"
-                    variant="outline"
-                    className="h-10 w-full"
-                    onClick={(e) => {
-                        e.stopPropagation()
-                        onViewContract?.()
-                    }}
-                >
-                    Xem hợp đồng
-                </Button>,
-            ],
         },
         expired: {
             tone: "accent",

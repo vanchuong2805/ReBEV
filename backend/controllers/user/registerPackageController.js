@@ -9,12 +9,12 @@ import momoService from '../../services/payment/momoService.js';
  * @swagger
  * /api/users/{user_id}/register-package/{package_id}:
  *   post:
- *     summary: Đăng ký gói dịch vụ cho người dùng
+ *     summary: Register a service package for a user
  *     description: |
- *       API cho phép người dùng đăng ký **gói dịch vụ (package)** theo ID.
- *       - Chỉ người dùng có quyền tương ứng mới được phép đăng ký (kiểm tra `user_id` trùng với người đăng nhập).
- *       - Nếu người dùng hoặc gói không tồn tại, trả về lỗi `404`.
- *       - Nếu gói đã bị xóa (`is_deleted = true`), trả về lỗi `400`.
+ *       This API allows a user to register a **service package** by its ID.  
+ *       - Only the authorized user can register a package (checks if `user_id` matches the logged-in user).  
+ *       - Returns `404` if the user or package does not exist.  
+ *       - Returns `400` if the package has been deleted (`is_deleted = true`).
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -22,14 +22,14 @@ import momoService from '../../services/payment/momoService.js';
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: ID của người dùng cần đăng ký gói
+ *         description: ID of the user registering the package
  *         schema:
  *           type: integer
  *           example: 5
  *       - in: path
  *         name: package_id
  *         required: true
- *         description: ID của gói dịch vụ cần đăng ký
+ *         description: ID of the package to register
  *         schema:
  *           type: integer
  *           example: 2
@@ -46,7 +46,7 @@ import momoService from '../../services/payment/momoService.js';
  *                 example: "https://example.com/redirect"
  *     responses:
  *       200:
- *         description: Đăng ký gói dịch vụ thành công
+ *         description: Package registered successfully
  *         content:
  *           application/json:
  *             schema:
@@ -75,7 +75,7 @@ import momoService from '../../services/payment/momoService.js';
  *                       format: date-time
  *                       example: "2025-10-30T10:20:45.000Z"
  *       400:
- *         description: Yêu cầu không hợp lệ hoặc gói đã bị xóa
+ *         description: Invalid request or the package has been deleted
  *         content:
  *           application/json:
  *             schema:
@@ -88,7 +88,7 @@ import momoService from '../../services/payment/momoService.js';
  *                   example:
  *                     - "Package not found or has been deleted"
  *       403:
- *         description: Người dùng không có quyền truy cập (user_id không khớp với token)
+ *         description: Forbidden - user does not have permission to register this package
  *         content:
  *           application/json:
  *             schema:
@@ -98,7 +98,7 @@ import momoService from '../../services/payment/momoService.js';
  *                   type: string
  *                   example: "Forbidden"
  *       404:
- *         description: Không tìm thấy người dùng hoặc gói dịch vụ
+ *         description: User or package not found
  *         content:
  *           application/json:
  *             schema:
@@ -112,7 +112,7 @@ import momoService from '../../services/payment/momoService.js';
  *                     - "User not found"
  *                     - "Package not found"
  *       500:
- *         description: Lỗi máy chủ nội bộ khi xử lý đăng ký
+ *         description: Internal server error while processing package registration
  *         content:
  *           application/json:
  *             schema:
@@ -122,6 +122,7 @@ import momoService from '../../services/payment/momoService.js';
  *                   type: string
  *                   example: "Failed to register package"
  */
+
 
 const registerPackage = async (req, res) => {
     try {

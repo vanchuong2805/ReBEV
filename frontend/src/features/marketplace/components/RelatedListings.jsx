@@ -8,7 +8,6 @@ export default function RelatedListings({
   handleLoadMore,
   navigate
 }) {
-  // helper chung
   function getThumbnailUrl(post) {
     try {
       const media = typeof post.media === "string" ? JSON.parse(post.media) : post.media;
@@ -19,7 +18,6 @@ export default function RelatedListings({
     }
   }
 
-  // component con dùng chung
   const Section = ({ title, posts, loadMore, hasMore }) => (
     <div className="mb-10">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">{title}</h2>

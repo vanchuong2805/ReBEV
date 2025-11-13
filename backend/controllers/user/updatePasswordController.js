@@ -7,14 +7,16 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * @swagger
  * /api/users/{id}/update-password:
  *   put:
- *     summary: Cập nhật mật khẩu người dùng
- *     description: API cho phép người dùng thay đổi mật khẩu của chính họ. Yêu cầu xác thực và kiểm tra mật khẩu cũ trước khi đặt mật khẩu mới.
+ *     summary: Update user password
+ *     description: Allows a user to update their own password. Requires authentication and verification of the old password before setting the new password.
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: ID của người dùng muốn cập nhật mật khẩu
+ *         description: ID of the user who wants to update their password
  *         schema:
  *           type: integer
  *           example: 123
@@ -30,15 +32,15 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *             properties:
  *               oldPassword:
  *                 type: string
- *                 description: Mật khẩu hiện tại của người dùng
+ *                 description: Current password of the user
  *                 example: "OldPassword123!"
  *               newPassword:
  *                 type: string
- *                 description: Mật khẩu mới cần cập nhật
+ *                 description: New password to set
  *                 example: "NewPassword456!"
  *     responses:
  *       200:
- *         description: Cập nhật mật khẩu thành công
+ *         description: Password updated successfully
  *         content:
  *           application/json:
  *             schema:
@@ -46,9 +48,9 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Cập nhật thông tin người dùng thành công"
+ *                   example: "Password updated successfully"
  *       400:
- *         description: Mật khẩu cũ không đúng hoặc dữ liệu đầu vào không hợp lệ
+ *         description: Old password is incorrect or invalid input
  *         content:
  *           application/json:
  *             schema:
@@ -56,9 +58,9 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 errors:
  *                   type: string
- *                   example: "Password Incorrect"
+ *                   example: "Old password is incorrect"
  *       403:
- *         description: Người dùng không có quyền thay đổi mật khẩu của người khác
+ *         description: User not authorized to update another user's password
  *         content:
  *           application/json:
  *             schema:
@@ -68,7 +70,7 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                   type: string
  *                   example: "Forbidden"
  *       404:
- *         description: Không tìm thấy người dùng hoặc mật khẩu mới bị bỏ trống
+ *         description: User not found or new password is blank
  *         content:
  *           application/json:
  *             schema:
@@ -78,7 +80,7 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                   type: string
  *                   example: "Password cannot be blank"
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error while updating password
  *         content:
  *           application/json:
  *             schema:
@@ -86,7 +88,7 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 error:
  *                   type: string
- *                   example: "Lỗi khi cập nhật mật khẩu người dùng"
+ *                   example: "Failed to update password"
  */
 
 const updatePassword = async (req, res) => {

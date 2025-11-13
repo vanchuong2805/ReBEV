@@ -7,8 +7,14 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  * /api/contacts/delete/{id}:
  *   delete:
  *     summary: Delete a user contact
- *     description: Permanently delete a contact record by its ID if it exists.
- *     tags: [Contacts]
+ *     description: >
+ *       Permanently delete a contact record by its ID if it exists.  
+ *       - The contact must exist in the database.  
+ *       - This operation is irreversible and will mark the contact as deleted (`is_deleted: true`).  
+ *       - Returns the deleted contact information upon success.  
+ *       - If the contact does not exist, a 400 error is returned with an appropriate message.
+ *     tags:
+ *       - Contacts
  *     parameters:
  *       - in: path
  *         name: id
@@ -27,9 +33,11 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Contact deleted successfully
+ *                   description: Success message
+ *                   example: "Contact deleted successfully"
  *                 contact:
  *                   type: object
+ *                   description: Deleted contact details
  *                   properties:
  *                     id:
  *                       type: integer
@@ -39,28 +47,28 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *                       example: 15
  *                     detail:
  *                       type: string
- *                       example: "123 Lê Lợi, Phường Bến Thành"
+ *                       example: "123 Le Loi, Ben Thanh Ward"
  *                     ward_code:
  *                       type: string
  *                       example: "27403"
  *                     ward_name:
  *                       type: string
- *                       example: "Phường Bến Thành"
+ *                       example: "Ben Thanh"
  *                     district_id:
  *                       type: integer
  *                       example: 769
  *                     district_name:
  *                       type: string
- *                       example: "Quận 1"
+ *                       example: "District 1"
  *                     province_id:
  *                       type: integer
  *                       example: 79
  *                     province_name:
  *                       type: string
- *                       example: "Thành phố Hồ Chí Minh"
+ *                       example: "Ho Chi Minh City"
  *                     name:
  *                       type: string
- *                       example: "Nguyễn Văn A"
+ *                       example: "Nguyen Van A"
  *                     phone:
  *                       type: string
  *                       example: "0901234567"
@@ -79,7 +87,8 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 errors:
  *                   type: string
- *                   example: Contact not found
+ *                   description: Error message describing why deletion failed
+ *                   example: "Contact not found"
  *       500:
  *         description: Internal server error while deleting the contact
  *         content:
@@ -89,7 +98,8 @@ import { SUCCESS_MESSAGE } from "../../config/constants.js";
  *               properties:
  *                 error:
  *                   type: string
- *                   example: Failed to delete contact
+ *                   description: Internal server error message
+ *                   example: "Failed to delete contact"
  */
 
 const deleteContact = async (req, res) => {

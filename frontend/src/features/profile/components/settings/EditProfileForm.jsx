@@ -8,7 +8,7 @@ import { useUpload } from "@/hooks/posts/useUpload"
 
 export default function EditProfileForm() {
   const { user, loading, updateUser } = useUser()
-  const { upload } = useUpload() // 🔹 dùng custom hook
+  const { upload } = useUpload() 
   const [uploading, setUploading] = useState(false)
 
   const [form, setForm] = useState({
@@ -32,23 +32,22 @@ export default function EditProfileForm() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value })
 
-  // === UPLOAD ẢNH LÊN CLOUDINARY ===
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith("image/")) {
-      alert("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
+      toast.error("Vui lòng chọn file hình ảnh hợp lệ (jpg, png, jpeg...)")
       return
     }
 
     try {
       setUploading(true)
-      const data = await upload(file) // 🔹 upload thật lên Cloudinary
-      setForm({ ...form, avatar: data.url.split(" ")[1] }) // chỉ lấy phần URL
-      alert("Tải ảnh lên thành công!")
+      const data = await upload(file) 
+      setForm({ ...form, avatar: data.url.split(" ")[1] }) 
+      toast.success("Tải ảnh lên thành công!")
     } catch (err) {
       console.error(err)
-      alert("Lỗi khi tải ảnh lên Cloudinary")
+      toast.error("Lỗi khi tải ảnh lên Cloudinary")
     } finally {
       setUploading(false)
     }
@@ -62,10 +61,10 @@ export default function EditProfileForm() {
       display_name: form.display_name,
       update_at: new Date().toISOString(),
     }
-    console.log("📤 Gửi updateProfile:", user.id, updatedUser )
+    console.log(" Gửi updateProfile:", user.id, updatedUser )
     await updateProfile(user.id, updatedUser)
     updateUser(updatedUser)
-    alert("Cập nhật thông tin thành công!")
+    toast.success("Cập nhật thông tin thành công!")
   }
 
   if (loading) {

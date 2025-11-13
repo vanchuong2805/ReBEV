@@ -21,8 +21,8 @@ import ListingGallery from "../components/ListingGallery";
 import ListingDescription from "../components/ListingDescription";
 import ListingActions from "../components/ListingActions";
 import ListingSellerInfo from "../components/ListingSellerInfo";
-import ListingSafetyTips from "../components/ListingSafetyTips";
 import RelatedListings from "../components/RelatedListings";
+import { toast } from "sonner";
 
 const ListingDetail = () => {
   const { user } = useUser();
@@ -49,7 +49,6 @@ const ListingDetail = () => {
   const [hasMoreOther, setHasMoreOther] = useState(true);
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
 
-  // ====== Fetch dữ liệu ======
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -96,8 +95,8 @@ const ListingDetail = () => {
           }),
         ]);
 
-        setOtherPosts(otherRes);
-        setSimilarPosts(similarRes);
+        setOtherPosts(otherRes.filter((p) => p.id !== postRes.id));
+        setSimilarPosts(similarRes.filter((p) => p.id !== postRes.id));
         setVariationValuesId(varValRes);
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
@@ -109,7 +108,6 @@ const ListingDetail = () => {
     fetchData();
   }, [listingId, user]);
 
-  // ====== Format helpers ======
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -123,10 +121,10 @@ const ListingDetail = () => {
       year: "numeric",
     }).format(new Date(date));
 
-  // ====== Các hành động ======
+
   const handleBuyNow = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để mua hàng");
+      toast.error("Bạn cần đăng nhập để mua hàng");
       return;
     }
     try {
@@ -182,7 +180,6 @@ const ListingDetail = () => {
     }
   };
 
-  // ====== Loading State ======
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -192,7 +189,6 @@ const ListingDetail = () => {
     );
   }
 
-  // ====== Not Found State ======
   if (!listing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -226,7 +222,6 @@ const ListingDetail = () => {
   const categoryInfo = categories.find((c) => c.id === listing.category_id);
   const baseInfo = bases.find((b) => b.id === listing.base_id);
 
-  // ====== Render chính ======
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ==== MAIN CONTENT ==== */}
@@ -275,7 +270,7 @@ const ListingDetail = () => {
                   </h1>
 
                   <div className="pb-3 border-b border-gray-100">
-                    <span className="text-[24px] font-bold text-blue-700">
+                    <span className="text-[24px] font-bold text-red-600">
                       {formatPrice(listing.price)}
                     </span>
                   </div>
@@ -301,11 +296,6 @@ const ListingDetail = () => {
                     handleViewShop={handleViewShop}
                   />
                 </div>
-              </div>
-
-              {/* === Safety Tips === */}
-              <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-4">
-                <ListingSafetyTips />
               </div>
             </div>
           </motion.div>

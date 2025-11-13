@@ -1,4 +1,5 @@
 import axios from "axios";
+import { se } from "date-fns/locale";
 
 // hooks/useUserPackages.js
 
@@ -67,36 +68,40 @@ export const deletePackage = async (packageId) => {
     throw err;
   }
 };
-export const updatePackage = async (packages) => {
-  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
-  console.log("Updating package with ID:", packages.id);
-  console.log("Using token:", token);
+export const getCategory = async () => {
+  try {
+    const res = await axios.get(`${baseAPI}/categories`);
+    return res.data;
+  } catch (err) {
+    console.error("Axios error:", err.response?.data ?? err.message);
+  }
+};
+
+export const updateCategory = async (categoryId, numb) => {
+  const token = localStorage.getItem("accessToken");
   try {
     const res = await axios.put(
-      `${baseAPI}/packages/${packages.id}/update`,
+      `${baseAPI}/categories/${categoryId}/rate`,
       {
-        name: packages.name,
-        description: packages.description,
-        price: packages.price,
-        highlight: packages.highlight,
-        top: packages.top,
-        duration: packages.duration,
+        rate: numb,
       },
       {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // thêm token vào header
+          Authorization: `Bearer ${token}`,
         },
       }
     );
-    console.log("Package updated:", res.data);
+    console.log("Category updated:", res.data);
     return res.data;
   } catch (err) {
-    console.error("Error updating package:", err.response?.data || err.message);
+    console.error(
+      "Error updating category:",
+      err.response?.data || err.message
+    );
     throw err;
   }
 };
-
 //_________________________________________
 
 // GET all users
@@ -106,8 +111,8 @@ export const fetchUserById = async (userId) => {
   return res.data;
 };
 
-export const fetchUsers = async () => {
-  const res = await axios.get(baseAPI + "/users");
+export const fetchUsers = async (searchKey) => {
+  const res = await axios.get(baseAPI + "/users" + searchKey + "&sort=DESC");
   return res.data;
 };
 
@@ -210,11 +215,12 @@ export const updatePostStatus = async (postId, newStatus) => {
   }
 };
 //-----------------------------------------
-export const getOrders = async (type) => {
+export const getOrders = async (type, searchKey) => {
   const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
   try {
     const res = await axios.get(
-      `${baseAPI}/orders?page=1&limit=20&order_type=${type}`,
+      `${baseAPI}/orders?order_type=${type}` + searchKey,
+      //?page=1&limit=20&order_type=${type}&priority=DELIVERING
       {
         headers: {
           "Content-Type": "application/json",
@@ -228,6 +234,22 @@ export const getOrders = async (type) => {
     console.error("Error fetching orders:", err.response?.data || err.message);
     throw err;
   }
+};
+
+export const updateOrderStatus = async (id, status) => {
+  const token = localStorage.getItem("accessToken");
+
+  const res = await axios.post(
+    `${baseAPI}/orders/${id}/status`,
+    { status: status },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    }
+  );
+  return res.data;
 };
 
 //.---
@@ -267,3 +289,46 @@ export const getStaticPage = async (year) => {
     throw err;
   }
 };
+
+// Complaint
+export const getComplaints = async (searchKey) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/complaints${searchKey}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    });
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export const changeComplaintStatus = async (id, status) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.patch(
+      `${baseAPI}/complaints/${id}/status`,
+      { status: status },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // thêm token vào header
+        },
+      }
+    );
+    console.log("Updated complaint:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error(
+      "Error updating complaint:",
+      err.response?.data || err.message
+    );
+    throw err;
+  }
+};
+///

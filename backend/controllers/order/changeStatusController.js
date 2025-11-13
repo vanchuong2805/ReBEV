@@ -1,6 +1,6 @@
 import orderStatusService from '../../services/order/orderStatusService.js';
 import orderService from '../../services/order/orderService.js';
-import { ORDER_STATUS, ORDER_STATUS_TRANSITION, ORDER_TYPE_STATUS } from '../../config/constants.js';
+import { ORDER_STATUS, ORDER_STATUS_TRANSITION, ORDER_TYPE_STATUS, ROLE } from '../../config/constants.js';
 import { sequelize } from '../../models/index.js';
 
 /** 
@@ -51,7 +51,7 @@ const changeStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         } else {
             if (
-                (user.role === 0 && order.customer_id !== user.id && order.seller_id !== user.id) ||
+                (user.role === ROLE.MEMBER && order.customer_id !== user.id && order.seller_id !== user.id) ||
                 (order.customer_id === user.id && status === ORDER_STATUS.SELLER_CANCELLED) ||
                 (order.seller_id === user.id && status === ORDER_STATUS.CUSTOMER_CANCELLED)
             ) {

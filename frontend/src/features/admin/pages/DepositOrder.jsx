@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
 import DepositOrdersTable from "../components/TransactionComponents/DepositOrdersTable";
 import DepositDetailModal from "../components/TransactionComponents/DepositDetailModal";
 import FilterBar from "../components/FilterBar";
 import { ArrowUpDown } from "lucide-react";
 import SortSelector from "../components/SortSelector";
+import { getOrders } from "../service";
 
 export default function DepositOrder() {
   const orderSortOptions = [
@@ -15,30 +16,45 @@ export default function DepositOrder() {
     { value: "completed", label: "Giao dịch thành công" },
   ];
   const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
-
+  const [orders, setOrders] = useState([]);
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    order_status: "",
+    priority: "",
+  });
+  const searchKey = `&order_id=${filSearch.searchTerm}&order_status=${filSearch.order_status}&priority=${filSearch.priority}`;
+  useEffect(() => {
+    (async () => {
+      const data = await getOrders(2, searchKey);
+      setOrders(data.orders || []);
+    })();
+  }, [filSearch]);
   return (
     <div className="space-y-4">
       {/* Filter */}
 
       <FilterBar
+        setFilSearch={setFilSearch}
+        filSearch={filSearch}
+        searchPlaceholder="Tìm kiếm id đơn mua ..."
         selects={[
           {
             key: "status",
-            value: "",
+            value: filSearch.order_status,
+            onChange: (v) =>
+              setFilSearch((pre) => ({ ...pre, order_status: v })),
             options: [
               { value: "", label: "Tất cả trạng thái" },
-              { value: 0, label: "Chờ duyệt" },
-              { value: 1, label: "Đã duyệt" },
-              { value: 2, label: "Từ chối" },
-              { value: 3, label: "Hoàn tất giao dịch" },
-              { value: 4, label: "Đang trong quá trình hoàn tất" },
-              { value: 5, label: "Đã dừng lại" },
-              { value: 6, label: "Đang xác minh" },
-              { value: 7, label: "Đang giao dịch" },
+              { value: "PENDING", label: "Chờ duyệt" },
+              { value: "PAID", label: "PAID" },
+              { value: "CUSTOMER_CANCELLED", label: "CUSTOMER_CANCELLED" },
+              { value: "SELLER_CANCELLED", label: "SELLER_CANCELLED" },
+              { value: "CANCELLED", label: "CANCELLED" },
+              { value: "COMPLETED", label: "COMPLETED" },
             ],
           },
         ]}
-      ></FilterBar>
+      />
       <div className="flex flex-wrap gap-4 justify-between">
         <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
         {/* Sort Selector */}
@@ -52,7 +68,7 @@ export default function DepositOrder() {
         </div>
       </div>
       {/* Orders List */}
-      <DepositOrdersTable />
+      <DepositOrdersTable orders={orders} setOrders={setOrders} />
     </div>
   );
 }

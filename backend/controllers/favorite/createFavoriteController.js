@@ -5,22 +5,40 @@ import postService from "../../services/post/postService.js";
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     FavoritePost:
+ *       type: object
+ *       description: Represents a user's favorite post
+ *       properties:
+ *         user_id:
+ *           type: integer
+ *           description: ID of the user who favorited the post
+ *           example: 1
+ *         post_id:
+ *           type: integer
+ *           description: ID of the post added to favorites
+ *           example: 12
+ *
  * /api/favorites/{user_id}:
  *   post:
- *     summary: Thêm bài viết vào danh sách yêu thích của người dùng
- *     tags: [Favorites]
- *     description: API cho phép người dùng thêm một bài viết cụ thể vào danh sách yêu thích của họ.
+ *     summary: Add a post to a user's favorite list
+ *     description: >
+ *       Allows a user to add a specific post to their list of favorite posts.  
+ *       The post must exist, cannot already be favorited by the user, and users cannot favorite their own posts.
+ *     tags:
+ *       - Favorites
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
- *         description: ID của người dùng thực hiện hành động yêu thích
+ *         description: ID of the user performing the favorite action
  *         schema:
  *           type: integer
  *           example: 1
  *     requestBody:
  *       required: true
- *       description: Dữ liệu của bài viết cần thêm vào danh sách yêu thích
+ *       description: Post information to be added to the user's favorite list
  *       content:
  *         application/json:
  *           schema:
@@ -30,11 +48,11 @@ import postService from "../../services/post/postService.js";
  *             properties:
  *               post_id:
  *                 type: integer
+ *                 description: ID of the post to add to favorites
  *                 example: 12
- *                 description: ID của bài viết cần được thêm vào danh sách yêu thích
  *     responses:
  *       200:
- *         description: Thêm bài viết vào danh sách yêu thích thành công
+ *         description: Favorite post created successfully
  *         content:
  *           application/json:
  *             schema:
@@ -42,18 +60,12 @@ import postService from "../../services/post/postService.js";
  *               properties:
  *                 message:
  *                   type: string
+ *                   description: Success message indicating favorite creation
  *                   example: "Favorite post created successfully"
  *                 favoritePost:
- *                   type: object
- *                   properties:
- *                     user_id:
- *                       type: integer
- *                       example: 1
- *                     post_id:
- *                       type: integer
- *                       example: 12
+ *                   $ref: '#/components/schemas/FavoritePost'
  *       400:
- *         description: Yêu cầu không hợp lệ — có thể do bài viết không tồn tại, đã được yêu thích, hoặc lỗi logic khác
+ *         description: Bad request - validation errors, post does not exist, post already favorited, or user trying to favorite own post
  *         content:
  *           application/json:
  *             schema:
@@ -61,11 +73,12 @@ import postService from "../../services/post/postService.js";
  *               properties:
  *                 errors:
  *                   type: array
+ *                   description: List of error messages describing why the request failed
  *                   items:
  *                     type: string
- *                   example: ["Post not found", "Favorite post already exists"]
- *       500:
- *         description: Lỗi máy chủ trong quá trình xử lý yêu cầu
+ *                   example: ["Post not found", "Favorite post already exists", "Cannot favorite your own post"]
+ *       404:
+ *         description: Post or user not found
  *         content:
  *           application/json:
  *             schema:
@@ -73,8 +86,20 @@ import postService from "../../services/post/postService.js";
  *               properties:
  *                 error:
  *                   type: string
+ *                   example: "Post not found"
+ *       500:
+ *         description: Internal server error while creating favorite post
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message from server
  *                   example: "CREATE_FAVORITE_FAIL"
  */
+
 
 const createFavoritePost = async (req, res) => {
     try {

@@ -15,6 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChevronDown, Loader2 } from "lucide-react"
+
+import { useFormik } from "formik"
+import * as Yup from "yup"
+import { toast } from "sonner"
+
 import {
   fetchProvinces,
   fetchDistricts,
@@ -24,286 +29,359 @@ import {
 } from "@/features/profile/service"
 import { useUser } from "@/contexts/UserContext"
 
+
+// ------------------ Yup Schema ------------------
+const AddressSchema = Yup.object({
+  name: Yup.string().required("Vui lòng nhập họ và tên."),
+  phone: Yup.string()
+    .matches(/^(0|\+84)\d{9}$/, "Số điện thoại không hợp lệ.")
+    .required("Vui lòng nhập số điện thoại."),
+  detail: Yup.string().required("Vui lòng nhập địa chỉ chi tiết."),
+  province_id: Yup.string().required("Vui lòng chọn Tỉnh/Thành phố."),
+  district_id: Yup.string().required("Vui lòng chọn Quận/Huyện."),
+  ward_name: Yup.string().required("Vui lòng chọn Phường/Xã."),
+})
+
+
+// ===================================================
+//                  COMPONENT
+// ===================================================
+
 export default function AddAddressModal({ open, onClose, contact }) {
   const { user } = useUser()
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    detail: "",
-    province_id: "",
-    district_id: "",
-    ward_name: "",
-  })
+
   const [provinces, setProvinces] = useState([])
   const [districts, setDistricts] = useState([])
   const [wards, setWards] = useState([])
-  const [loading, setLoading] = useState({ provinces: false, districts: false, wards: false })
-  const [error, setError] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  useEffect(() => {
-    const loadProvinces = async () => {
-      setLoading(p => ({ ...p, provinces: true }))
-      try {
-        const data = await fetchProvinces()
-        setProvinces(data || [])
-      } catch (err) {
-        console.error(" Lỗi tải tỉnh:", err)
-        setError("Không tải được danh sách tỉnh.")
-      } finally {
-        setLoading(p => ({ ...p, provinces: false }))
-      }
-    }
-    loadProvinces()
-  }, [])
+  const [loading, setLoading] = useState({
+    provinces: false,
+    districts: false,
+    wards: false,
+  })
+  const [error, setError] = useState("")
 
 
-  const handleProvinceSelect = async (provinceId) => {
-    setForm(prev => ({
-      ...prev,
-      province_id: provinceId,
+  // ---------------- useFormik ----------------
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      phone: "",
+      detail: "",
+      province_id: "",
       district_id: "",
       ward_name: "",
-    }))
-    setDistricts([])
-    setWards([])
+    },
+    validationSchema: AddressSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      const province = provinces.find((p) => p.ProvinceID == values.province_id)
+      const district = districts.find((d) => d.DistrictID == values.district_id)
+      const ward = wards.find((w) => w.WardName == values.ward_name)
 
-    if (!provinceId) return
-    setLoading(p => ({ ...p, districts: true }))
-    try {
-      const data = await fetchDistricts(provinceId)
-      setDistricts(data || [])
-    } catch (err) {
-      console.error(" Lỗi tải quận:", err)
-      setError("Không tải được danh sách quận/huyện.")
-    } finally {
-      setLoading(p => ({ ...p, districts: false }))
-    }
-  }
+      const payload = {
+        user_id: user?.id,
+        name: values.name.trim(),
+        phone: values.phone.trim(),
+        detail: values.detail.trim(),
+        province_id: province?.ProvinceID,
+        province_name: province?.ProvinceName,
+        district_id: district?.DistrictID,
+        district_name: district?.DistrictName,
+        ward_code: ward?.WardCode,
+        ward_name: ward?.WardName,
+      }
 
-  const handleDistrictSelect = async (districtId) => {
-    setForm(prev => ({
-      ...prev,
-      district_id: districtId,
-      ward_name: "",
-    }))
-    setWards([])
-
-    if (!districtId) return
-    setLoading(p => ({ ...p, wards: true }))
-    try {
-      const data = await fetchWards(districtId)
-      setWards(data || [])
-    } catch (err) {
-      console.error(" Lỗi tải phường:", err)
-      setError("Không tải được danh sách phường/xã.")
-    } finally {
-      setLoading(p => ({ ...p, wards: false }))
-    }
-  }
+      try {
+        if (contact) {
+          await updateContact(contact.id, payload)
+          toast.success("Đã cập nhật địa chỉ!")
+        } else {
+          await createContact(payload)
+          toast.success("Đã thêm địa chỉ mới!")
+        }
+        onClose()
+      } catch (err) {
+        toast.error("Lưu địa chỉ thất bại, vui lòng thử lại.")
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    enableReinitialize: true, // cho phép fill khi edit
+  })
 
 
+  // ---------------- Load Provinces ----------------
   useEffect(() => {
-    const loadForEdit = async () => {
-      if (contact) {
-        setForm({
-          name: contact.name || "",
-          phone: contact.phone || "",
-          detail: contact.detail || "",
-          province_id: contact.province_id || "",
-          district_id: contact.district_id || "",
-          ward_name: contact.ward_name || "",
-        })
+    if (!open) return
 
-        if (contact.province_id) await handleProvinceSelect(contact.province_id)
-        if (contact.district_id) await handleDistrictSelect(contact.district_id)
-
-        setForm(prev => ({
-          ...prev,
-          ward_name: contact.ward_name || "",
-        }))
-      } else if (open) {
-        setForm({
-          name: "",
-          phone: "",
-          detail: "",
-          province_id: "",
-          district_id: "",
-          ward_name: "",
-        })
-        setDistricts([])
-        setWards([])
+    const load = async () => {
+      setLoading((p) => ({ ...p, provinces: true }))
+      try {
+        const list = await fetchProvinces()
+        setProvinces(list || [])
+      } catch {
+        setError("Không tải được danh sách tỉnh.")
+      } finally {
+        setLoading((p) => ({ ...p, provinces: false }))
       }
     }
-
-    if (open) loadForEdit()
-  }, [contact, open])
-
-  useEffect(() => {
-    if (!open) {
-      setIsSubmitting(false)
-    }
+    load()
   }, [open])
 
-  const handleSubmit = async () => {
-    if (isSubmitting) return
 
-    const phoneRegex = /^(0|\+84)(\d{9})$/
+  // ---------------- Edit mode load data ----------------
+  useEffect(() => {
+    if (!open) return
 
-    if (!form.name.trim()) return alert("Vui lòng nhập họ và tên.")
-    if (!form.phone.trim()) return alert("Vui lòng nhập số điện thoại.")
-    if (!phoneRegex.test(form.phone.trim())) return alert("Số điện thoại không hợp lệ.")
-    if (!form.detail.trim()) return alert("Vui lòng nhập địa chỉ chi tiết.")
-    if (!form.province_id) return alert("Vui lòng chọn Tỉnh/Thành phố.")
-    if (!form.district_id) return alert("Vui lòng chọn Quận/Huyện.")
-    if (!form.ward_name) return alert("Vui lòng chọn Phường/Xã.")
+    if (contact) {
+      formik.setValues({
+        name: contact.name || "",
+        phone: contact.phone || "",
+        detail: contact.detail || "",
+        province_id: contact.province_id || "",
+        district_id: contact.district_id || "",
+        ward_name: contact.ward_name || "",
+      })
 
-    setIsSubmitting(true)
+      if (contact.province_id) handleProvince(contact.province_id, false)
+      if (contact.district_id) handleDistrict(contact.district_id, false)
+    } else {
+      formik.resetForm()
+      setDistricts([])
+      setWards([])
+    }
+  }, [contact, open])
 
-    const province = provinces.find(p => p.ProvinceID == form.province_id)
-    const district = districts.find(d => d.DistrictID == form.district_id)
-    const ward = wards.find(w => w.WardName == form.ward_name)
 
-    const payload = {
-      user_id: user?.id,
-      name: form.name.trim(),
-      phone: form.phone.trim(),
-      detail: form.detail.trim(),
-      province_id: province?.ProvinceID || "",
-      province_name: province?.ProvinceName || "",
-      district_id: district?.DistrictID || "",
-      district_name: district?.DistrictName || "",
-      ward_code: ward?.WardCode || "",
-      ward_name: ward?.WardName || "",
+  // ===================================================
+  //              HANDLE PROVINCE / DISTRICT
+  // ===================================================
+  const handleProvince = async (id, clear = true) => {
+    formik.setFieldValue("province_id", id)
+
+    if (clear) {
+      formik.setFieldValue("district_id", "")
+      formik.setFieldValue("ward_name", "")
+      setDistricts([])
+      setWards([])
     }
 
+    setLoading((p) => ({ ...p, districts: true }))
     try {
-      if (contact) {
-        await updateContact(contact.id, payload)
-        alert("Đã cập nhật địa chỉ thành công")
-      } else {
-        await createContact(payload)
-        alert("Đã thêm địa chỉ mới thành công")
-      }
-      onClose()
-    } catch (err) {
-      console.error("Lỗi khi lưu contact:", err)
-      alert("Lưu địa chỉ thất bại, vui lòng thử lại.")
+      const data = await fetchDistricts(id)
+      setDistricts(data || [])
     } finally {
-      setIsSubmitting(false)
+      setLoading((p) => ({ ...p, districts: false }))
     }
   }
+
+  const handleDistrict = async (id, clear = true) => {
+    formik.setFieldValue("district_id", id)
+
+    if (clear) {
+      formik.setFieldValue("ward_name", "")
+      setWards([])
+    }
+
+    setLoading((p) => ({ ...p, wards: true }))
+    try {
+      const data = await fetchWards(id)
+      setWards(data || [])
+    } finally {
+      setLoading((p) => ({ ...p, wards: false }))
+    }
+  }
+
+
+  // ===================================================
+  //                       UI
+  // ===================================================
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md" aria-describedby="add-address-desc">
+      <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{contact ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}</DialogTitle>
+          <DialogTitle>
+            {contact ? "Chỉnh sửa địa chỉ" : "Thêm địa chỉ mới"}
+          </DialogTitle>
         </DialogHeader>
 
         {error && (
-          <div className="bg-red-50 border border-red-300 text-red-600 p-2 text-sm rounded-md mb-3">
+          <div className="bg-red-100 border border-red-300 text-red-600 p-2 mb-2 rounded">
             {error}
           </div>
         )}
 
-        <div className="space-y-3">
-          <Input placeholder="Họ và tên" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-          <Input placeholder="Số điện thoại" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-          <Input placeholder="Số nhà, tên đường..." value={form.detail} onChange={e => setForm({ ...form, detail: e.target.value })} />
+        {/* ------------ FORM -------------- */}
+        <form onSubmit={formik.handleSubmit} className="space-y-3">
+          
+          {/* Name */}
+          <div>
+            <Input
+              name="name"
+              placeholder="Họ và tên"
+              value={formik.values.name}
+              onChange={formik.handleChange}
+            />
+            {formik.touched.name && formik.errors.name && (
+              <p className="text-red-500 text-sm">{formik.errors.name}</p>
+            )}
+          </div>
 
-          {/* Province */}
+          {/* Phone */}
+          <div>
+            <Input
+              name="phone"
+              placeholder="Số điện thoại"
+              value={formik.values.phone}
+              onChange={formik.handleChange}
+            />
+            {formik.touched.phone && formik.errors.phone && (
+              <p className="text-red-500 text-sm">{formik.errors.phone}</p>
+            )}
+          </div>
+
+          {/* Detail */}
+          <div>
+            <Input
+              name="detail"
+              placeholder="Số nhà, tên đường..."
+              value={formik.values.detail}
+              onChange={formik.handleChange}
+            />
+            {formik.touched.detail && formik.errors.detail && (
+              <p className="text-red-500 text-sm">{formik.errors.detail}</p>
+            )}
+          </div>
+
+
+          {/* ---------------- Province ---------------- */}
           <div className="space-y-1">
             <Label>Tỉnh / Thành phố</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-between">
-                  {form.province_id
-                    ? provinces.find(p => p.ProvinceID == form.province_id)?.ProvinceName
-                    : loading.provinces
-                    ? "Đang tải..."
+                  {formik.values.province_id
+                    ? provinces.find((p) => p.ProvinceID == formik.values.province_id)
+                        ?.ProvinceName
                     : "Chọn tỉnh / thành phố"}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  <ChevronDown className="w-4 h-4 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent className="max-h-64 overflow-y-auto">
-                {provinces.map(p => (
-                  <DropdownMenuItem key={p.ProvinceID} onClick={() => handleProvinceSelect(p.ProvinceID)}>
+                {provinces.map((p) => (
+                  <DropdownMenuItem
+                    key={p.ProvinceID}
+                    onClick={() => handleProvince(p.ProvinceID)}
+                  >
                     {p.ProvinceName}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {formik.touched.province_id && formik.errors.province_id && (
+              <p className="text-red-500 text-sm">{formik.errors.province_id}</p>
+            )}
           </div>
 
-          {/* District */}
+
+          {/* ---------------- District ---------------- */}
           <div className="space-y-1">
             <Label>Quận / Huyện</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between" disabled={!form.province_id || loading.districts}>
-                  {form.district_id
-                    ? districts.find(d => d.DistrictID == form.district_id)?.DistrictName
-                    : !form.province_id
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  disabled={!formik.values.province_id}
+                >
+                  {formik.values.district_id
+                    ? districts.find((d) => d.DistrictID == formik.values.district_id)
+                        ?.DistrictName
+                    : !formik.values.province_id
                     ? "Chọn tỉnh trước"
                     : loading.districts
                     ? "Đang tải..."
                     : "Chọn quận / huyện"}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  <ChevronDown className="w-4 h-4 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent className="max-h-64 overflow-y-auto">
-                {districts.map(d => (
-                  <DropdownMenuItem key={d.DistrictID} onClick={() => handleDistrictSelect(d.DistrictID)}>
+                {districts.map((d) => (
+                  <DropdownMenuItem
+                    key={d.DistrictID}
+                    onClick={() => handleDistrict(d.DistrictID)}
+                  >
                     {d.DistrictName}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {formik.touched.district_id && formik.errors.district_id && (
+              <p className="text-red-500 text-sm">{formik.errors.district_id}</p>
+            )}
           </div>
 
-          {/* Ward */}
+
+          {/* ---------------- Ward ---------------- */}
           <div className="space-y-1">
             <Label>Phường / Xã</Label>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-between" disabled={!form.district_id || loading.wards}>
-                  {form.ward_name
-                    ? wards.find(w => w.WardName == form.ward_name)?.WardName
-                    : !form.district_id
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                  disabled={!formik.values.district_id}
+                >
+                  {formik.values.ward_name
+                    ? wards.find((w) => w.WardName === formik.values.ward_name)?.WardName
+                    : !formik.values.district_id
                     ? "Chọn quận trước"
                     : loading.wards
                     ? "Đang tải..."
                     : "Chọn phường / xã"}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                  <ChevronDown className="w-4 h-4 opacity-60" />
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent className="max-h-64 overflow-y-auto">
-                {wards.map(w => (
-                  <DropdownMenuItem key={w.WardCode} onClick={() => setForm({ ...form, ward_name: w.WardName })}>
+                {wards.map((w) => (
+                  <DropdownMenuItem
+                    key={w.WardCode}
+                    onClick={() => formik.setFieldValue("ward_name", w.WardName)}
+                  >
                     {w.WardName}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        </div>
 
-        <div className="flex justify-end gap-2 mt-5">
-          <Button variant="outline" onClick={onClose}>
-            Hủy
-          </Button>
-          <Button
-            disabled={isSubmitting}
-            className={`bg-[#007BFF] hover:bg-[#68b1ff] hover:text-white transition-all shadow-sm flex items-center gap-2 ${
-              isSubmitting ? "opacity-70 cursor-not-allowed" : ""
-            }`}
-            onClick={handleSubmit}
-          >
-            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isSubmitting ? "Đang lưu..." : "Lưu"}
-          </Button>
-        </div>
+            {formik.touched.ward_name && formik.errors.ward_name && (
+              <p className="text-red-500 text-sm">{formik.errors.ward_name}</p>
+            )}
+          </div>
+
+
+          {/* SUBMIT */}
+          <div className="flex justify-end gap-2 mt-5">
+            <Button variant="outline" type="button" onClick={onClose}>
+              Hủy
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={formik.isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+            >
+              {formik.isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {formik.isSubmitting ? "Đang lưu..." : "Lưu"}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   )

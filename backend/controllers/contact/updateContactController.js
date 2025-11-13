@@ -8,52 +8,70 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *   schemas:
  *     Contact:
  *       type: object
+ *       description: Represents a user's contact information
  *       properties:
  *         id:
  *           type: integer
+ *           description: Unique ID of the contact
  *           example: 1
  *         user_id:
  *           type: integer
+ *           description: ID of the user this contact belongs to
  *           example: 5
  *         detail:
  *           type: string
+ *           description: Detailed street address
  *           example: "123 Nguyen Van Linh, Ward 5"
  *         ward_code:
  *           type: string
+ *           description: Administrative ward code
  *           example: "W123"
  *         ward_name:
  *           type: string
+ *           description: Name of the ward
  *           example: "Ward 5"
  *         district_id:
  *           type: integer
+ *           description: Administrative district ID
  *           example: 45
  *         district_name:
  *           type: string
+ *           description: Name of the district
  *           example: "District 7"
  *         province_id:
  *           type: integer
+ *           description: Province or city ID
  *           example: 79
  *         province_name:
  *           type: string
+ *           description: Name of the province or city
  *           example: "Ho Chi Minh City"
  *         name:
  *           type: string
+ *           description: Full name of the contact person
  *           example: "Nguyen Van A"
  *         phone:
  *           type: string
+ *           description: Phone number of the contact
  *           example: "0901234567"
  *         is_default:
  *           type: boolean
+ *           description: Indicates if this contact is the default for the user
  *           example: false
  *         is_deleted:
  *           type: boolean
+ *           description: Indicates if the contact has been marked as deleted
  *           example: false
  *
  * /api/contacts/update:
  *   put:
- *     summary: Update a contact
- *     description: Update contact information such as address, name, phone, or region details.
- *     tags: [Contacts]
+ *     summary: Update an existing contact
+ *     description: >
+ *       Update a user's contact information, including address details, contact name, phone number, and region identifiers.  
+ *       The `id` of the contact must be provided.  
+ *       Fields marked as required must not be empty. Optional fields can be omitted if no change is needed.
+ *     tags:
+ *       - Contacts
  *     requestBody:
  *       required: true
  *       content:
@@ -111,7 +129,7 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *                 example: "Ho Chi Minh City"
  *               name:
  *                 type: string
- *                 description: Contact name
+ *                 description: Contact full name
  *                 example: "Nguyen Van A"
  *               phone:
  *                 type: string
@@ -119,11 +137,11 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *                 example: "0901234567"
  *               is_default:
  *                 type: boolean
- *                 description: Whether this contact is the default
+ *                 description: Set true if this contact should be the default
  *                 example: false
  *               is_deleted:
  *                 type: boolean
- *                 description: Whether this contact is marked as deleted
+ *                 description: Set true if marking this contact as deleted
  *                 example: false
  *     responses:
  *       200:
@@ -135,11 +153,12 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *               properties:
  *                 message:
  *                   type: string
+ *                   description: Success message
  *                   example: "Contact updated successfully"
  *                 contact:
  *                   $ref: '#/components/schemas/Contact'
  *       400:
- *         description: Bad request - validation error or missing fields
+ *         description: Bad request - validation error or missing required fields
  *         content:
  *           application/json:
  *             schema:
@@ -147,9 +166,20 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *               properties:
  *                 errors:
  *                   type: array
+ *                   description: List of validation or processing errors
  *                   items:
  *                     type: string
  *                   example: ["Contact not found", "Phone cannot be blank"]
+ *       404:
+ *         description: Contact with provided ID not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Contact not found"
  *       500:
  *         description: Internal server error
  *         content:
@@ -161,6 +191,7 @@ import { SUCCESS_MESSAGE } from '../../config/constants.js';
  *                   type: string
  *                   example: "Failed to update contact"
  */
+
 
 const updateContact = async (req, res) => {
     try {
@@ -175,7 +206,7 @@ const updateContact = async (req, res) => {
             province_id,
             province_name,
             name,
-            phone
+            phone,
         } = req.body;
 
         const contact_id = await userContactService.getUserContact(id);

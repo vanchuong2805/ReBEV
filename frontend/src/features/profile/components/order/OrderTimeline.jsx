@@ -76,11 +76,6 @@ export default function OrderTimeline({ timeline = [], isCanceled = false }) {
         ))}
       </div>
 
-      {timeline.length > 3 && (
-        <button className="text-sm text-[#007BFF] hover:underline mt-2 ml-4">
-          Xem thêm
-        </button>
-      )}
     </div>
   )
 }

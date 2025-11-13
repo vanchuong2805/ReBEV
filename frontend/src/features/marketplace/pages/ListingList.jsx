@@ -11,6 +11,7 @@ import { getFeaturedProducts } from "@/features/home/service";
 import { toast } from "sonner";
 import FilterSearch from "../components/FilterSearch";
 import CompareFloatingToolbar from "@/features/compare/components/CompareFloatingToolbar";
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 function currency(v) {
   return Number(v || 0).toLocaleString("vi-VN") + " ₫";
@@ -57,6 +58,9 @@ export default function ListingList() {
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  //  Dùng context yêu thích
+  const { isFavorite, toggleFavorite } = useFavorite();
+
   // Lấy search từ URL query params
   const searchFromUrl = searchParams.get("search") || "";
 
@@ -91,10 +95,6 @@ export default function ListingList() {
         ? "price-asc"
         : "price-desc"
       : "newest";
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
   const [totalPages, setTotalPages] = useState(1);
 
   // Pagination from URL
@@ -107,7 +107,6 @@ export default function ListingList() {
       try {
         setLoading(true);
 
-        // Build query params từ URL
         const queryParams = {};
 
         // Category từ route hoặc từ searchParams
@@ -274,23 +273,6 @@ export default function ListingList() {
     }
   }, [displayItems, pages]);
 
-  // Favorites
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      toast.dismiss();
-      if (prev.includes(id)) {
-        toast.info("Đã xóa khỏi yêu thích");
-        return prev.filter((x) => x !== id);
-      } else {
-        toast.success("Đã thêm vào yêu thích");
-        return [...prev, id];
-      }
-    });
-  };
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
-
   // Handler cho so sánh sản phẩm
   const toggleCompare = (item) => {
     setCompareList((prev) => {
@@ -344,7 +326,7 @@ export default function ListingList() {
       <div className="container px-4 py-6 mx-auto">
         <div className="flex gap-6">
           {/* Filter Sidebar */}
-          <FilterSearch priceMin={priceMin} priceMax={priceMax} />
+          <FilterSearch priceMax={priceMax} priceMin={priceMin} />
 
           {/* Main */}
           <div className="flex-1">
@@ -440,6 +422,7 @@ export default function ListingList() {
                         </div>
 
                         <div className="flex gap-2">
+                          {/* Nút yêu thích dùng useFavorite */}
                           <button
                             onClick={() => toggleCompare(item)}
                             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
@@ -455,25 +438,34 @@ export default function ListingList() {
                           </button>
 
                           <button
-                            onClick={() => toggleFavorite(item.id)}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg ${
-                              favorites.includes(item.id)
-                                ? "bg-red-50 text-red-600"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleFavorite(item);
+                              toast.dismiss();
+                              toast.success(
+                                isFavorite(item.id)
+                                  ? "Đã xoá khỏi yêu thích"
+                                  : "Đã thêm vào yêu thích"
+                              );
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                              isFavorite(item.id)
+                                ? "bg-red-50 text-red-600 hover:bg-red-100"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
                             <Heart
-                              className={`w-4 h-4 ${
-                                favorites.includes(item.id)
-                                  ? "fill-current"
+                              className={`w-4 h-4 transition-transform ${
+                                isFavorite(item.id)
+                                  ? "fill-current scale-110"
                                   : ""
                               }`}
                             />
-                            {favorites.includes(item.id)
-                              ? "Đã thích"
-                              : "Yêu thích"}
+                            {isFavorite(item.id) ? "Đã thích" : "Yêu thích"}
                           </button>
 
+                          {/* 🔍 Xem chi tiết */}
                           <Link
                             to={`/marketplace/listing/${item.id}`}
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"

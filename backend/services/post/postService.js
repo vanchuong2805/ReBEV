@@ -33,8 +33,8 @@ const getPosts = async (filters = {}) => {
         province_id,
         order_by,
         order_direction,
-        is_deleted = false,
-        is_hidden = false,
+        is_deleted,
+        is_hidden,
         max_price,
         min_price,
     } = filters;
@@ -47,7 +47,7 @@ const getPosts = async (filters = {}) => {
         }
     }
 
-    const where = { is_deleted, is_hidden };
+    const where = {};
     const include = province_id
         ? [
               {
@@ -66,7 +66,7 @@ const getPosts = async (filters = {}) => {
         include: [
             {
                 association: 'package',
-                attributes: [],
+                attributes: ['highlight', 'top'],
             },
         ],
     });
@@ -102,6 +102,14 @@ const getPosts = async (filters = {}) => {
             { '$base.province_id$': province_id },
             { '$seller_contact.province_id$': province_id },
         ];
+    }
+
+    if (is_deleted !== undefined) {
+        where.is_deleted = is_deleted;
+    }
+
+    if (is_hidden !== undefined) {
+        where.is_hidden = is_hidden;
     }
 
     if (min_price) {
@@ -153,6 +161,7 @@ const getPosts = async (filters = {}) => {
             'status',
             'base_id',
             'seller_contact_id',
+            'is_deleted',
             [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
         ],
         group: [
@@ -161,6 +170,8 @@ const getPosts = async (filters = {}) => {
             'posts.title',
             'posts.create_at',
             '[user->package].[top]',
+            '[user->package].[highlight]',
+            '[user->package].[id]',
             'posts.status',
             'posts.base_id',
             'posts.seller_contact_id',
@@ -169,6 +180,7 @@ const getPosts = async (filters = {}) => {
             'user.email',
             'user.phone',
             'user.avatar',
+            'posts.is_deleted',
         ],
         ...(variationFilter
             ? {
@@ -179,9 +191,54 @@ const getPosts = async (filters = {}) => {
                   ),
               }
             : {}),
+        subQuery: false,
     });
 
-    const total = await posts.count({ include, where });
+    const rows = await posts.count({
+        include,
+        where,
+        attributes: [
+            'id',
+            'price',
+            'title',
+            'create_at',
+            'status',
+            'base_id',
+            'seller_contact_id',
+            'is_deleted',
+            [Sequelize.literal('MAX(CAST(media AS NVARCHAR(MAX)))'), 'media'],
+        ],
+        group: [
+            'posts.id',
+            'posts.price',
+            'posts.title',
+            'posts.create_at',
+            '[user->package].[top]',
+            '[user->package].[highlight]',
+            '[user->package].[id]',
+            'posts.status',
+            'posts.base_id',
+            'posts.seller_contact_id',
+            'user.id',
+            'user.display_name',
+            'user.email',
+            'user.phone',
+            'user.avatar',
+            'posts.is_deleted',
+        ],
+        ...(variationFilter
+            ? {
+                  having: Sequelize.literal(
+                      `COUNT(DISTINCT CASE WHEN post_details.variation_value_id IN (${variationFilter.join(
+                          ','
+                      )}) THEN post_details.variation_value_id END) = ${variationFilter.length}`
+                  ),
+              }
+            : {}),
+        subQuery: false,
+    });
+
+    const total = Array.isArray(rows) ? rows.length : rows;
 
     return { data, pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null };
 };
