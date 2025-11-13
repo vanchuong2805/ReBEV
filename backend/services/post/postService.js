@@ -191,6 +191,7 @@ const getPosts = async (filters = {}) => {
                   ),
               }
             : {}),
+        subQuery: false,
     });
 
     const total = await posts.count({ include, where });
