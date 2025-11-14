@@ -64,17 +64,17 @@ export default function Form({
   // success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const handlePriceChange = (e) => {
-    let raw = e.target.value.replace(/\D/g, ""); // bỏ dấu và chữ
+  // const handlePriceChange = (e) => {
+  //   let raw = e.target.value.replace(/\D/g, ""); // bỏ dấu và chữ
 
-    if (!raw) {
-      setPrice("");
-      return;
-    }
+  //   if (!raw) {
+  //     setPrice("");
+  //     return;
+  //   }
 
-    let formatted = Number(raw).toLocaleString("vi-VN");
-    setPrice(formatted);
-  };
+  //   let formatted = Number(raw).toLocaleString("vi-VN");
+  //   setPrice(formatted);
+  // };
 
   // Load variation values (re-fetch khi đổi categoryId)
   useEffect(() => {
@@ -293,7 +293,7 @@ export default function Form({
             <input
               type="text"
               value={price}
-              onChange={handlePriceChange}
+              onChange={(e) => setPrice(e.target.value)}
               placeholder="Nhập giá bán (VND)"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
