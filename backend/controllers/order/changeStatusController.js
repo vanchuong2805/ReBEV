@@ -44,7 +44,7 @@ const changeStatus = async (req, res) => {
     try {
         // Extract and validate input data
         const { id } = req.params;
-        const { status, description } = req.body;
+        const { status, description, media } = req.body;
         const user = req.user;
         const order = await orderService.getById(id);
         if (!order) {
@@ -69,7 +69,7 @@ const changeStatus = async (req, res) => {
         }
         // Update order status
         await orderStatusService.updateOrderStatus(
-            { order_id: id, status, description, create_by: user.id },
+            { order_id: id, status, description, create_by: user.id, media: media ? JSON.stringify(media) : null },
             { transaction: t }
         );
 
