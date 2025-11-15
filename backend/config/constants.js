@@ -1,5 +1,5 @@
 export const ERROR_MESSAGE = {
-    BLANK_INFORMATION: 'Information cannot be left blank.',
+    BLANK_INFORMATION: 'Information must not be left blank.',
     USER_NOT_FOUND: 'User not found.',
     DISPLAY_NAME_BLANK: 'Display name cannot be left blank.',
     EMAIL_BLANK: 'Email cannot be left blank.',
@@ -50,7 +50,7 @@ export const ERROR_MESSAGE = {
     REVIEW_NOT_FOUND: 'Review not found',
     DELETE_REVIEW_FAILED: 'Deleting review failed',
     CATEGORY_NOT_FOUND: 'Category not found',
-}
+};
 
 export const SUCCESS_MESSAGE = {
     REGISTER_SUCCESS: 'Register successful',
@@ -76,7 +76,7 @@ export const SUCCESS_MESSAGE = {
     UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
     DELETE_REVIEW_SUCCESS: 'Review deleted successfully',
     CATEGORY_UPDATED_SUCCESSFULLY: 'Category updated successfully',
-}
+};
 
 export const POST_STATUS = {
     PENDING: 0,
@@ -154,11 +154,7 @@ export const ORDER_TYPE_STATUS = {
         ORDER_STATUS.CANCELLED,
         ORDER_STATUS.COMPLETED,
     ],
-    [ORDER_TYPE.RETURN]: [
-        ORDER_STATUS.PENDING,
-        ORDER_STATUS.RETURNING,
-        ORDER_STATUS.RETURNED,
-    ],
+    [ORDER_TYPE.RETURN]: [ORDER_STATUS.PENDING, ORDER_STATUS.RETURNING, ORDER_STATUS.RETURNED],
 };
 
 export const TRANSACTION_STATUS = {
@@ -174,13 +170,12 @@ export const TRANSACTION_TYPE = {
     CASH_OUT: 6,
 };
 
-
 export const COMPLAINT_STATUS = {
     PENDING: 0,
     RESOLVED: 1,
     REJECTED: 2,
     CANCELLED: 3,
-}
+};
 
 export const COMPLAINT_STATUS_TRANSITION = {
     [COMPLAINT_STATUS.RESOLVED]: [COMPLAINT_STATUS.PENDING],
@@ -191,4 +186,4 @@ export const COMPLAINT_STATUS_TRANSITION = {
 
 export const COMPLAINT_TYPE = {
     REFUND: 0,
-}
+};
