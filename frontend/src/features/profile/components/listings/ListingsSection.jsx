@@ -6,8 +6,6 @@ import {
     CardContent,
 } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Car } from "lucide-react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { useUser } from "@/contexts/UserContext"
@@ -104,10 +102,6 @@ const ListingsSection = () => {
                                 Tất cả tin đăng xe và pin của bạn
                             </CardDescription>
                         </div>
-                        <Button className="bg-red-600 hover:bg-red-700">
-                            <Car className="w-4 h-4 mr-2" />
-                            Đăng tin mới
-                        </Button>
                     </div>
                 </CardHeader>
 

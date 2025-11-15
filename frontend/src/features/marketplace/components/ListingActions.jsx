@@ -2,6 +2,7 @@ import { ShoppingCart, CreditCard, MessageCircle, Heart, Star } from "lucide-rea
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx"
 import { useCart } from "@/contexts/CartContext"
 import { getCategories } from "@/features/profile/service"
+import { toast } from "sonner"
 
 export default function ListingActions({
   listing,
@@ -18,7 +19,7 @@ export default function ListingActions({
 
   const handleDeposit = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để mua hàng")
+      toast.error("Bạn cần đăng nhập để mua hàng")
       return
     }
     const category = await getCategories()
@@ -44,19 +45,18 @@ export default function ListingActions({
 
   const handleAddToCart = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để thêm vào giỏ hàng")
+      toast.error("Bạn cần đăng nhập để thêm vào giỏ hàng")
       return
     }
     try {
       await addToCart(user.id, listing.id)
-      alert(`Đã thêm "${listing.title}" vào giỏ hàng thành công!`)
+      toast.success(`Đã thêm vào giỏ hàng thành công!`)
     } catch (error) {
       console.error("Lỗi khi thêm vào giỏ hàng:", error)
-      alert("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.")
+      toast.error("Thêm vào giỏ hàng thất bại. Vui lòng thử lại sau.")
     }
   }
 
-  // === SẢN PHẨM ĐÃ BÁN ===
   if (Number(listing.status) === 3) {
     return (
       <div className="flex flex-col gap-3 mt-4">
@@ -95,7 +95,6 @@ export default function ListingActions({
     )
   }
 
-  // === SẢN PHẨM ĐANG ĐƯỢC MUA (status = 7) ===
   if (Number(listing.status) === 7) {
     return (
       <div className="flex flex-col gap-3 mt-4">
@@ -117,7 +116,7 @@ export default function ListingActions({
       <button
         onClick={() => {
           handleHidePost(listing.id)
-          alert(listing.is_hidden ? "Tin đã được hiển thị lại" : "Tin đã được ẩn")
+          toast(listing.is_hidden ? "Tin đã được hiển thị lại" : "Tin đã được ẩn")
         }}
         className={`w-full px-4 py-3 mb-3 font-semibold text-white rounded-xl shadow-md transition 
         ${

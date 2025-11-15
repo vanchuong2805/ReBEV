@@ -1,97 +1,228 @@
-import { useState, useEffect } from "react";
-import { BarChart3, TrendingUp, Users, DollarSign } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  DollarSign,
+  RefreshCcw,
+} from "lucide-react";
 import { Card } from "../../../components/ui/card";
-import { statsData } from "../../../data/data";
 import StatsCards from "../components/StatsCards";
 import TitlePage from "../components/TitlePage";
 import BarChartComponent from "../components/ReportComponents/BarChartComponent";
 import YearSelector from "../components/YearSelector";
-import reportService from "../functions/reportService";
-import { fetchPost, fetchUsers } from "../service";
+import { getStaticPage } from "../service";
+import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router";
+
+const nf = new Intl.NumberFormat("vi-VN");
+const formatMoney = (v) => (typeof v === "number" ? nf.format(v) : "0");
+
 const ReportsStatistics = () => {
-  const [stats] = useState(statsData);
+  // const { user } = useUser();
+  // console.log(user);
+  // const navigate = useNavigate();
+  // useEffect(() => {
+  //   if (user?.role !== 2) {
+  //     navigate("/admin/transactions"); // Chuyển hướng về trang chủ nếu không phải admin
+  //   }
+  // }, [user]);
   const [selectedYear, setSelectedYear] = useState("2025");
-  const [monthlyData, setMonthlyData] = useState([]);
+  const [data, setData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(null);
 
-  // Cập nhật dữ liệu khi năm thay đổi
-  const [listings, setListings] = useState([]);
-  useEffect(() => {
-    fetchPost().then((data) => setListings(data));
-  }, []);
-  console.log("Listings data:", listings);
-  const number_Listing = listings.filter(
-    (listing) => listing.status == 1
-  ).length;
+  // dịch mảng lùi 1 bước (memo để không render lại vô ích)
+  const shiftArrayBackOne = (arr) =>
+    Array.isArray(arr) && arr.length ? [...arr.slice(1), arr[0]] : arr ?? [];
+
+  const totals = useMemo(() => {
+    const revenue = (data.revenue || []).reduce(
+      (s, i) => s + (i?.transaction_sum || 0),
+      0
+    );
+    return {
+      users: data.totalUsers || 0,
+      posts: data.totalPosts || 0,
+      transactions: data.totalTransactions || 0,
+      revenue,
+    };
+  }, [data]);
 
   useEffect(() => {
-    const yearData = reportService.getDataByYear(selectedYear);
-    setMonthlyData(yearData);
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setErr(null);
+        const res = await getStaticPage(selectedYear);
+        if (!alive) return;
+        setData(res?.data || {});
+      } catch (err) {
+        if (!alive) return;
+        setErr("Không tải được dữ liệu. Vui lòng thử lại.");
+        console.log(err);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, [selectedYear]);
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    fetchUsers().then((data) => setUsers(data));
-  }, []);
+
+  const monthlyRevenue = useMemo(() => {
+    const mr = (data.monthlyRevenues || []).map((month) =>
+      (month || []).reduce((sum, t) => sum + (t?.transaction_sum || 0), 0)
+    );
+    return shiftArrayBackOne(mr);
+  }, [data.monthlyRevenues]);
+
+  const monthlyTransactions = useMemo(
+    () => shiftArrayBackOne(data.monthlyTransactions || []),
+    [data.monthlyTransactions]
+  );
+
+  const revenueSystem = () => {
+    let revenues = 0;
+    data.revenue?.map((item) => {
+      if (item.transaction_type === 4) {
+        revenues += item.transaction_sum;
+      } else if (item.transaction_type === 5) {
+        revenues += item.transaction_sum;
+        revenues += item.commission_sum;
+      }
+    });
+    return revenues;
+  };
+  const revenueOffice = () => {
+    let revenues = 0;
+    data.revenue?.map((item) => {
+      if (item.transaction_type === 4) {
+        revenues += item.transaction_sum;
+      } else if (item.transaction_type === 5) {
+        revenues += item.commission_sum;
+      }
+    });
+    return revenues;
+  };
+
+  console.log(data);
   return (
-    <div className="p-6">
-      {/* Title and Description */}
-      <TitlePage
-        title="Báo cáo & Thống kê"
-        description="Tổng quan về hiệu suất hệ thống và các chỉ số"
-      />
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatsCards
-          title="Tổng người dùng"
-          number={users.filter((user) => user.role == 0).length}
-          icon={<Users className="h-6 w-6 text-blue-600" />}
-        />
-
-        <StatsCards
-          title="Tổng bài đăng"
-          number={number_Listing.toLocaleString()}
-          icon={<BarChart3 className="h-6 w-6 text-green-600" />}
-        />
-
-        <StatsCards
-          title="Giao dịch"
-          number={stats.totalTransactions.toLocaleString()}
-          icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
-        />
-
-        <StatsCards
-          title="Tổng doanh thu"
-          number={`$${stats.totalRevenue.toLocaleString()}`}
-          icon={<DollarSign className="h-6 w-6 text-purple-600" />}
+    <div className="p-6 bg-gradient-to-b from-slate-50 to-slate-100 min-h-screen">
+      {/* Title */}
+      <div className="mb-6">
+        <TitlePage
+          title="Báo cáo & Thống kê"
+          description="Tổng quan về hiệu suất hệ thống và các chỉ số"
         />
       </div>
 
-      {/* Year Selector */}
-      <YearSelector
-        selectedYear={selectedYear}
-        onYearChange={setSelectedYear}
-      />
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-4">
-          <div className="h-80">
-            <BarChartComponent
-              data={monthlyData.map((item) => item.revenue)}
-              title="Doanh thu theo tháng (VND)"
-              color="rgba(53, 162, 235, 0.8)"
-              year={selectedYear}
+      {/* Top stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        {loading ? (
+          // Skeletons
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-[120px] rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden"
+            >
+              <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100" />
+            </div>
+          ))
+        ) : (
+          <>
+            <StatsCards
+              title="Tổng người dùng"
+              number={nf.format(totals.users)}
+              icon={<Users className="h-6 w-6 text-blue-600" />}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
             />
+            <StatsCards
+              title="Tổng bài đăng"
+              number={nf.format(totals.posts)}
+              icon={<BarChart3 className="h-6 w-6 text-green-600" />}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
+            />
+            <StatsCards
+              title="Giao dịch"
+              number={nf.format(totals.transactions)}
+              icon={<TrendingUp className="h-6 w-6 text-yellow-600" />}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
+            />
+            <StatsCards
+              title="Doanh thu hệ thống (VNĐ)"
+              number={formatMoney(revenueSystem())}
+              icon={""}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
+            />
+            <StatsCards
+              title="Doanh thu doanh nghiệp (VNĐ)"
+              number={formatMoney(revenueOffice())}
+              className="bg-white/90 hover:shadow-lg transition-shadow rounded-2xl border border-slate-200"
+            />
+          </>
+        )}
+      </div>
+
+      {/* Year Selector + Refresh */}
+      <div className="flex items-center justify-between mb-6">
+        <YearSelector
+          selectedYear={selectedYear}
+          onYearChange={setSelectedYear}
+        />
+      </div>
+
+      {/* Error state */}
+      {err && (
+        <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 px-4 py-3">
+          {err}
+        </div>
+      )}
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-4 rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-slate-800">
+              Doanh thu theo tháng (VND)
+            </h3>
+            <span className="text-xs text-slate-500">Năm {selectedYear}</span>
+          </div>
+          <div className="h-80">
+            {!loading && monthlyRevenue?.length ? (
+              <BarChartComponent
+                data={monthlyRevenue}
+                title=""
+                color="rgba(53, 162, 235, 0.8)"
+                year={selectedYear}
+                monthly={true}
+              />
+            ) : (
+              <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl" />
+            )}
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card className="p-4 rounded-2xl border border-slate-200 bg-white/90 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-semibold text-slate-800">
+              Số lượng giao dịch theo tháng
+            </h3>
+            <span className="text-xs text-slate-500">Năm {selectedYear}</span>
+          </div>
           <div className="h-80">
-            <BarChartComponent
-              data={monthlyData.map((item) => item.transactions)}
-              title="Số lượng giao dịch theo tháng"
-              color="rgba(255, 99, 132, 0.8)"
-              year={selectedYear}
-            />
+            {!loading && monthlyTransactions?.length ? (
+              <BarChartComponent
+                data={monthlyTransactions}
+                title=""
+                color="rgba(255, 99, 132, 0.8)"
+                year={selectedYear}
+                monthly={false}
+              />
+            ) : (
+              <div className="h-full w-full animate-pulse bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 rounded-xl" />
+            )}
           </div>
         </Card>
       </div>

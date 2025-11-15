@@ -1,18 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
-import { getOrders, updateContractFile } from "../../service";
+import React, { useRef } from "react";
+import { updateContractFile, updateOrderStatus } from "../../service";
 import { useUpload } from "@/hooks/posts/useUpload";
+import { Button } from "@/components/ui/button";
 
-export default function DepositOrdersTable() {
+export default function DepositOrdersTable({ orders, setOrders }) {
   const { upload } = useUpload();
   const fileRef = useRef(null);
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    (async () => {
-      const data = await getOrders(2);
-      setOrders(data.orders || []);
-    })();
-  }, []);
 
   const handleAddContract = async (e, id) => {
     const file = e.target.files?.[0];
@@ -20,6 +13,28 @@ export default function DepositOrdersTable() {
     const data = await upload(file);
     const url = data?.url?.split(" ")[1];
     await updateContractFile(id, url);
+  };
+
+  const handleUpdateStatus = async (id, status) => {
+    await updateOrderStatus(id, status);
+
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              order_statuses: [
+                {
+                  ...(order.order_statuses?.[0] || {}),
+                  status, // cập nhật đúng chỗ UI đang đọc
+                  create_at: new Date().toISOString(),
+                },
+                ...(order.order_statuses?.slice(1) || []),
+              ],
+            }
+          : order
+      )
+    );
   };
 
   const getStatusBadge = (status) => {
@@ -126,7 +141,7 @@ export default function DepositOrdersTable() {
                 <th
                   key={i}
                   className={[
-                    "px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase tracking-wider",
+                    "px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
                     // Ẩn bớt cột trên màn hình nhỏ cho thoáng
                     h === "Người Xác Nhận" || h === "Hợp Đồng"
                       ? "hidden md:table-cell"
@@ -147,17 +162,17 @@ export default function DepositOrdersTable() {
                   <td className="px-3 py-2 text-sm text-gray-900">{item.id}</td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 truncate"
-                    title={String(item.customer_id)}
+                    className="px-3 py-2 break-words text-sm text-gray-900"
+                    title={String(item.customer.display_name)}
                   >
-                    {item.customer_id}
+                    {item.customer.display_name}
                   </td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 truncate"
+                    className="px-3 py-2 break-words text-sm text-gray-900"
                     title={String(item.seller_id)}
                   >
-                    {item.seller_id}
+                    {item.seller.display_name}
                   </td>
 
                   <td className="px-3 py-2 text-sm text-gray-900">
@@ -174,7 +189,7 @@ export default function DepositOrdersTable() {
                   </td>
 
                   <td
-                    className="px-3 py-2 text-xs text-gray-900 hidden md:table-cell truncate"
+                    className="px-3 py-2 break-words text-sm text-gray-900"
                     title={st?.create_by_user?.display_name || "N/A"}
                   >
                     {st?.create_by_user?.display_name
@@ -184,15 +199,27 @@ export default function DepositOrdersTable() {
 
                   <td className="px-3 py-2 hidden md:table-cell">
                     {/* Nút gọn mở input file ẩn */}
+                    {console.log(item)}
                     <input
-                      ref={fileRef}
+                      id={`file-${item.id}`}
                       type="file"
                       accept="application/pdf"
                       className="hidden"
-                      onChange={(e) =>
-                        handleAddContract(e, item.order_details?.[0]?.id)
-                      }
+                      onChange={(e) => {
+                        // reset value để có thể chọn cùng file nhiều lần nếu cần
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        handleAddContract(e, item.order_details[0]?.id);
+                        e.target.value = "";
+                      }}
                     />
+
+                    <label
+                      htmlFor={`file-${item.id}`}
+                      className="px-2 py-1 text-xs rounded-md border bg-white hover:bg-gray-50 cursor-pointer"
+                    >
+                      Tải hợp đồng
+                    </label>
                     {item.order_details[0].contract_file && (
                       <a
                         href={item.order_details[0].contract_file}
@@ -205,26 +232,41 @@ export default function DepositOrdersTable() {
                       </a>
                     )}
                     <br />
-                    <button
-                      onClick={() => fileRef.current?.click()}
-                      className="px-2 py-1 text-xs rounded-md border bg-white hover:bg-gray-50"
-                    >
-                      Tải hợp đồng
-                    </button>
                   </td>
 
-                  <td className="px-3 py-2">
-                    {st?.status?.toUpperCase() === "PAID" && (
-                      <div className="flex flex-col gap-1">
-                        <button className="bg-orange-600 text-white px-2 py-1 text-xs rounded-md hover:bg-orange-700">
+                  <td className="px-3 py-3">
+                    {st?.status?.toUpperCase() === "CONFIRMED" && (
+                      <div className="flex flex-col gap-1 ">
+                        <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "CUSTOMER_CANCELLED");
+                          }}
+                          className={
+                            "bg-orange-600 text-white hover:bg-orange-700 px-2 py-1"
+                          }
+                        >
                           Bên mua hủy
-                        </button>
-                        <button className="bg-red-600 text-white px-2 py-1 text-xs rounded-md hover:bg-red-700">
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "SELLER_CANCELLED");
+                          }}
+                          className={
+                            "bg-red-600 text-white hover:bg-red-700 px-2 py-1"
+                          }
+                        >
                           Bên bán hủy
-                        </button>
-                        <button className="bg-green-600 text-white px-2 py-1 text-xs rounded-md hover:bg-green-700">
-                          Thành công
-                        </button>
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            handleUpdateStatus(item?.id, "COMPLETED");
+                          }}
+                          className={
+                            "bg-green-600 text-white hover:bg-green-700 px-2 py-1"
+                          }
+                        >
+                          Thành công{" "}
+                        </Button>
                       </div>
                     )}
                   </td>

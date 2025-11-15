@@ -16,12 +16,33 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
   const [users, setUsers] = useState([]);
   useEffect(() => {
     fetchUsers().then((data) => {
-      setUsers(data);
+      setUsers(data.users);
     });
   }, []);
-
+  function safeRenderMessages(conversation) {
+    if (!conversation)
+      return <div className="p-6 text-gray-500">Đang tải cuộc trò chuyện…</div>;
+    const messages = Array.isArray(conversation.messages)
+      ? conversation.messages
+      : [];
+    if (messages.length === 0) {
+      return (
+        <div className="p-6 text-gray-500">
+          Chưa có tin nhắn — gửi lời chào nào!
+        </div>
+      );
+    }
+    return messages.map((m, idx) => (
+      <div key={m.id ?? idx} className="mb-2">
+        <div className="text-xs text-gray-500">
+          {m.senderName ?? "Người dùng"}
+        </div>
+        <div>{m.text ?? ""}</div>
+      </div>
+    ));
+  }
   const getUserById = (id) => {
-    const nguoiDung = users.filter((user) => (user.id == id ? true : false))[0];
+    const nguoiDung = users.find((item) => Number(item.id) === Number(id));
     return nguoiDung;
   };
 
@@ -46,7 +67,7 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
     await sendMessage(convKey, content, buyerAppId);
     setText("");
   }
-
+  console.log(users);
   return (
     //max-w-3xl
     <div className="flex h-[90vh] min-h-[360px] w-full  flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -55,7 +76,7 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
       </header> */}
 
       <section className="flex-1 space-y-3 overflow-y-auto bg-gray-50 px-4 py-4 sm:px-6">
-        {msgs.map((m) => {
+        {(Array.isArray(msgs) ? msgs : []).map((m) => {
           const isMe = m.senderAppId === buyerAppId;
 
           return (

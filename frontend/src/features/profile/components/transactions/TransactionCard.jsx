@@ -1,4 +1,3 @@
-// components/transactions/TransactionCard.jsx
 import { Badge } from "@/components/ui/badge"
 import {
   ShoppingCart,
@@ -16,7 +15,6 @@ const formatVND = n =>
     maximumFractionDigits: 0,
   }) || "0 ₫"
 
-// 🔹 Chỉnh icon + màu hợp lý cho từng loại giao dịch
 const TYPE_MAP = {
   1: {
     label: "Mua hàng",
@@ -64,7 +62,7 @@ export default function TransactionCard({ tx }) {
           {info.icon}
           <h3 className="text-lg font-semibold">{info.label}</h3>
         </div>
-        <Badge className={info.color}>
+        <Badge className={tx.status==0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-600"}>
           {tx.status==0 ? "Thành công" : "Thất bại"}
         </Badge>
       </div>

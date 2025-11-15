@@ -17,6 +17,7 @@ import {
   Clock,
   Route,
   ChevronDown,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -32,15 +33,11 @@ import {
   HoverCardTrigger,
   HoverCardContent,
 } from "@/components/ui/hover-card";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router";
 import { useUser } from "@/contexts/UserContext";
-import {
-  fetchDistricts,
-  fetchProvinces,
-  fetchWards,
-} from "../../features/profile/service";
+import { fetchProvinces } from "../../features/profile/service";
 import { getVariationValues } from "@/features/posts/service";
-// ========== GHN CONFIG ==========
+import { toast } from "sonner";
 
 // ===== Header Component =====
 const Header = () => {
@@ -48,33 +45,43 @@ const Header = () => {
   const { user, logout } = useUser();
   const { cartItemCount } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
 
   // Search state - local state để quản lý input
   const [localSearch, setLocalSearch] = useState("");
 
+  const clearSearch = (e) => {
+    e && e.preventDefault();
+    // Clear local input
+    setLocalSearch("");
+
+    // Remove 'search' from current query and navigate to same pathname so listings refresh
+    const params = new URLSearchParams(searchParams);
+    params.delete("search");
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
+  };
+
   // ====== LOCATION STATES ======
   const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
-
   const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
+  // Temp selection inside the dropdown; only apply when user clicks Apply
+  const [selectedProvinceTemp, setSelectedProvinceTemp] = useState("");
 
   const [provLoading, setProvLoading] = useState(false);
-  const [districtLoading, setDistrictLoading] = useState(false);
-  const [wardLoading, setWardLoading] = useState(false);
   const [provError, setProvError] = useState(null);
-  const [wardError, setWardError] = useState(null);
   // ======= FETCH PROVINCES =======
   useEffect(() => {
     (async () => {
       try {
         setProvLoading(true);
         const data = await fetchProvinces();
+        console.log(data);
         setProvinces(data);
       } catch (err) {
-        console.error("❌ Error loading provinces:", err);
+        console.error(" Error loading provinces:", err);
         setProvError(err);
       } finally {
         setProvLoading(false);
@@ -82,45 +89,40 @@ const Header = () => {
     })();
   }, []);
 
-  // ======= FETCH DISTRICTS =======
-  const handleProvinceChange = async (e) => {
-    const id = e.target.value;
-    setSelectedProvince(id);
-    setSelectedDistrict("");
-    setSelectedWard("");
-    setDistricts([]);
-    setWards([]);
-
-    if (!id) return;
-    try {
-      setDistrictLoading(true);
-      const res = await fetchDistricts(id);
-      setDistricts(res);
-    } catch (err) {
-      console.error("❌ Error loading districts:", err);
-    } finally {
-      setDistrictLoading(false);
+  // Đọc province_id từ URL khi component mount hoặc URL thay đổi
+  useEffect(() => {
+    const provinceIdFromUrl = searchParams.get("province_id");
+    if (provinceIdFromUrl) {
+      setSelectedProvince(provinceIdFromUrl);
     }
+  }, [searchParams]);
+  // When user interacts with the select, we only update the TEMP value.
+  // The change only takes effect when they click Apply.
+  const handleProvinceChange = (e) => {
+    setSelectedProvinceTemp(e.target.value);
   };
 
-  // ======= FETCH WARDS =======
-  const handleDistrictChange = async (e) => {
-    const id = e.target.value;
-    setSelectedDistrict(id);
-    setSelectedWard("");
-    setWards([]);
+  const applyProvinceSelection = () => {
+    const id = selectedProvinceTemp;
+    setSelectedProvince(id);
+    const params = new URLSearchParams(searchParams);
+    if (id) params.set("province_id", id);
+    else params.delete("province_id");
 
-    if (!id) return;
-    try {
-      setWardLoading(true);
-      const res = await fetchWards(id);
-      setWards(res);
-    } catch (err) {
-      console.error("❌ Error loading wards:", err);
-      setWardError(err);
-    } finally {
-      setWardLoading(false);
-    }
+    // Update the current page's URL so components on that page (e.g. Home) pick up the filter
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
+  };
+
+  const clearProvinceSelection = () => {
+    setSelectedProvinceTemp("");
+    setSelectedProvince("");
+    const params = new URLSearchParams(searchParams);
+    params.delete("province_id");
+    const basePath = location.pathname || "/";
+    const query = params.toString();
+    navigate(`${basePath}${query ? `?${query}` : ""}`);
   };
 
   // ===== VARIATIONS =====
@@ -143,7 +145,6 @@ const Header = () => {
           xe: {
             "Thương hiệu": { icon: <Factory size={14} />, data: grouped[1] },
             "Công suất (W)": { icon: <Power size={14} />, data: grouped[3] },
-
             "Xuất xứ": { icon: <Globe size={14} />, data: grouped[6] },
           },
           pin: {
@@ -163,7 +164,7 @@ const Header = () => {
           },
         });
       } catch (err) {
-        console.error("❌ Lỗi khi tải variationValues:", err);
+        console.error(" Lỗi khi tải variationValues:", err);
       } finally {
         setLoadingVariations(false);
       }
@@ -245,9 +246,7 @@ const Header = () => {
                                 {group.data.map((item) => (
                                   <Link
                                     key={item.id}
-                                    to={`/marketplace/all?categories=1&${name.toLowerCase()}=${encodeURIComponent(
-                                      item.value
-                                    )}`}
+                                    to={`/marketplace/all?categories=1&variation_value_id=${item.id}`}
                                     className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                   >
                                     {item.value}
@@ -302,9 +301,7 @@ const Header = () => {
                                   {group.data.map((item) => (
                                     <Link
                                       key={item.id}
-                                      to={`/marketplace/all?categories=2&${name.toLowerCase()}=${encodeURIComponent(
-                                        item.value
-                                      )}`}
+                                      to={`/marketplace/all?categories=2&variation_value_id=${item.id}`}
                                       className="text-gray-600 hover:text-[#007BFF] text-sm px-1 py-0.5 hover:underline transition"
                                     >
                                       {item.value}
@@ -328,15 +325,17 @@ const Header = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 console.log("🔎 Submitting search:", localSearch);
-                // Chuyển sang trang marketplace/all với search query trong URL
+                // Chuyển sang trang marketplace/all với
                 const searchQuery = localSearch.trim();
+                const params = new URLSearchParams(searchParams);
+
                 if (searchQuery) {
-                  navigate(
-                    `/marketplace/all?search=${encodeURIComponent(searchQuery)}`
-                  );
+                  params.set("search", searchQuery);
                 } else {
-                  navigate("/marketplace/all");
+                  params.delete("search");
                 }
+
+                navigate(`/marketplace/all?${params.toString()}`);
               }}
               className="flex items-center w-full gap-2 px-2 py-1 bg-white shadow-md rounded-xl"
             >
@@ -349,15 +348,32 @@ const Header = () => {
                   onChange={(e) => setLocalSearch(e.target.value)}
                   className="h-12 pl-10 pr-4 text-gray-700 border-0 rounded-md focus-visible:ring-0 placeholder:text-gray-400"
                 />
+                {localSearch && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      clearSearch(e);
+                    }}
+                    className="absolute text-gray-400 -translate-y-1/2 right-3 top-1/2 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
-              {/* Dropdown chọn tỉnh / quận / xã */}
+              {/* Dropdown chọn tỉnh*/}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className="flex items-center h-10 gap-2 px-4 border rounded-md shadow-sm hover:bg-gray-50"
                     disabled={provLoading}
+                    onClick={() =>
+                      setSelectedProvinceTemp(selectedProvince || "")
+                    }
                   >
                     <MapPin className="h-4 w-4 text-[#007BFF]" />
                     <span className="font-medium text-gray-700">
@@ -394,7 +410,7 @@ const Header = () => {
                         Tỉnh/Thành *
                       </label>
                       <select
-                        value={selectedProvince}
+                        value={selectedProvinceTemp}
                         onChange={handleProvinceChange}
                         disabled={provLoading}
                         className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
@@ -410,71 +426,24 @@ const Header = () => {
                       </select>
                     </div>
 
-                    {/* Quận/Huyện */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Quận/Huyện *
-                      </label>
-                      <select
-                        value={selectedDistrict}
-                        onChange={handleDistrictChange}
-                        disabled={!selectedProvince || districtLoading}
-                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                    {/* Apply / Clear buttons */}
+                    <div className="flex items-center gap-2 mt-3">
+                      <button
+                        type="button"
+                        onClick={applyProvinceSelection}
+                        className="px-4 py-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0056b3]"
                       >
-                        <option value="">
-                          {!selectedProvince
-                            ? "Chọn tỉnh trước"
-                            : districtLoading
-                            ? "Đang tải..."
-                            : "-- Chọn quận --"}
-                        </option>
-                        {districts.map((d) => (
-                          <option key={d.DistrictID} value={d.DistrictID}>
-                            {d.DistrictName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Xã/Phường */}
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 block mb-1.5">
-                        Xã/Phường *
-                      </label>
-                      <select
-                        value={selectedWard}
-                        onChange={(e) => setSelectedWard(e.target.value)}
-                        disabled={!selectedDistrict || wardLoading}
-                        className="w-full border border-gray-300 rounded-md h-10 px-3 text-gray-700 focus:ring-2 focus:ring-[#007BFF]"
+                        Áp dụng
+                      </button>
+                      <button
+                        type="button"
+                        onClick={clearProvinceSelection}
+                        className="px-3 py-2 text-sm text-gray-600 hover:text-red-600"
                       >
-                        <option value="">
-                          {!selectedDistrict
-                            ? "Chọn quận trước"
-                            : wardLoading
-                            ? "Đang tải..."
-                            : "-- Chọn xã --"}
-                        </option>
-                        {wards.map((w) => (
-                          <option key={w.WardCode} value={w.WardCode}>
-                            {w.WardName}
-                          </option>
-                        ))}
-                      </select>
-
-                      {wardError && (
-                        <p className="mt-1 text-sm text-red-500">
-                          Không thể tải danh sách xã.
-                        </p>
-                      )}
+                        Xóa
+                      </button>
                     </div>
                   </div>
-
-                  <Button
-                    className="w-full bg-[#007BFF] hover:bg-[#0056b3] text-white font-semibold h-10 rounded-md"
-                    disabled={provLoading}
-                  >
-                    Áp dụng
-                  </Button>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -551,10 +520,18 @@ const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
-                asChild
+                onClick={(e) => {
+                  if (!user?.package_id || user.package_id === null) {
+                    e.preventDefault();
+                    toast.error("Bạn phải đăng ký gói trước khi đăng tin");
+                    navigate("/upgrade");
+                  } else {
+                    navigate("/posts");
+                  }
+                }}
                 className="bg-white text-[#007BFF] hover:bg-gray-100 font-semibold shadow-lg"
               >
-                <Link to="/posts">Đăng tin</Link>
+                Đăng tin
               </Button>
             </nav>
           ) : (

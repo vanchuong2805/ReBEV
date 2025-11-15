@@ -5,7 +5,7 @@ import { ROUTES } from "@/constants/routes";
 // Định nghĩa các route mặc định cho từng role
 export const DEFAULT_ROUTES = {
   [ROLES.ADMIN]: ROUTES.ADMIN.DASHBOARD,
-  [ROLES.STAFF]: ROUTES.STAFF.DASHBOARD,
+  [ROLES.STAFF]: ROUTES.ADMIN.DASHBOARD,
   [ROLES.MEMBER]: ROUTES.HOME,
 };
 
@@ -43,19 +43,32 @@ export const redirectAfterLogin = (user, navigate, intendedRoute = null) => {
  * @returns {boolean}
  */
 export const canAccessRoute = (userRole, route) => {
-  // Admin có thể truy cập mọi route
+  // Admin chỉ có thể truy cập /admin routes
   if (userRole === ROLES.ADMIN) {
+    // Admin không được vào member routes
+    const memberOnlyRoutes = [
+      "/profile",
+      "/posts",
+      "/cart",
+      "/checkout",
+      "/upgrade",
+    ];
+    const isMemberRoute = memberOnlyRoutes.some((r) => route.startsWith(r));
+    if (isMemberRoute) {
+      return false;
+    }
+    // Admin có thể vào admin routes và public routes
     return true;
   }
 
-  // Staff chỉ có thể truy cập /staff và các route công khai
+  // Staff không thể truy cập /admin
   if (userRole === ROLES.STAFF) {
     return !route.startsWith("/admin");
   }
 
   // Member không thể truy cập /admin và /staff
   if (userRole === ROLES.MEMBER) {
-    return !route.startsWith("/admin") && !route.startsWith("/staff");
+    return !route.startsWith("/admin");
   }
 
   return false;
@@ -85,7 +98,7 @@ export const isAdmin = (user) => {
  * @returns {boolean}
  */
 export const isStaff = (user) => {
-  return user?.role === ROLES.STAFF;
+  return user?.role === ROLES.ADMIN;
 };
 
 /**

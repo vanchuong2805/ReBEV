@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder } from "../service";
 import CheckoutBar from "../components/CheckoutBar";
 import Header from "@/components/common/Header";
+import { toast } from "sonner";
 
 // import & xài AddAddressModal
 import AddAddressModal from "@/features/profile/components/settings/AddAddressModal";
@@ -102,7 +102,7 @@ export default function CheckoutPage() {
         post_id: item.post_id,
         price: item.price,
         deposit_amount: item.price * item.deposit_rate,
-        commission_amount: item.commission_rate * item.price,
+        commission_amount: (item.commission_rate * item.price) / 100,
         appointment_time,
       }));
       return {
@@ -163,7 +163,7 @@ export default function CheckoutPage() {
       setContacts((prev) => prev.filter((c) => c.id !== id));
     } catch (e) {
       console.error("deleteContact failed:", e);
-      alert("Xoá thất bại, vui lòng thử lại.");
+      toast.error("Xoá thất bại, vui lòng thử lại.");
     }
   };
 

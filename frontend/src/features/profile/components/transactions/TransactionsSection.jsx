@@ -14,7 +14,7 @@ export default function TransactionSection() {
     const fetchData = async () => {
       if (!user || !user.id) return
       const data = await getTransactionByUserId(user.id)
-      setAll(data)
+      setAll(data.transactions)
       console.log(" Transactions fetched in component:", data)
     }
     fetchData()

@@ -5,8 +5,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Star } from "lucide-react"
 import { useUser } from "@/contexts/UserContext"
 import { createReview, updateReview, getPostById } from "@/features/profile/service"
+import { toast } from "sonner"
 
-export default function ReviewModal({ reviewed, open, onClose, purchase }) {
+export default function ReviewModal({ reviewed, open, onClose,detail }) {
   const [rating, setRating] = useState(0)
   const [hover, setHover] = useState(0)
   const [idReview, setIdReview] = useState(null)
@@ -15,9 +16,9 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
 
   useEffect(() => {
     const fetchOldReview = async () => {
-      if (open && reviewed && purchase?.id) {
+      if (open && reviewed && detail?.id) {
         try {
-          const res = await getPostById(purchase.id)
+          const res = await getPostById(detail.post.id)
           if (res?.review) {
             setRating(res.review.rating_value || 0)
             setComment(res.review.comment || "")
@@ -33,17 +34,18 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
       }
     }
     fetchOldReview()
-  }, [open, reviewed, purchase])
+  }, [open, reviewed, detail])
 
   const handleSubmit = async () => {
     try {
-      const res = await createReview(user.id, purchase.id, rating, comment)
+      const res = await createReview(user.id, detail.id, rating, comment)
       console.log(" Review mới:", res)
-      alert("Cảm ơn bạn đã đánh giá!")
+      toast.success("Cảm ơn bạn đã đánh giá!")
       onClose()
     } catch (error) {
+      console.error(" Lỗi gửi đánh giá:", detail)
       console.error(" Lỗi gửi đánh giá:", error)
-      alert("Gửi đánh giá thất bại!")
+      toast.error("Gửi đánh giá thất bại!")
     }
   }
 
@@ -52,11 +54,11 @@ export default function ReviewModal({ reviewed, open, onClose, purchase }) {
     try {
       const res = await updateReview(idReview, rating, comment)
       console.log(" Review cập nhật:", res)
-      alert("Cập nhật đánh giá thành công!")
+      toast.success("Cập nhật đánh giá thành công!")
       onClose()
     } catch (error) {
       console.error(" Lỗi cập nhật:", error)
-      alert("Cập nhật đánh giá thất bại!")
+      toast.error("Cập nhật đánh giá thất bại!")
     }
   }
 

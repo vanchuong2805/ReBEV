@@ -16,13 +16,12 @@ import {
 import { useUser } from "@/contexts/UserContext";
 import { useCart } from "@/contexts/CartContext";
 
-// === Import các components con ===
 import ListingGallery from "../components/ListingGallery";
 import ListingDescription from "../components/ListingDescription";
 import ListingActions from "../components/ListingActions";
 import ListingSellerInfo from "../components/ListingSellerInfo";
-import ListingSafetyTips from "../components/ListingSafetyTips";
 import RelatedListings from "../components/RelatedListings";
+import { toast } from "sonner";
 
 const ListingDetail = () => {
   const { user } = useUser();
@@ -49,12 +48,16 @@ const ListingDetail = () => {
   const [hasMoreOther, setHasMoreOther] = useState(true);
   const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
 
-  // ====== Fetch dữ liệu ======
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [listingId]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const postRes = await getPostById(listingId);
+
         const [varRes, cateRes, baseRes, userRes, contactRes, varValRes] =
           await Promise.all([
             getVariations(),
@@ -96,8 +99,8 @@ const ListingDetail = () => {
           }),
         ]);
 
-        setOtherPosts(otherRes);
-        setSimilarPosts(similarRes);
+        setOtherPosts(otherRes.filter((p) => p.id !== postRes.id));
+        setSimilarPosts(similarRes.filter((p) => p.id !== postRes.id));
         setVariationValuesId(varValRes);
       } catch (err) {
         console.error("Lỗi tải dữ liệu:", err);
@@ -109,7 +112,6 @@ const ListingDetail = () => {
     fetchData();
   }, [listingId, user]);
 
-  // ====== Format helpers ======
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -123,15 +125,14 @@ const ListingDetail = () => {
       year: "numeric",
     }).format(new Date(date));
 
-  // ====== Các hành động ======
   const handleBuyNow = async () => {
     if (!user) {
-      alert("Bạn cần đăng nhập để mua hàng");
+      toast.error("Bạn cần đăng nhập để mua hàng");
       return;
     }
     try {
+      setBuyNowItem(() => listing.id);
       await addToCart(user.id, listing.id);
-      setBuyNowItem(listing.id);
       navigate("/checkout");
     } catch (error) {
       console.log(error);
@@ -182,28 +183,26 @@ const ListingDetail = () => {
     }
   };
 
-  // ====== Loading State ======
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
         <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-        <p className="mt-4 text-gray-500 text-sm">Đang tải sản phẩm...</p>
+        <p className="mt-4 text-sm text-gray-500">Đang tải sản phẩm...</p>
       </div>
     );
   }
 
-  // ====== Not Found State ======
   if (!listing) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-2xl flex items-center justify-center">
+        <div className="max-w-md text-center">
+          <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-2xl">
             <span className="text-4xl">📦</span>
           </div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h2 className="mb-2 text-2xl font-semibold text-gray-900">
             Sản phẩm không tồn tại
           </h2>
-          <p className="text-gray-500 mb-8 text-sm">
+          <p className="mb-8 text-sm text-gray-500">
             Sản phẩm này có thể đã bị xóa hoặc không khả dụng
           </p>
           <button
@@ -223,21 +222,21 @@ const ListingDetail = () => {
     name: "Người bán",
     avatar: listing.user_avatar,
   };
+
   const categoryInfo = categories.find((c) => c.id === listing.category_id);
   const baseInfo = bases.find((b) => b.id === listing.base_id);
 
-  // ====== Render chính ======
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       {/* ==== MAIN CONTENT ==== */}
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* LEFT: Gallery & Description */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-8 space-y-8"
+            className="space-y-8 lg:col-span-8"
           >
             <ListingGallery
               listing={listing}
@@ -251,14 +250,13 @@ const ListingDetail = () => {
             />
           </motion.div>
 
-          {/* RIGHT: Sidebar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-4"
           >
-            <div className="lg:sticky lg:top-24 space-y-6">
+            <div className="space-y-6 lg:sticky lg:top-24">
               {/* === Product Info Card === */}
               <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] overflow-hidden">
                 <div className="p-6 space-y-4">
@@ -275,7 +273,7 @@ const ListingDetail = () => {
                   </h1>
 
                   <div className="pb-3 border-b border-gray-100">
-                    <span className="text-[24px] font-bold text-blue-700">
+                    <span className="text-[24px] font-bold text-red-600">
                       {formatPrice(listing.price)}
                     </span>
                   </div>
@@ -291,7 +289,7 @@ const ListingDetail = () => {
                   />
                 </div>
 
-                <div className="border-t border-gray-100 p-5">
+                <div className="p-5 border-t border-gray-100">
                   <ListingSellerInfo
                     seller={seller}
                     listing={listing}
@@ -302,18 +300,13 @@ const ListingDetail = () => {
                   />
                 </div>
               </div>
-
-              {/* === Safety Tips === */}
-              <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] p-4">
-                <ListingSafetyTips />
-              </div>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* ==== RELATED LISTINGS ==== */}
-      <div className="bg-gradient-to-b from-gray-50 to-white border-t border-gray-100 mt-20">
+      <div className="mt-20 border-t border-gray-100 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-14">
           <RelatedListings
             seller={seller}

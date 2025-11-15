@@ -1,11 +1,14 @@
 // src/features/home/components/FeaturedListings.jsx
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, GitCompare } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { getFeaturedProducts } from "../service";
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 import { useCart } from "@/contexts/CartContext";
 import { useProductSearch } from "@/hooks/useProductSearch";
+import { useCompare } from "@/hooks/useCompare";
+import CompareFloatingToolbar from "@/features/compare/components/CompareFloatingToolbar";
 
 function currency(v) {
   return typeof v === "number" ? v.toLocaleString("vi-VN") + " ₫" : v;
@@ -19,7 +22,7 @@ export default function FeaturedListings() {
   // Sử dụng search từ zustand store thay vì URL
   const { searchQuery } = useProductSearch();
 
-  // nhận page/limit từ URL (không lấy search từ URL nữa)
+  // nhận page/limit từ URL
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 10);
 
@@ -32,17 +35,27 @@ export default function FeaturedListings() {
     setLoading(true);
     (async () => {
       try {
-        // Tạo pagination object cho BE: { page: 1, limit: 10 }
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+
+        // Lấy province_id từ URL
+        const provinceId = searchParams.get("province_id");
+
         const pagination = {
           page,
           limit,
-          ...(searchQuery && { search: searchQuery }), // Thêm search nếu có
+          status: 1,
+          is_hidden: false,
+          is_featured: false,
+          ...(searchQuery && { search: searchQuery }),
+          ...(user?.id && { iUser_id: user.id }),
+          ...(provinceId && { province_id: provinceId }),
         };
 
         const res = await getFeaturedProducts(pagination);
 
-        // BE trả về: { data: [...], pagination: { page, limit, total } }
         setItems(res.data || []);
+
         const calculatedTotalPages = res.pagination
           ? Math.ceil(res.pagination.total / res.pagination.limit)
           : 1;
@@ -55,7 +68,7 @@ export default function FeaturedListings() {
         setLoading(false);
       }
     })();
-  }, [page, limit, searchQuery]); // Re-fetch khi page, limit, hoặc searchQuery thay đổi
+  }, [page, limit, searchQuery, searchParams]);
 
   const goToPage = (nextPage) => {
     const np = Math.min(Math.max(nextPage, 1), totalPages);
@@ -76,25 +89,28 @@ export default function FeaturedListings() {
 
     // Thêm trang 1
     range.push(1);
-
-    // Thêm ... nếu cần
     if (left > 2) range.push("...");
 
     // Thêm các trang ở giữa
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) range.push(i);
     }
-
-    // Thêm ... nếu cần
     if (right < totalPages - 1) range.push("...");
 
-    // Thêm trang cuối
     if (totalPages > 1) range.push(totalPages);
 
     return range;
   }, [page, totalPages]);
 
   const { isFavorite, toggleFavorite } = useFavorite();
+  const {
+    addToCompare,
+    removeFromCompare,
+    isInCompare,
+    getCompareCount,
+    compareList,
+  } = useCompare();
+
   return (
     <section className="container mx-auto mt-8">
       <div className="flex items-end justify-between mb-3">
@@ -138,6 +154,34 @@ export default function FeaturedListings() {
                         isFavorite(it.id)
                           ? "text-red-500 fill-red-500"
                           : "text-gray-400 hover:text-red-400"
+                      }`}
+                    />
+                  </button>
+
+                  {/* Compare button */}
+                  <button
+                    className="absolute p-2 transition-all duration-200 rounded-full shadow-lg right-3 top-14 bg-white/95 backdrop-blur-sm hover:bg-white hover:scale-110"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (isInCompare(it.id)) {
+                        removeFromCompare(it.id);
+                        toast.success("Đã xóa khỏi danh sách so sánh");
+                      } else {
+                        if (getCompareCount() >= 4) {
+                          toast.error("Chỉ có thể so sánh tối đa 4 sản phẩm");
+                          return;
+                        }
+                        addToCompare(it.id);
+                        toast.success("Đã thêm vào danh sách so sánh");
+                      }
+                    }}
+                  >
+                    <GitCompare
+                      className={`w-5 h-5 transition-colors ${
+                        isInCompare(it.id)
+                          ? "text-blue-500 fill-blue-500"
+                          : "text-gray-400 hover:text-blue-400"
                       }`}
                     />
                   </button>
@@ -222,6 +266,39 @@ export default function FeaturedListings() {
           )}
         </>
       )}
+
+      {/* Floating compare bar */}
+      <CompareFloatingToolbar
+        compareList={compareList
+          .map((id) => {
+            const item = items.find((it) => it.id === id);
+            return item
+              ? {
+                  id: item.id,
+                  title: item.title,
+                  price: item.price,
+                  image: getThumbnail(item.media),
+                }
+              : null;
+          })
+          .filter(Boolean)}
+        setCompareList={(newList) => {
+          // Convert back to IDs
+          const ids = Array.isArray(newList)
+            ? newList.map((item) => item.id)
+            : [];
+          ids.forEach((id) => {
+            if (!compareList.includes(id)) {
+              addToCompare(id);
+            }
+          });
+          compareList.forEach((id) => {
+            if (!ids.includes(id)) {
+              removeFromCompare(id);
+            }
+          });
+        }}
+      />
     </section>
   );
 }

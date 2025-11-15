@@ -50,7 +50,10 @@ export const ERROR_MESSAGE = {
     REVIEW_NOT_FOUND: 'Review not found',
     DELETE_REVIEW_FAILED: 'Deleting review failed',
     CATEGORY_NOT_FOUND: 'Category not found',
-};
+    CATEGORY_UPDATE_FAILED: 'Updating category failed',
+    CONTACT_UPDATE_FAILED: 'Updating contact failed',
+    UNAUTHORIZED_ACTION: 'You are not authorized to perform this action',
+}
 
 export const SUCCESS_MESSAGE = {
     REGISTER_SUCCESS: 'Register successful',
@@ -76,7 +79,8 @@ export const SUCCESS_MESSAGE = {
     UPDATE_REVIEW_SUCCESS: 'Review updated successfully',
     DELETE_REVIEW_SUCCESS: 'Review deleted successfully',
     CATEGORY_UPDATED_SUCCESSFULLY: 'Category updated successfully',
-};
+    CONTACT_UPDATED: 'Contact updated successfully',
+}
 
 export const POST_STATUS = {
     PENDING: 0,

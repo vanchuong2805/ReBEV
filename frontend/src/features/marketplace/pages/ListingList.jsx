@@ -1,15 +1,17 @@
 // src/features/home/pages/ListingList.jsx
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   useParams,
   Link,
   useLocation,
   useSearchParams,
 } from "react-router-dom";
-import { Heart, Filter, MapPin } from "lucide-react";
+import { Heart, Filter, MapPin, GitCompare } from "lucide-react";
 import { getFeaturedProducts } from "@/features/home/service";
 import { toast } from "sonner";
 import FilterSearch from "../components/FilterSearch";
+import CompareFloatingToolbar from "@/features/compare/components/CompareFloatingToolbar";
+import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 
 function currency(v) {
   return Number(v || 0).toLocaleString("vi-VN") + " ₫";
@@ -29,23 +31,75 @@ function getThumb(media) {
 export default function ListingList() {
   const location = useLocation();
   const { category } = useParams();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // State cho so sánh sản phẩm
+  const [compareList, setCompareList] = useState([]);
+
+  // Nếu route chứa category (ví dụ /marketplace/xe hoặc /marketplace/pin),
+  // nhưng URL query chưa có `categories`, thì tự động gắn vào searchParams
+  // để các component khác (và filter logic) có thể reuse param này.
+  useEffect(() => {
+    const cats = searchParams.get("categories");
+    if (!cats) {
+      let catId = null;
+      if (category === "xe") catId = "1";
+      else if (category === "pin") catId = "2";
+
+      if (catId) {
+        const next = new URLSearchParams(searchParams);
+        next.set("categories", catId);
+        setSearchParams(next, { replace: true });
+      }
+    }
+    // only run when route category changes
+  }, [category, searchParams, setSearchParams]);
 
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  //  Dùng context yêu thích
+  const { isFavorite, toggleFavorite } = useFavorite();
 
   // Lấy search từ URL query params
   const searchFromUrl = searchParams.get("search") || "";
 
   // Sort + favorites
-  const [sortBy, setSortBy] = useState("newest");
-  const [displayCount, setDisplayCount] = useState(10);
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
+  // We'll drive sorting via URL params: order_by and order_direction
+  const handleSortClick = (optKey) => {
+    const params = new URLSearchParams(searchParams);
+    if (optKey === "newest") {
+      // For "Mới nhất" we only send the order_by (create_at).
+      // Do not send order_direction so backend can use its default ordering.
+      params.set("order_by", "create_at");
+      params.delete("order_direction");
+    } else if (optKey === "price-asc") {
+      params.set("order_by", "price");
+      params.set("order_direction", "ASC");
+    } else if (optKey === "price-desc") {
+      params.set("order_by", "price");
+      params.set("order_direction", "DESC");
+    }
+    // reset page when sorting changes
+    params.delete("page");
+    setSearchParams(params, { replace: true });
+  };
 
-  const observerTarget = useRef(null);
+  const currentOrderBy = searchParams.get("order_by") || "create_at";
+  const currentOrderDir = (
+    searchParams.get("order_direction") || "DESC"
+  ).toUpperCase();
+  const currentSortKey =
+    currentOrderBy === "price"
+      ? currentOrderDir === "ASC"
+        ? "price-asc"
+        : "price-desc"
+      : "newest";
+  const [totalPages, setTotalPages] = useState(1);
+
+  // Pagination from URL
+  const page = Number(searchParams.get("page") || 1);
+  const limit = Number(searchParams.get("limit") || 10);
 
   // Fetch API với filter params
   useEffect(() => {
@@ -53,7 +107,6 @@ export default function ListingList() {
       try {
         setLoading(true);
 
-        // Build query params từ URL
         const queryParams = {};
 
         // Category từ route hoặc từ searchParams
@@ -63,7 +116,7 @@ export default function ListingList() {
           .filter(Boolean)
           .map(Number);
         if (categoryIds && categoryIds.length > 0) {
-          queryParams.category_id = categoryIds[0]; // Backend chỉ nhận 1 category
+          queryParams.category_id = categoryIds[0];
         } else if (category === "xe") {
           queryParams.category_id = 1;
         } else if (category === "pin") {
@@ -82,26 +135,70 @@ export default function ListingList() {
         }
 
         // Price range
-        const minPrice = searchParams.get("minPrice");
-        const maxPrice = searchParams.get("maxPrice");
-        if (minPrice) queryParams.minPrice = minPrice;
-        if (maxPrice) queryParams.maxPrice = maxPrice;
+        const minPrice = searchParams.get("min_price");
+        const maxPrice = searchParams.get("max_price");
+        if (minPrice) queryParams.min_price = minPrice;
+        if (maxPrice) queryParams.max_price = maxPrice;
+
+        // Province ID
+        const provinceId = searchParams.get("province_id");
+        if (provinceId) {
+          queryParams.province_id = provinceId;
+        }
+
+        // Order params (send to backend so server does sorting)
+        const orderBy = searchParams.get("order_by");
+        const orderDir = searchParams.get("order_direction");
+        if (orderBy) queryParams.order_by = orderBy;
+        if (orderDir) queryParams.order_direction = orderDir;
+
+        // Variation filters (supports comma-separated or repeated params)
+        const variationRaw = searchParams.getAll("variation_value_id") || [];
+        const variationIds = variationRaw
+          .flatMap((v) => (v || "").toString().split(","))
+          .map((v) => Number(v))
+          .filter(Boolean);
+        if (variationIds.length > 0) {
+          // send as array so axios/express will parse to an array on the server
+          queryParams.variation_value_id = variationIds;
+        }
+
+        // Status - chỉ lấy approved
+        queryParams.status = 1;
+
+        // Ensure we only request visible, non-deleted posts
+        queryParams.is_deleted = false;
+        queryParams.is_hidden = false;
+
+        // include pagination params so backend returns paginated data
+        queryParams.page = page;
+        queryParams.limit = limit;
+
+        // iUser_id - BE sẽ loại bỏ posts của user này
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+        if (user?.id) {
+          queryParams.iUser_id = user.id;
+        }
 
         console.log("🔍 Fetching with params:", queryParams);
 
         const res = await getFeaturedProducts(queryParams);
-        const list = Array.isArray(res) ? res : res?.data || [];
+        // API may return paginated shape: { data: [...], pagination: { total, limit, page } }
+        const list = res?.data || (Array.isArray(res) ? res : []);
 
-        // Chỉ lấy Approved + chuẩn hóa field ảnh, ngày
-        const approved = list
-          .filter((p) => p?.status === 1)
-          .map((p) => ({
-            ...p,
-            image: getThumb(p.media),
-            created_at: p.create_at || p.created_at || null,
-          }));
+        const normalized = (list || []).map((p) => ({
+          ...p,
+          image: getThumb(p.media),
+          created_at: p.create_at || p.created_at || null,
+        }));
 
-        setAllItems(approved);
+        setAllItems(normalized);
+
+        const calculatedTotalPages = res?.pagination
+          ? Math.ceil(res.pagination.total / res.pagination.limit)
+          : 1;
+        setTotalPages(calculatedTotalPages);
       } catch (e) {
         console.error(e);
         setAllItems([]);
@@ -109,28 +206,13 @@ export default function ListingList() {
         setLoading(false);
       }
     })();
-  }, [category, searchParams, searchFromUrl]);
+  }, [category, searchParams, searchFromUrl, page, limit]);
 
-  // Chỉ sort items từ BE, không lọc nữa (BE đã lọc rồi)
+  // Do not sort client-side: ordering is handled by the backend via
+  // order_by / order_direction params. Keep server-provided order.
   const filteredItems = useMemo(() => {
-    let items = [...allItems];
-
-    // Sort
-    if (sortBy === "price-asc") {
-      items.sort((a, b) => (a.price || 0) - (b.price || 0));
-    } else if (sortBy === "price-desc") {
-      items.sort((a, b) => (b.price || 0) - (a.price || 0));
-    } else {
-      // newest
-      items.sort(
-        (a, b) =>
-          new Date(b.created_at || 0).getTime() -
-          new Date(a.created_at || 0).getTime()
-      );
-    }
-
-    return items;
-  }, [allItems, sortBy]);
+    return [...allItems];
+  }, [allItems]);
 
   // Calculate price range từ filtered items
   const { priceMin, priceMax } = useMemo(() => {
@@ -142,42 +224,72 @@ export default function ListingList() {
     };
   }, [filteredItems]);
 
-  // Infinite scroll
+  // Server-side pagination: displayItems are the items returned for current page
+  const displayItems = filteredItems;
+
+  const goToPage = (nextPage) => {
+    const np = Math.min(Math.max(nextPage, 1), totalPages);
+    const next = new URLSearchParams(searchParams);
+    next.set("page", String(np));
+    setSearchParams(next, { replace: true });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // build condensed page range
+  const pages = useMemo(() => {
+    if (totalPages === 1) return [1];
+
+    const delta = 2;
+    const left = Math.max(2, page - delta);
+    const right = Math.min(totalPages - 1, page + delta);
+    const range = [];
+
+    range.push(1);
+    if (left > 2) range.push("...");
+
+    for (let i = left; i <= right; i++) {
+      if (i !== 1 && i !== totalPages) range.push(i);
+    }
+    if (right < totalPages - 1) range.push("...");
+
+    if (totalPages > 1) range.push(totalPages);
+
+    return range;
+  }, [page, totalPages]);
+
+  // Debug helper: log duplicate keys if any (helps trace React key warnings)
   useEffect(() => {
-    setDisplayCount(10); // reset khi filter/sort đổi
-  }, [filteredItems.length]);
+    try {
+      const ids = displayItems.map((d) => d.id);
+      const dupIds = ids.filter((v, i) => ids.indexOf(v) !== i);
+      if (dupIds.length > 0)
+        console.warn("Duplicate item ids in ListingList:", dupIds);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && displayCount < filteredItems.length) {
-          setDisplayCount((prev) => Math.min(prev + 10, filteredItems.length));
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (observerTarget.current) observer.observe(observerTarget.current);
-    return () => observer.disconnect();
-  }, [filteredItems.length, displayCount]);
+      const dupPages = pages.filter((v, i) => pages.indexOf(v) !== i);
+      if (dupPages.length > 0)
+        console.warn("Duplicate page entries in pagination:", dupPages);
+    } catch {
+      /* ignore */
+    }
+  }, [displayItems, pages]);
 
-  const displayItems = filteredItems.slice(0, displayCount);
-
-  // Favorites
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      toast.dismiss();
-      if (prev.includes(id)) {
-        toast.info("Đã xóa khỏi yêu thích");
-        return prev.filter((x) => x !== id);
+  // Handler cho so sánh sản phẩm
+  const toggleCompare = (item) => {
+    setCompareList((prev) => {
+      const exists = prev.find((p) => p.id === item.id);
+      if (exists) {
+        toast.info("Đã xóa khỏi danh sách so sánh");
+        return prev.filter((p) => p.id !== item.id);
       } else {
-        toast.success("Đã thêm vào yêu thích");
-        return [...prev, id];
+        if (prev.length >= 4) {
+          toast.error("Chỉ có thể so sánh tối đa 4 sản phẩm");
+          return prev;
+        }
+        toast.success("Đã thêm vào danh sách so sánh");
+        return [...prev, item];
       }
     });
   };
-  useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
 
   const categoryTitle =
     category === "xe"
@@ -214,17 +326,27 @@ export default function ListingList() {
       <div className="container px-4 py-6 mx-auto">
         <div className="flex gap-6">
           {/* Filter Sidebar */}
-          <FilterSearch priceMin={priceMin} priceMax={priceMax} />
+          <FilterSearch priceMax={priceMax} priceMin={priceMin} />
 
           {/* Main */}
           <div className="flex-1">
             {/* Sort Bar */}
             <div className="flex items-center justify-between p-4 mb-4 bg-white border rounded-lg">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  Sắp xếp:
-                </span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Sắp xếp:
+                  </span>
+                </div>
+                {compareList.length > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-1 text-blue-700 bg-blue-100 rounded-full">
+                    <GitCompare className="w-4 h-4" />
+                    <span className="text-xs font-semibold">
+                      {compareList.length} đang so sánh
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 {[
@@ -234,9 +356,9 @@ export default function ListingList() {
                 ].map((opt) => (
                   <button
                     key={opt.key}
-                    onClick={() => setSortBy(opt.key)}
+                    onClick={() => handleSortClick(opt.key)}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      sortBy === opt.key
+                      currentSortKey === opt.key
                         ? "bg-blue-600 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
@@ -258,10 +380,14 @@ export default function ListingList() {
               </div>
             ) : (
               <div className="space-y-4">
-                {displayItems.map((item) => (
+                {displayItems.map((item, idx) => (
                   <div
-                    key={item.id}
-                    className="relative flex gap-4 p-4 transition-shadow bg-white border rounded-lg hover:shadow-md"
+                    key={`${item.id}-${idx}`}
+                    className={`relative flex gap-4 p-4 transition-all bg-white border-2 rounded-lg hover:shadow-md ${
+                      compareList.some((p) => p.id === item.id)
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200"
+                    }`}
                   >
                     <Link
                       to={`/marketplace/listing/${item.id}`}
@@ -296,26 +422,50 @@ export default function ListingList() {
                         </div>
 
                         <div className="flex gap-2">
+                          {/* Nút yêu thích dùng useFavorite */}
                           <button
-                            onClick={() => toggleFavorite(item.id)}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg ${
-                              favorites.includes(item.id)
-                                ? "bg-red-50 text-red-600"
+                            onClick={() => toggleCompare(item)}
+                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              compareList.some((p) => p.id === item.id)
+                                ? "bg-blue-50 text-blue-600 border border-blue-600"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }`}
+                          >
+                            <GitCompare className="w-4 h-4" />
+                            {compareList.some((p) => p.id === item.id)
+                              ? "Đã chọn"
+                              : "So sánh"}
+                          </button>
+
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleFavorite(item);
+                              toast.dismiss();
+                              toast.success(
+                                isFavorite(item.id)
+                                  ? "Đã xoá khỏi yêu thích"
+                                  : "Đã thêm vào yêu thích"
+                              );
+                            }}
+                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                              isFavorite(item.id)
+                                ? "bg-red-50 text-red-600 hover:bg-red-100"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
                           >
                             <Heart
-                              className={`w-4 h-4 ${
-                                favorites.includes(item.id)
-                                  ? "fill-current"
+                              className={`w-4 h-4 transition-transform ${
+                                isFavorite(item.id)
+                                  ? "fill-current scale-110"
                                   : ""
                               }`}
                             />
-                            {favorites.includes(item.id)
-                              ? "Đã thích"
-                              : "Yêu thích"}
+                            {isFavorite(item.id) ? "Đã thích" : "Yêu thích"}
                           </button>
 
+                          {/* 🔍 Xem chi tiết */}
                           <Link
                             to={`/marketplace/listing/${item.id}`}
                             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -328,13 +478,47 @@ export default function ListingList() {
                   </div>
                 ))}
 
-                {/* Infinite scroll loader */}
-                {displayCount < filteredItems.length && (
-                  <div ref={observerTarget} className="py-8 text-center">
-                    <div className="inline-block w-8 h-8 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                    <p className="mt-2 text-sm text-gray-600">
-                      Đang tải thêm...
-                    </p>
+                {/* Pagination (server-side) */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <button
+                      onClick={() => goToPage(page - 1)}
+                      disabled={page === 1}
+                      className="px-3 py-1 text-sm text-gray-600 bg-white border rounded-md hover:bg-gray-100 disabled:opacity-40"
+                    >
+                      ‹
+                    </button>
+
+                    {pages.map((p, i) =>
+                      p === "..." ? (
+                        <span
+                          key={`ellipsis-${i}`}
+                          className="px-3 text-gray-400 select-none"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={`page-${p}-${i}`}
+                          onClick={() => goToPage(p)}
+                          className={`px-3 py-1 text-sm font-medium rounded-md ${
+                            p === page
+                              ? "bg-[#007BFF] text-white shadow-md scale-105 transition"
+                              : "bg-white text-gray-700 hover:bg-gray-100"
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                    <button
+                      onClick={() => goToPage(page + 1)}
+                      disabled={page === totalPages}
+                      className="px-3 py-1 text-sm text-gray-600 bg-white border rounded-md hover:bg-gray-100 disabled:opacity-40"
+                    >
+                      ›
+                    </button>
                   </div>
                 )}
               </div>
@@ -342,6 +526,12 @@ export default function ListingList() {
           </div>
         </div>
       </div>
+
+      {/* Floating Compare Toolbar */}
+      <CompareFloatingToolbar
+        compareList={compareList}
+        setCompareList={setCompareList}
+      />
     </div>
   );
 }

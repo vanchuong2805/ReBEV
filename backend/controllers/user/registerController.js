@@ -7,10 +7,11 @@ import userService from '../../services/user/userService.js'
  * @swagger
  * /api/users/register:
  *   post:
- *     summary: Đăng ký người dùng mới
- *     description: API cho phép người dùng đăng ký tài khoản mới bằng **họ tên, số điện thoại và mật khẩu**.  
- *       - Nếu số điện thoại đã tồn tại trong hệ thống, trả về lỗi `409`.  
- *       - Nếu dữ liệu không hợp lệ (thiếu hoặc trống), trả về lỗi `400`.
+ *     summary: Register a new user
+ *     description: |
+ *       Allows a new user to register using **display name, phone, and password**.  
+ *       - If the phone number already exists, returns `409 Conflict`.  
+ *       - If input data is invalid or missing, returns `400 Bad Request`.
  *     tags: [Users]
  *     requestBody:
  *       required: true
@@ -25,19 +26,19 @@ import userService from '../../services/user/userService.js'
  *             properties:
  *               display_name:
  *                 type: string
- *                 description: Tên hiển thị của người dùng
+ *                 description: User's display name
  *                 example: "Nguyen Van A"
  *               phone:
  *                 type: string
- *                 description: Số điện thoại của người dùng
+ *                 description: User's phone number
  *                 example: "0901234567"
  *               password:
  *                 type: string
- *                 description: Mật khẩu đăng nhập
+ *                 description: User password
  *                 example: "12345678"
  *     responses:
  *       200:
- *         description: Đăng ký thành công
+ *         description: User registered successfully
  *         content:
  *           application/json:
  *             schema:
@@ -70,7 +71,7 @@ import userService from '../../services/user/userService.js'
  *                       nullable: true
  *                       example: null
  *       400:
- *         description: Dữ liệu đầu vào không hợp lệ hoặc thiếu thông tin bắt buộc
+ *         description: Invalid input or missing required fields
  *         content:
  *           application/json:
  *             schema:
@@ -85,7 +86,7 @@ import userService from '../../services/user/userService.js'
  *                     - "Phone cannot be blank"
  *                     - "Password cannot be blank"
  *       409:
- *         description: Số điện thoại đã tồn tại trong hệ thống
+ *         description: Phone number already exists
  *         content:
  *           application/json:
  *             schema:
@@ -98,7 +99,7 @@ import userService from '../../services/user/userService.js'
  *                   example:
  *                     - "Phone already exists"
  *       500:
- *         description: Lỗi máy chủ nội bộ
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
@@ -108,6 +109,7 @@ import userService from '../../services/user/userService.js'
  *                   type: string
  *                   example: "Failed to register user"
  */
+
 
 const registerUser = async (req, res) => {
     try {

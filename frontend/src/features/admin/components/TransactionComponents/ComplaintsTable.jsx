@@ -1,74 +1,166 @@
 import React from "react";
+import { changeComplaintStatus } from "../../service";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 
-export default function ComplaintsTable({
-  complaints = [],
-  renderStatusBadge, // (status) => ReactNode
-  onProcess, // (complaint) => void
-  className = "",
-}) {
+export default function ComplaintsTable({ complaints, setComplaints }) {
+  const formatDate = (isoString) => {
+    return new Date(isoString).toLocaleString("vi-VN", {
+      hour12: false,
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+  };
+  const handleChangStatus = async (id, status) => {
+    await changeComplaintStatus(id, status);
+    setComplaints((prev) =>
+      prev.map((complaint) => {
+        if (complaint.id === id) {
+          return { ...complaint, complaint_status: status };
+        }
+        return complaint;
+      })
+    );
+  };
+  const getStatusBadge = (status) => {
+    const base =
+      "px-2 py-0.5 rounded-full text-xs font-medium inline-flex items-center justify-center border transition";
+    switch (status) {
+      case 0:
+        return (
+          <span
+            className={`${base} bg-yellow-100 text-yellow-800 border-yellow-300`}
+          >
+            Pending
+          </span>
+        );
+      case 1:
+        return (
+          <span
+            className={`${base} bg-green-100 text-blue-800 border-blue-300`}
+          >
+            RESOLVED
+          </span>
+        );
+      case 2:
+        return (
+          <span className={`${base} bg-gray-100 text-blue-800 border-blue-300`}>
+            REJECTED
+          </span>
+        );
+      case 3:
+        return (
+          <span className={`${base} bg-blue-100 text-blue-800 border-blue-300`}>
+            CANCELLED
+          </span>
+        );
+
+      default:
+        return (
+          <span className={`${base} bg-gray-100 text-gray-700 border-gray-300`}>
+            N/A
+          </span>
+        );
+    }
+  };
+
+  console.log(complaints);
   return (
-    <div
-      className={`bg-white rounded-lg shadow-sm overflow-hidden ${className}`}
-    >
+    <div className="bg-white rounded-lg shadow-sm">
+      {/* Cho phép cuộn ngang khi thiếu chỗ */}
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        {/* Ép có độ rộng tối thiểu để không bị bóp cột + table-fixed */}
+        <table className="min-w-[1100px] w-full table-fixed divide-y divide-gray-200">
+          {/* width tương đối cho từng cột */}
+
           <thead className="bg-gray-50">
             <tr>
               {[
-                "Mã khiếu nại",
-                "Tên khách hàng",
-                "Lý do",
-                "Ngày tạo",
-                "Trạng thái",
-                "Thao tác",
-              ].map((h) => (
+                "Mã ",
+                "Người khiếu nại",
+                "Ngày Tạo",
+                "Trạng Thái",
+                "Người Xác Nhận",
+                "Thao Tác",
+              ].map((h, i) => (
                 <th
-                  key={h}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  key={i}
+                  className={
+                    "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  }
                 >
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
-            {complaints.map((c) => (
-              <tr key={c.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {c.id}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {c.customerName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {c.reason}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {c.createdDate}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {renderStatusBadge ? renderStatusBadge(c.status) : c.status}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {c.status === "pending" && (
-                    <button
-                      onClick={() => onProcess?.(c)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      Xử lý
-                    </button>
+            {complaints?.map((item) => {
+              return (
+                <tr key={item.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {item.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {item.user.display_name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(item.create_at)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {getStatusBadge(item.complaint_status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {item.moderator_user
+                      ? item.moderator_user.display_name
+                      : "N/A"}
+                  </td>
+                  {item.complaint_status == 0 && (
+                    <td className=" whitespace-nowrap text-sm text-gray-900 flex flex-col space-y-2 lg:w-36">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-gray-300"
+                        onClick={() => {
+                          console.log("a");
+                        }}
+                      >
+                        <Eye size={16} className="mr-1" />
+                        Xem Chi Tiết
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                        onClick={() => {
+                          handleChangStatus(item.id, 2);
+                        }}
+                      >
+                        Từ chối
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => {
+                          handleChangStatus(item.id, 1);
+                        }}
+                      >
+                        Phê duyệt
+                      </Button>
+                    </td>
                   )}
-                </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
 
             {complaints.length === 0 && (
               <tr>
                 <td
-                  colSpan={6}
                   className="px-6 py-8 text-sm text-gray-500 text-center"
+                  colSpan={9}
                 >
-                  Không có khiếu nại nào.
+                  Không có đơn khiếu nại nào.
                 </td>
               </tr>
             )}
