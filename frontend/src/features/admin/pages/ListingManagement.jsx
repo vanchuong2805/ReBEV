@@ -63,21 +63,16 @@ const ListingManagement = () => {
   // (ví dụ FilterBar dùng onchange để cập nhật trạng thái UI nhưng sẽ gọi setFilSearch khi ấn nút Tìm kiếm)
   // Ở đây mình đặt effect để tự động đồng bộ nếu bạn muốn:
 
-  const refreshPost = async () => {
-    try {
-      const fresh = await fetchPost();
-      setPosts((fresh || []).map((p) => ({ ...p, status: Number(p.status) })));
-    } catch (err) {
-      console.error("Refresh posts failed:", err);
-    }
-  };
-
   // Handlers
   const handleApprove = async (id) => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await updatePostStatus(id, 1);
-      await refreshPost();
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === id ? { ...post, status: 1 } : post
+        )
+      );
       toast.success(`Đã phê duyệt tin đăng: ${id}`);
       // nếu modal đang mở và chính là bài này thì cập nhật modal state
       if (selected?.id === id) {
@@ -94,7 +89,11 @@ const ListingManagement = () => {
     try {
       console.log("Token hiện tại:", localStorage.getItem("token"));
       await updatePostStatus(id, 2);
-      await refreshPost();
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === id ? { ...post, status: 2 } : post
+        )
+      );
       toast.success(`Đã từ chối tin đăng: ${id}`);
       if (selected?.id === id) {
         setSelected((s) => s && { ...s, status: 2 });
