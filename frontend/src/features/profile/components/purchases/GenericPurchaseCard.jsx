@@ -10,6 +10,7 @@ export default function GenericPurchaseCard({
     onReview,
     onView,
     post,
+    cstatus,
 }) {
     const isCar = post?.category_id === 1
 
@@ -78,6 +79,7 @@ export default function GenericPurchaseCard({
         refunded: {
             tone: "accent",
             badgeText:
+            cstatus === 0 ?"Đợi duyệt":
                 status === "PENDING"
                     ? "Chờ bàn giao hàng"
                     : status === "RETURNING"
