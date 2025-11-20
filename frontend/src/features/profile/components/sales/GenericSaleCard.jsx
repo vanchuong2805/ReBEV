@@ -7,7 +7,7 @@ export default function GenericSaleCard({ type, post, detail, status }) {
   const config = {
     pending: {
       tone: 'warning',
-      badgeText: 'Chờ xác nhận',
+      badgeText: (status === "PENDING" ? "Đang thanh toán" : "Chờ xác nhận"),
       note:  'Đơn chờ bạn xác nhận.',
     },
     processing: {

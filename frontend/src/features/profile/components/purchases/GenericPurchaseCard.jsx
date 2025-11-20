@@ -17,7 +17,7 @@ export default function GenericPurchaseCard({
     const config = {
         pending: {
             tone: "warning",
-            badgeText: "Chờ xác nhận",
+            badgeText: (status === "PENDING" ? "Đang thanh toán" : "Chờ xác nhận"),
             note: isCar
                 ? "Đơn đang chờ người bán xác nhận lịch hẹn xem xe."
                 : "Đơn hàng đang chờ xác nhận và chuẩn bị giao pin.",
@@ -108,7 +108,7 @@ export default function GenericPurchaseCard({
             badgeText={cfg.badgeText}
             note={cfg.note}
             actions={cfg.actions}
-            onClick={() => onView?.(purchase)}
+            onClick={() => onView?.(detail)}
         />
     )
 }

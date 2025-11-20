@@ -130,7 +130,7 @@ const SalesSection = () => {
   }
 
   // === Phân loại trạng thái ===
-  const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
+  const pendingOrders = orders.filter((o) => ["PAID", "PENDING"].includes(getStatus(o)))
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
   const shippingOrders = orders.filter((o) => getStatus(o) === "DELIVERING")
   const successOrders = orders.filter((o) =>
@@ -162,7 +162,7 @@ const SalesSection = () => {
               detail={detail}
               post={product}
               type={
-                status === "PAID"
+                ["PAID", "PENDING"].includes(status)
                   ? "pending"
                   : status === "CONFIRMED"
                     ? "processing"

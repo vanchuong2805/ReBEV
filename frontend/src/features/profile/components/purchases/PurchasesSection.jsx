@@ -142,7 +142,7 @@ const PurchasesSection = () => {
     })
   }
 
-  const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
+  const pendingOrders = orders.filter((o) => getStatus(o) === "PAID"|| getStatus(o) === "PENDING")
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
   const shippingOrders = orders.filter((o) => getStatus(o) === "DELIVERING")
   const successOrders = orders.filter((o) =>
@@ -177,7 +177,7 @@ const PurchasesSection = () => {
               status={status}
               reviewed={order.reviewed}
               type={
-                status === "PAID"
+                ["PAID", "PENDING"].includes(status)
                   ? "pending"
                   : status === "CONFIRMED"
                   ? "processing"
@@ -187,7 +187,7 @@ const PurchasesSection = () => {
                   ? "success"
                   : ["CANCELLED", "CUSTOMER_CANCELLED", "SELLER_CANCELLED", "FAIL_PAY"].includes(status)
                   ? "canceled"
-                  : "refunded"
+                  : ""
               }
               onComplaint={handleComplaint}
               onReview={handleReview}

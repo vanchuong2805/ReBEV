@@ -133,7 +133,7 @@ export default function PurchaseFooter({
             Tải hợp đồng
           </Button>
         )}
-        {status === "PENDING" && (
+        {status === "PENDING" && order?.order_type !== 1 && order?.order_type !== 2 && (
           <Button
             size="sm"
             className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
