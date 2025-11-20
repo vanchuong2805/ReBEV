@@ -41,7 +41,6 @@ export async function openOrCreateConversation(buyerAppId, sellerAppId) {
       lastMessage: "",
     });
   } else {
-    // 👉 self-join: thêm đúng UID hiện tại
     await updateDoc(ref, {
       participantUids: arrayUnion(user.uid),
       updatedAt: serverTimestamp(),

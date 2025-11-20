@@ -2,9 +2,9 @@ import axios from "axios";
 
 export const getUserByID = async (userId) => {
   const res = await axios.get(
-    `https://rebev.up.railway.app/api/users/${userId}`
+    `https://rebev-production.up.railway.app/api/users/${userId}`
   );
-  return res.data.display_name; //string
+  return res.data; //string
 };
 
 export const fetchUsers = async () => {
