@@ -47,8 +47,9 @@ export default function GenericListingCard({
         },
         active: {
             tone: "neutral",
-            badgeText: "Đang bán",
+            badgeText: (Number(listing?.status) === 1&&"Đang bán"||"Đang giao dịch"),
             actions: [
+                (Number(listing?.status) === 1&&
                 <Button
                     key="hide"
                     size="lg"
@@ -60,7 +61,7 @@ export default function GenericListingCard({
                     }}
                 >
                     Ẩn tin
-                </Button>,
+                </Button>),
             ],
         },
         sold: {
