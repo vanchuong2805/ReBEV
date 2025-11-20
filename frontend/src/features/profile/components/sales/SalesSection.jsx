@@ -157,6 +157,7 @@ const SalesSection = () => {
                           ? "canceled"
                           : "refunded"
               }
+              status={status}
             />
           )
         })}
