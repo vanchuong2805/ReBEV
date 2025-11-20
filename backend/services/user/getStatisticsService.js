@@ -1,5 +1,5 @@
 import models, { sequelize } from '../../models/index.js';
-import { POST_STATUS, TRANSACTION_STATUS } from '../../config/constants.js';
+import { POST_STATUS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '../../config/constants.js';
 import { fn, literal, Op } from 'sequelize';
 const { users } = models;
 const { posts } = models;
@@ -53,6 +53,7 @@ const getUserStatistics = async (user_id, year = null) => {
         where: {
             receiver_id: user_id,
             status: TRANSACTION_STATUS.SUCCESS,
+            transaction_type: TRANSACTION_TYPE.RELEASE
         }
     })
 
@@ -62,6 +63,7 @@ const getUserStatistics = async (user_id, year = null) => {
         where: {
             receiver_id: user_id,
             status: TRANSACTION_STATUS.SUCCESS,
+            transaction_type: TRANSACTION_TYPE.RELEASE,
             [Op.and]: [
                 literal(`transactions.create_at BETWEEN '${startDate}' AND '${endDate}'`)
             ]
@@ -75,11 +77,11 @@ const getUserStatistics = async (user_id, year = null) => {
         raw: true
     });
 
-    const monthlyRevenue = Array(13).fill(0);
+    const monthlyRevenue = Array(12).fill(0);
     revenueByMonthly.forEach(record => {
         const month = record.month;
         const revenue = parseFloat(record.revenue);
-        monthlyRevenue[month] = revenue;
+        monthlyRevenue[month - 1] = revenue;
     });
 
 
