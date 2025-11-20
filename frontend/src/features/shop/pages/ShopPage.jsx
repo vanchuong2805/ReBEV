@@ -31,7 +31,7 @@ export default function ShopPage() {
         setLoading(true)
         const [userRes, activeRes, soldRes, reservedRes, baseRes] = await Promise.all([
           getUserById(sellerId),
-          getPosts({ user_id: sellerId, status: 1 }),
+          getPosts({ user_id: sellerId, status: 1 ,is_hidden:false}),
           getPosts({ user_id: sellerId, status: 3 }),
           getPosts({ user_id: sellerId, status: 7 }),
           getBases(),
@@ -60,7 +60,6 @@ export default function ShopPage() {
           attachContacts(soldRes),
           attachContacts(reservedRes),
         ])
-
         setActivePosts(activeWithContact)
         setSoldPosts(soldWithContact)
         setReservedPosts(reservedWithContact)
