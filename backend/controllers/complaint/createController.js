@@ -65,6 +65,14 @@ const createComplaint = async (req, res) => {
             return res.status(404).json({ error: 'Order detail not found' });
         }
 
+        const existingComplaint = await complaintService.getByOrderDetailId(order_detail_id);
+
+        if (existingComplaint) {
+            return res
+                .status(400)
+                .json({ error: 'Complaint for this order detail already exists' });
+        }
+
         const order = await orderService.getById(orderDetail.order_id);
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
