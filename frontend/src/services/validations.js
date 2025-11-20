@@ -68,10 +68,13 @@ export const createPostSchema = ({ categoryId, requireBase }) =>
   Yup.object({
     title: Yup.string()
       .required("Vui lòng nhập tiêu đề bài đăng")
-      .min(10, "Tiêu đề phải có ít nhất 10 ký tự")
+      .min(5, "Tiêu đề phải có ít nhất 5 ký tự")
       .max(200, "Tiêu đề không được vượt quá 200 ký tự"),
     price: Yup.string().required("Vui lòng nhập giá bán"),
-    description: Yup.string().max(5000, "Mô tả không được vượt quá 5000 ký tự"),
+    description: Yup.string()
+      .max(5000, "Mô tả không được vượt quá 5000 ký tự")
+      .required("Vui lòng nhập mô tả")
+      .min(10, "Mô tả phải có ít nhất 10 ký tự"),
     sellerContactId:
       categoryId === 2
         ? Yup.string().required("Vui lòng chọn thông tin liên hệ người bán")
