@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import TitlePage from "../components/TitlePage";
 import ListingsList from "../components/ListingComponents/ListingsList";
-import StatsCard from "../components/StatsCard";
+import Pagination from "../components/ListingComponents/Pagination";
 import FilterBar from "../components/FilterBar";
 import ListingDetailsModal from "../components/ListingComponents/ListingDetailsModal";
 import { fetchPost, updatePostStatus } from "../service";
@@ -13,13 +13,17 @@ const ListingManagement = () => {
     searchTerm: "",
     status: "",
     category: "",
+    page: 1,
   });
 
   // Modal state
   const [posts, setPosts] = useState([]);
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [pagination, setPagination] = useState({
+    total: 1,
+    currentPage: 1,
+  });
   // build searchKey dựa trên filSearch
   const searchKey =
     "?status=" +
@@ -27,7 +31,8 @@ const ListingManagement = () => {
     "&category_id=" +
     filSearch.category +
     "&search=" +
-    encodeURIComponent(filSearch.searchTerm || "");
+    encodeURIComponent(filSearch.searchTerm || "") +
+    `&page=${filSearch.page}&limit=5`;
 
   // Khi filSearch thay đổi -> fetch
   useEffect(() => {
@@ -36,11 +41,12 @@ const ListingManagement = () => {
       .then((data) => {
         if (!mounted) return;
         // đảm bảo status là number
-        const normalized = (data || []).map((p) => ({
+        const normalized = (data.data || []).map((p) => ({
           ...p,
           status: Number(p.status),
         }));
         setPosts(normalized);
+        setPagination(data.pagination || { totalPages: 1, currentPage: 1 });
       })
       .catch((err) => {
         console.error("Fetch posts error:", err);
@@ -98,17 +104,6 @@ const ListingManagement = () => {
     }
   };
 
-  const handleEdit = async (id) => {
-    try {
-      console.log("Token hiện tại:", localStorage.getItem("token"));
-      // mở form edit hoặc điều hướng nếu cần
-      await refreshPost();
-      toast.success(`Đã chỉnh sửa tin đăng: ${id}`);
-    } catch (err) {
-      toast.error(`Lỗi khi chỉnh sửa tin đăng: ${err.message}`);
-    }
-  };
-
   // mở modal: nhận listing object hoặc id
   const handleViewDetails = (listingOrId) => {
     if (!listingOrId) return;
@@ -156,7 +151,6 @@ const ListingManagement = () => {
               { value: 1, label: "Đã duyệt" },
               { value: 2, label: "Từ chối" },
               { value: 3, label: "Đã bán" },
-              { value: 4, label: "Đã đặt cọc" },
               { value: 5, label: "Đã hủy" },
               { value: 6, label: "Đã xác nhận" },
               { value: 7, label: "Đang giao dịch" },
@@ -180,7 +174,15 @@ const ListingManagement = () => {
         onViewDetails={handleViewDetails}
         onApprove={handleApprove}
         onReject={handleReject}
-        onEdit={handleEdit}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        length={Number(pagination.total) / 5}
+        current={filSearch.page}
+        canPrev={filSearch.page > 1}
+        canNext={posts.length === 5} // nếu đủ limit => còn trang sau
+        onChange={(p) => setFilSearch((pre) => ({ ...pre, page: p }))}
       />
 
       <ListingDetailsModal

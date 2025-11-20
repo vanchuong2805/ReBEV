@@ -1,5 +1,4 @@
 import axios from "axios";
-import { se } from "date-fns/locale";
 
 // hooks/useUserPackages.js
 
@@ -10,7 +9,7 @@ const baseAPI = import.meta.env.VITE_BASE_URL;
 
 export async function getFullPackage() {
   try {
-    const res = await axios.get("https://rebev.up.railway.app/api/packages");
+    const res = await axios.get(`${baseAPI}/packages`);
     return res.data;
   } catch (err) {
     console.error("Axios error:", err.response?.data ?? err.message);
@@ -190,7 +189,13 @@ export const createStaffAccount = async (staff) => {
 export const fetchPost = async (searchKey) => {
   const apiPost = baseAPI + "/posts" + (searchKey ? searchKey : "");
   const res = await axios.get(apiPost);
-  return res.data.data;
+  return res.data;
+};
+
+export const getPostById = async (id) => {
+  const res = await axios.get(`${baseAPI}/posts/${id}`);
+  console.log(res.data);
+  return res.data;
 };
 //"/posts?status=1&category_id=1&user_id=5&search=đời&page=2&limit=1"
 
@@ -228,6 +233,22 @@ export const getOrders = async (type, searchKey) => {
         },
       }
     );
+    console.log("Fetched orders:", res.data);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching orders:", err.response?.data || err.message);
+    throw err;
+  }
+};
+export const getOrdersById = async (id) => {
+  const token = localStorage.getItem("accessToken"); // lấy token đã lưu sau khi login
+  try {
+    const res = await axios.get(`${baseAPI}/orders/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // thêm token vào header
+      },
+    });
     console.log("Fetched orders:", res.data);
     return res.data;
   } catch (err) {
@@ -331,4 +352,12 @@ export const changeComplaintStatus = async (id, status) => {
     throw err;
   }
 };
-///
+// get variation values by variation id
+export const getVariationValues = async () => {
+  const res = await axios.get(`${baseAPI}/VariationValues`);
+  return res.data;
+};
+export const getVariations = async () => {
+  const res = await axios.get(`${baseAPI}/variations`);
+  return res.data;
+};

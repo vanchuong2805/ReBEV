@@ -2,7 +2,7 @@ import React from "react";
 
 const YearSelector = ({ selectedYear, onYearChange }) => {
   const currentYear = new Date().getFullYear(); // Năm hiện tại
-  const startYear = 2025;
+  const startYear = 2024;
 
   // Tạo danh sách năm từ 2025 → năm hiện tại
   const years = Array.from(
