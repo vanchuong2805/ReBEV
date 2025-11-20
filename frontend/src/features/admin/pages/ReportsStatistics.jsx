@@ -14,6 +14,7 @@ import YearSelector from "../components/YearSelector";
 import { getStaticPage } from "../service";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router";
+import RefeshButton from "../components/RefeshButton";
 
 const nf = new Intl.NumberFormat("vi-VN");
 const formatMoney = (v) => (typeof v === "number" ? nf.format(v) : "0");
@@ -172,6 +173,7 @@ const ReportsStatistics = () => {
           selectedYear={selectedYear}
           onYearChange={setSelectedYear}
         />
+        <RefeshButton />
       </div>
 
       {/* Error state */}

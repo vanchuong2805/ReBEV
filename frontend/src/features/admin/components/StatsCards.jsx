@@ -4,7 +4,7 @@ import { Card } from "../../../components/ui/card";
 export default function StatsCards({ title, number, icon }) {
   return (
     <>
-      <Card className="p-6">
+      <Card className="p-6" style={{ padding: "10px" }}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-gray-600">{title}</p>
