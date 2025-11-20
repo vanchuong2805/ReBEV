@@ -365,3 +365,16 @@ export const getPackages = async () => {
   const res = await axios.get(`${API_BASE_URL}/packages`);
   return res.data;
 }
+//stats
+export const getUserStatistics = async (userId, year) => {
+  const token = localStorage.getItem("accessToken");
+  const res = await axios.get(`${API_BASE_URL}/users/${userId}/statistics?year=${year}`,
+    {
+      headers: {
+       "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+  return res.data.data
+}
