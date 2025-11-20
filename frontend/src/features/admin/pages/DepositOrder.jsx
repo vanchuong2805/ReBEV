@@ -1,32 +1,30 @@
 import React, { useEffect, useState } from "react";
-import FilterTransaction from "../components/TransactionComponents/FilterTransaction";
 import DepositOrdersTable from "../components/TransactionComponents/DepositOrdersTable";
-import DepositDetailModal from "../components/TransactionComponents/DepositDetailModal";
 import FilterBar from "../components/FilterBar";
-import { ArrowUpDown } from "lucide-react";
-import SortSelector from "../components/SortSelector";
 import { getOrders } from "../service";
+import Pagination from "../components/ListingComponents/Pagination";
 
 export default function DepositOrder() {
-  const orderSortOptions = [
-    { value: "all", label: "Tất cả" },
-    { value: "pending", label: "Chờ xử lý" },
-    { value: "seller_cancelled", label: "Bên bán hủy" },
-    { value: "buyer_cancelled", label: "Bên mua hủy" },
-    { value: "completed", label: "Giao dịch thành công" },
-  ];
-  const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
   const [orders, setOrders] = useState([]);
   const [filSearch, setFilSearch] = useState({
     searchTerm: "",
     order_status: "",
     priority: "",
+    page: 1,
   });
-  const searchKey = `&order_id=${filSearch.searchTerm}&order_status=${filSearch.order_status}&priority=${filSearch.priority}`;
+  const [pagination, setPagination] = useState({
+    total: 1,
+    currentPage: 1,
+  });
+  const searchKey = `&order_id=${filSearch.searchTerm}&order_status=${filSearch.order_status}&priority=${filSearch.priority}&page=${filSearch.page}&limit=5`;
   useEffect(() => {
     (async () => {
       const data = await getOrders(2, searchKey);
       setOrders(data.orders || []);
+      setPagination({
+        ...pagination,
+        total: data.pagination.total,
+      });
     })();
   }, [filSearch]);
   return (
@@ -46,29 +44,28 @@ export default function DepositOrder() {
             options: [
               { value: "", label: "Tất cả trạng thái" },
               { value: "PENDING", label: "Chờ duyệt" },
-              { value: "PAID", label: "PAID" },
-              { value: "CUSTOMER_CANCELLED", label: "CUSTOMER_CANCELLED" },
-              { value: "SELLER_CANCELLED", label: "SELLER_CANCELLED" },
-              { value: "CANCELLED", label: "CANCELLED" },
-              { value: "COMPLETED", label: "COMPLETED" },
+              { value: "PAID", label: "Đã bán" },
+              { value: "CUSTOMER_CANCELLED", label: "Người mua hủy" },
+              { value: "SELLER_CANCELLED", label: "Người bán hủy" },
+              { value: "CANCELLED", label: "Đã hủy" },
+              { value: "COMPLETED", label: "Hoàn thành" },
+              { value: "FAIL_PAY", label: "Thanh toán thất bại" },
             ],
           },
         ]}
       />
       <div className="flex flex-wrap gap-4 justify-between">
         <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
-        {/* Sort Selector */}
-        <div className="flex items-center">
-          <ArrowUpDown size={16} className="mr-2 text-gray-500" />
-          <SortSelector
-            value={orderSortOption}
-            onChange={setOrderSortOption}
-            options={orderSortOptions}
-          />
-        </div>
       </div>
       {/* Orders List */}
       <DepositOrdersTable orders={orders} setOrders={setOrders} />
+      <Pagination
+        length={Number(pagination.total) / 5}
+        current={filSearch.page}
+        canPrev={filSearch.page > 1}
+        canNext={orders.length === 5} // nếu đủ limit => còn trang sau
+        onChange={(p) => setFilSearch((pre) => ({ ...pre, page: p }))}
+      />
     </div>
   );
 }

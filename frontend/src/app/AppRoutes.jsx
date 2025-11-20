@@ -153,7 +153,7 @@ export default function AppRoutes() {
           <Route path="listings" element={<ListingManagement />} />
           <Route path="fees" element={<SystemFeesManagement />}>
             <Route path="package" element={<PackageFee />} />
-            <Route path="system" element={<SystemFee />} />
+            <Route index element={<SystemFee />} />
           </Route>
           <Route path="transactions" element={<TransactionManagement />}>
             <Route index element={<PurchaseOrder />}></Route>

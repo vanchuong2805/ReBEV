@@ -6,8 +6,8 @@ export default function ListingsList({
   onViewDetails,
   onApprove,
   onReject,
-  onEdit,
 }) {
+ 
   if (!listings.length) {
     return (
       <Card className="p-8 text-center">
@@ -26,9 +26,9 @@ export default function ListingsList({
           onViewDetails={onViewDetails}
           onApprove={onApprove}
           onReject={onReject}
-          onEdit={onEdit}
         />
       ))}
+  
     </div>
   );
 }
