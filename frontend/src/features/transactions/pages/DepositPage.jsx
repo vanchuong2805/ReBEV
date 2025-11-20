@@ -250,7 +250,7 @@ function DepositPage() {
               {/* Địa chỉ nhận hàng */}
               <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
                 <h3 className="mb-3 text-lg font-semibold text-gray-800">
-                  Địa chỉ nhận hàng
+                  Thông tin liên hệ
                 </h3>
                 {selectedContact ? (
                   <div className="space-y-2">
@@ -278,8 +278,8 @@ function DepositPage() {
                 ) : (
                   <div>
                     <p className="mb-2 text-sm text-gray-500">
-                      Bạn chưa chọn địa chỉ. Vui lòng chọn để giao hàng chính
-                      xác.
+                      Bạn chưa chọn thông tin liên hệ. Vui lòng chọn để giao
+                      hàng chính xác.
                     </p>
                     <button
                       onClick={() => setAddressOpen(true)}
@@ -322,12 +322,12 @@ function DepositPage() {
       <Dialog open={addressOpen} onOpenChange={setAddressOpen}>
         <DialogContent className="max-w-2xl" aria-describedby={undefined}>
           <DialogHeader>
-            <DialogTitle>Chọn địa chỉ nhận hàng</DialogTitle>
+            <DialogTitle>Chọn thông tin liên hệ</DialogTitle>
           </DialogHeader>
 
           <div className="flex items-center justify-between mb-3">
             <Button variant="outline" onClick={addNew}>
-              + Thêm địa chỉ
+              + Thêm thông tin liên hệ
             </Button>
           </div>
 
@@ -336,7 +336,7 @@ function DepositPage() {
               <div className="py-8 text-center text-gray-500">Đang tải…</div>
             ) : customerContacts.length === 0 ? (
               <div className="py-8 text-center text-gray-500">
-                Chưa có địa chỉ. Nhấn "Thêm địa chỉ".
+                Chưa có thông tin liên hệ. Nhấn "Thêm thông tin liên hệ".
               </div>
             ) : (
               customerContacts.map((c) => {

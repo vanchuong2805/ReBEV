@@ -248,15 +248,13 @@ export default function ListingList() {
   const pages = useMemo(() => {
     if (totalPages === 1) return [1];
 
-    const delta = 1; // Giảm từ 2 xuống 1 để gọn hơn
+    const delta = 1;
     const left = Math.max(2, page - delta);
     const right = Math.min(totalPages - 1, page + delta);
     const range = [];
 
-    // Luôn có trang 1
     range.push(1);
     if (left > 2) range.push("...");
-    // Thêm các trang ở giữa
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) range.push(i);
     }
