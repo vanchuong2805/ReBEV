@@ -26,7 +26,7 @@ const getByUserId = async (userId) => {
             {
                 association: 'user',
                 attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
-            }
+            },
         ],
         where: { user_id: userId },
     });
@@ -138,36 +138,50 @@ const getById = async (id) => {
 };
 
 const getAll = async (filters) => {
-    const { page, limit } = filters;
+    const { page, limit, status, id } = filters;
     const pageNum = parseInt(page) || 1;
     const pageSize = parseInt(limit) || null;
     const offset = (pageNum - 1) * pageSize;
+    const where = {};
+    if (status !== undefined) {
+        where.complaint_status = status;
+    }
+    if (id !== undefined) {
+        where.id = id;
+    }
     const data = await complaints.findAll({
-        include: [{
-            association: 'user',
-            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
-        },
-        {
-            association: 'order_detail',
-            include: [{
-                association: 'post',
-                attributes: ['id', 'title', 'description', 'price', 'media'],
-            }],
-            attributes: ['id'],
-        },
-        {
-            association: 'moderator_user',
-            attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
-        }
-    ],
+        where,
+        include: [
+            {
+                association: 'user',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+            {
+                association: 'order_detail',
+                include: [
+                    {
+                        association: 'post',
+                        attributes: ['id', 'title', 'description', 'price', 'media'],
+                    },
+                ],
+                attributes: ['id'],
+            },
+            {
+                association: 'moderator_user',
+                attributes: ['id', 'display_name', 'email', 'phone', 'avatar'],
+            },
+        ],
 
         ...(pageSize ? { limit: pageSize, offset } : {}),
-        order: [['complaint_status', 'ASC'], ['create_at', 'DESC']],
+        order: [
+            ['complaint_status', 'ASC'],
+            ['create_at', 'DESC'],
+        ],
     });
-    const total = await complaints.count();
+    const total = await complaints.count({ where });
     const pagination = pageSize ? { page: pageNum, limit: pageSize, total } : null;
     return { complaints: data, pagination };
-}
+};
 
 export default {
     getByOrderDetailId,

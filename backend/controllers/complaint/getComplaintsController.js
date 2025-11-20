@@ -1,4 +1,4 @@
-import complaintService from "../../services/complaint/complaintService.js";
+import complaintService from '../../services/complaint/complaintService.js';
 
 /**
  * @swagger
@@ -16,6 +16,14 @@ import complaintService from "../../services/complaint/complaintService.js";
  *         schema:
  *           type: integer
  *           default: 10
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: A list of complaints
@@ -29,7 +37,7 @@ const getComplaints = async (req, res) => {
         const complaints = await complaintService.getAll(filters);
         res.status(200).json(complaints);
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
