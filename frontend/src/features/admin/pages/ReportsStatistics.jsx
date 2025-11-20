@@ -14,19 +14,17 @@ import YearSelector from "../components/YearSelector";
 import { getStaticPage } from "../service";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router";
+import RefeshButton from "../components/RefeshButton";
 
 const nf = new Intl.NumberFormat("vi-VN");
 const formatMoney = (v) => (typeof v === "number" ? nf.format(v) : "0");
 
 const ReportsStatistics = () => {
-  // const { user } = useUser();
-  // console.log(user);
-  // const navigate = useNavigate();
-  // useEffect(() => {
-  //   if (user?.role !== 2) {
-  //     navigate("/admin/transactions"); // Chuyển hướng về trang chủ nếu không phải admin
-  //   }
-  // }, [user]);
+  const user = useUser().user;
+  const navigate = useNavigate();
+  if (user?.role !== 2) {
+    navigate("/admin/transactions");
+  }
   const [selectedYear, setSelectedYear] = useState("2025");
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -73,8 +71,12 @@ const ReportsStatistics = () => {
 
   const monthlyRevenue = useMemo(() => {
     const mr = (data.monthlyRevenues || []).map((month) =>
-      (month || []).reduce((sum, t) => sum + (t?.transaction_sum || 0), 0)
+      (month || []).reduce((sum, t) => {
+        console.log(`check`, t);
+        return sum + (t?.transaction_sum || 0) + (t?.commission_sum || 0);
+      }, 0)
     );
+    console.log("check mr", mr);
     return shiftArrayBackOne(mr);
   }, [data.monthlyRevenues]);
 
@@ -171,6 +173,7 @@ const ReportsStatistics = () => {
           selectedYear={selectedYear}
           onYearChange={setSelectedYear}
         />
+        <RefeshButton />
       </div>
 
       {/* Error state */}

@@ -25,7 +25,7 @@ export const getContactByUserId = async (id) => {
 // service.js
 export const getPosts = async (filters = {}) => {
   const res = await axios.get(`${API_BASE_URL}/posts`, {
-    params: filters, // 👈 Tự động build query ?user_id=5&status=1
+    params: filters, 
   })
   return res.data.data
 }

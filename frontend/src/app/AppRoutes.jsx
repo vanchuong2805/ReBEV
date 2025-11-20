@@ -43,6 +43,7 @@ import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 import PackageFee from "@/features/admin/components/systemfeesComponents/PackageFee.jsx";
 import SystemFee from "@/features/admin/components/systemfeesComponents/Systemfee.jsx";
 import Terms from "@/features/terms/Terms.jsx";
+import StatsPage from "@/features/profile/components/stats/StatsPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -77,6 +78,7 @@ export default function AppRoutes() {
             <Route path="transactions" element={<TransactionsSection />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="wallet" element={<WalletSection />} />
+            <Route path="stats" element={<StatsPage />} />
             <Route path="purchases/:orderId" element={<OrderDetailPage />} />
             <Route path="sale/:orderId" element={<OrderDetailPage />} />
             <Route
@@ -154,7 +156,7 @@ export default function AppRoutes() {
           <Route path="listings" element={<ListingManagement />} />
           <Route path="fees" element={<SystemFeesManagement />}>
             <Route path="package" element={<PackageFee />} />
-            <Route path="system" element={<SystemFee />} />
+            <Route index element={<SystemFee />} />
           </Route>
           <Route path="transactions" element={<TransactionManagement />}>
             <Route index element={<PurchaseOrder />}></Route>

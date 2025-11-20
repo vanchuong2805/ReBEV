@@ -1,7 +1,6 @@
-import cartService from "../../services/cart/cartService.js";
-import postService from "../../services/post/postService.js";
-import userService from "../../services/user/userService.js";
-
+import cartService from '../../services/cart/cartService.js';
+import postService from '../../services/post/postService.js';
+import userService from '../../services/user/userService.js';
 
 /**
  * @swagger
@@ -120,13 +119,14 @@ const getCart = async (req, res) => {
     try {
         const { user_id } = req.params;
         if (parseInt(user_id) !== req.user.id) {
-            return res.status(403).json({ error: "Forbidden" });
+            return res.status(403).json({ error: 'Forbidden' });
         }
         const carts = await cartService.getCartByUserId(user_id);
 
-        const groupedCart = {};
+        const groupedCart = new Map();
 
         for (const cart of carts) {
+            console.log(cart);
             const post = await postService.getCartItem(cart.post_id);
             if (!post) continue;
             const seller_id = post.user_id;
@@ -135,16 +135,16 @@ const getCart = async (req, res) => {
 
             const key = `${seller_id}-${post.seller_contact.id}`;
 
-            if (!groupedCart[key]) {
-                groupedCart[key] = {
+            if (!groupedCart.has(key)) {
+                groupedCart.set(key, {
                     seller_id,
                     seller_display_name,
                     seller_contact: post.seller_contact,
                     items: [],
-                };
+                });
             }
 
-            groupedCart[key].items.push({
+            groupedCart.get(key).items.push({
                 post_id: post.id,
                 title: post.title,
                 price: post.price,
@@ -155,12 +155,13 @@ const getCart = async (req, res) => {
                 media: post.media,
             });
         }
-        const cartItems = Object.values(groupedCart);
+
+        const cartItems = Array.from(groupedCart.values());
         res.status(200).json(cartItems);
     } catch (error) {
-        console.error("Failed to get cart:", error);
-        res.status(500).json({ error: "Failed to get cart" });
+        console.error('Failed to get cart:', error);
+        res.status(500).json({ error: 'Failed to get cart' });
     }
-}
+};
 
 export default getCart;

@@ -13,6 +13,7 @@ import {
   unLockUserAccount,
 } from "../service";
 import { toast } from "sonner";
+import Pagination from "../components/ListingComponents/Pagination";
 
 const UserManagement = () => {
   const [showStaffForm, setShowStaffForm] = useState(false);
@@ -21,13 +22,18 @@ const UserManagement = () => {
     email: "",
     phone: "",
   });
+  const [pagination, setPagination] = useState({
+    total: 1,
+    currentPage: 1,
+  });
   //
   const [filSearch, setFilSearch] = useState({
     searchTerm: "",
     hasPackage: "",
     isLocked: "",
+    page: 1,
   });
-  const searchKey = `?hasPackage=${filSearch.hasPackage}&isLocked=${filSearch.isLocked}&search=${filSearch.searchTerm}`;
+  const searchKey = `?hasPackage=${filSearch.hasPackage}&isLocked=${filSearch.isLocked}&search=${filSearch.searchTerm}&page=${filSearch.page}&limit=10`;
 
   // API User
   const [users, setUsers] = useState([]);
@@ -35,6 +41,10 @@ const UserManagement = () => {
     const data = async () => {
       const fresh = await fetchUsers(searchKey);
       setUsers(fresh.users);
+      setPagination({
+        total: fresh.total,
+        currentPage: 1,
+      });
     };
     data();
   }, [filSearch]);
@@ -213,6 +223,14 @@ const UserManagement = () => {
         onCreate={handleStaffFormSubmit}
       />
       {/* Password change UI removed - staff password change disabled in admin UI */}
+      {/* Phan Trang */}
+      <Pagination
+        length={Number(pagination.total) / 5}
+        current={filSearch.page}
+        canPrev={filSearch.page > 1}
+        canNext={users.length === 5} // nếu đủ limit => còn trang sau
+        onChange={(p) => setFilSearch((pre) => ({ ...pre, page: p }))}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -23,8 +23,8 @@ ChartJS.register(
 
 const BarChartComponent = ({ data = [], title, color, year, monthly }) => {
   const chartRef = useRef(null);
+  console.log(data);
 
-  // Tạo gradient mềm kiểu Metronic
   const createGradient = (ctx, area) => {
     const gradient = ctx.createLinearGradient(0, area.bottom, 0, area.top);
     gradient.addColorStop(0, color.replace("0.8", "0.2")); // nhạt dưới
@@ -53,6 +53,11 @@ const BarChartComponent = ({ data = [], title, color, year, monthly }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: "index",
+      intersect: false,
+      axis: "x",
+    },
     animation: {
       duration: 700,
       easing: "easeOutQuart",
@@ -75,8 +80,9 @@ const BarChartComponent = ({ data = [], title, color, year, monthly }) => {
         padding: 12,
         displayColors: false,
         callbacks: {
-          title: () => "", // 🚀 ẨN title trong tooltip
+          title: () => "", // ẨN title trong tooltip
           label: (ctx) => {
+            console.log("check ctx", ctx);
             const value = ctx.raw || 0;
             return monthly
               ? value.toLocaleString("vi-VN") + " VND"
@@ -107,6 +113,63 @@ const BarChartComponent = ({ data = [], title, color, year, monthly }) => {
       },
     },
   };
+
+  // Hiển thị tooltip khi hover vào nhãn tháng (trục X)
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const canvas = chart.canvas;
+    const hoverZone = 42; // chiều cao vùng tính từ đáy biểu đồ xuống khu vực tick/label
+
+    const onMove = (evt) => {
+      if (!chart?.scales?.x || !chart?.chartArea) return;
+      const { left, right, bottom, top } = chart.chartArea;
+      const xScale = chart.scales.x;
+
+      // Tọa độ chuột tương đối trên canvas
+      const rect = canvas.getBoundingClientRect();
+      const x = evt.clientX - rect.left;
+      const y = evt.clientY - rect.top;
+
+      // Nếu hover ngay vùng nhãn trục X, kích hoạt tooltip ở cột tương ứng
+      if (x >= left && x <= right && y >= bottom && y <= bottom + hoverZone) {
+        // Lấy index gần nhất từ pixel
+        const rawIndex = xScale.getValueForPixel(x);
+        const index = Math.max(0, Math.min(11, Math.round(rawIndex)));
+
+        const xPos = xScale.getPixelForValue(index);
+        const yPos = top + 10; // hiển thị tooltip phía trên trục X
+
+        chart.tooltip?.setActiveElements([{ datasetIndex: 0, index }], {
+          x: xPos,
+          y: yPos,
+        });
+        chart.update();
+        return;
+      }
+
+      // Nếu không ở vùng nhãn, không can thiệp (Chart.js xử lý mặc định)
+      // Tuy nhiên nếu ở ngoài toàn bộ chart/canvas, ẩn tooltip tùy chỉnh
+      if (y > bottom + hoverZone || x < left || x > right) {
+        chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+        chart.update();
+      }
+    };
+
+    const onLeave = () => {
+      chart.tooltip?.setActiveElements([], { x: 0, y: 0 });
+      chart.update();
+    };
+
+    canvas.addEventListener("mousemove", onMove);
+    canvas.addEventListener("mouseleave", onLeave);
+
+    return () => {
+      canvas.removeEventListener("mousemove", onMove);
+      canvas.removeEventListener("mouseleave", onLeave);
+    };
+  }, [chartRef, data]);
 
   return <Bar ref={chartRef} options={options} data={chartData} />;
 };

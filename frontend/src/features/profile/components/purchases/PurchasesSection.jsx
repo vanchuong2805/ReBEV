@@ -307,6 +307,7 @@ const PurchasesSection = () => {
                         order={item}
                         status={status}
                         post={item.order_detail?.post || { title: "Không rõ sản phẩm" }}
+                        cstatus={item.complaint_status}
                         onView={() =>
                           navigate(`/profile/returns/${item.order_detail?.order_id}`, {
                             state: { order: item },

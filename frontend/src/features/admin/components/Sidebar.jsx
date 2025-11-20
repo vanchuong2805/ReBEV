@@ -16,15 +16,12 @@ import { useMemo } from "react";
 const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
   const { logout } = useUser();
+  const user = useUser().user;
+  console.log("user", user);
 
+  const IconStatic = BarChart3;
   const menuItems = useMemo(
     () => [
-      {
-        id: "reports",
-        label: "Báo cáo & Thống kê",
-        icon: BarChart3,
-        to: ROUTES.ADMIN.DASHBOARD,
-      },
       {
         id: "fees",
         label: "Quản lý phí hệ thống",
@@ -88,7 +85,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
           {!isCollapsed && (
             <div>
               <h1 className="text-cyan-300 font-semibold tracking-wide">
-                Admin Panel
+                {user?.role == 2 ? "Admin" : "Staff"} Panel
               </h1>
               <p className="text-xs text-slate-400">Control center</p>
             </div>
@@ -99,6 +96,64 @@ const Sidebar = ({ isCollapsed, setIsCollapsed }) => {
       {/* Nav */}
       <nav className="px-2">
         <ul className="space-y-1">
+          {user?.role == 2 && (
+            <>
+              <NavLink
+                to={ROUTES.ADMIN.DASHBOARD}
+                end={ROUTES.ADMIN.DASHBOARD === ROUTES.ADMIN.DASHBOARD}
+                className={({ isActive }) =>
+                  [
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5",
+                    "text-slate-300 hover:text-white",
+                    "transition-colors relative overflow-hidden",
+                    "before:absolute before:inset-y-0 before:left-0 before:w-0 before:bg-gradient-to-r before:from-cyan-500/10 before:to-transparent before:transition-all before:duration-300 group-hover:before:w-full",
+                    isActive
+                      ? "bg-white/[0.04] text-white"
+                      : "hover:bg-white/[0.03]",
+                  ].join(" ")
+                }
+                title={isCollapsed ? "Báo cáo & Thống kê" : undefined}
+              >
+                {/* Active indicator bar */}
+                <span
+                  className={[
+                    "absolute left-0 top-1/2 -translate-y-1/2 h-5 rounded-r-full",
+                    "transition-all duration-300",
+                    "bg-gradient-to-b from-cyan-400 via-cyan-300 to-cyan-500",
+                    "shadow-[0_0_12px_rgba(34,211,238,0.6)]",
+                    "data-[active=false]:w-0 data-[active=true]:w-1.5",
+                  ].join(" ")}
+                  data-active={
+                    // NavLink doesn't expose isActive here, so use CSS via aria-current
+                    undefined
+                  }
+                />
+                <IconStatic size={20} className="shrink-0 text-cyan-300/90" />
+                {!isCollapsed && (
+                  <span className="font-medium tracking-wide">
+                    Báo cáo & Thống kê
+                  </span>
+                )}
+
+                {/* Right glow accent */}
+                <span className="ml-auto hidden md:block h-2 w-2 rounded-full bg-cyan-400/60 group-hover:bg-cyan-300/80"></span>
+              </NavLink>
+
+              {/* Tooltip when collapsed */}
+              {isCollapsed && (
+                <div
+                  className={[
+                    "pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3",
+                    "opacity-0 group-hover:opacity-100 transition-opacity",
+                  ].join(" ")}
+                >
+                  <div className="whitespace-nowrap rounded-lg bg-slate-800 text-white text-xs px-2 py-1 border border-white/10 shadow-xl">
+                    Báo cáo & Thống kê
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           {menuItems.map((item) => {
             const Icon = item.icon;
             return (

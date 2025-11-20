@@ -6,3 +6,10 @@ export const getUserByID = async (userId) => {
   );
   return res.data.display_name; //string
 };
+
+export const fetchUsers = async () => {
+  const res = await axios.get(
+    `https://rebev-production.up.railway.app/api/users`
+  );
+  return res; //{users: [], pagination: {}}
+};

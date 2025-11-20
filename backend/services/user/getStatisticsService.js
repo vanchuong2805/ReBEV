@@ -1,8 +1,9 @@
 import models, { sequelize } from '../../models/index.js';
-import { POST_STATUS } from '../../config/constants.js';
+import { POST_STATUS, TRANSACTION_STATUS, TRANSACTION_TYPE } from '../../config/constants.js';
 import { fn, literal, Op } from 'sequelize';
 const { users } = models;
 const { posts } = models;
+const { transactions } = models;
 
 const getUserStatistics = async (user_id, year = null) => {
     const targetYear = year || new Date().getFullYear();
@@ -47,39 +48,40 @@ const getUserStatistics = async (user_id, year = null) => {
         }
     })
 
-    const totalRevenue = await posts.sum('price', {
+    //tổng doanh thu
+    const totalRevenue = await transactions.sum('amount', {
         where: {
-            user_id: user_id,
-            is_deleted: false,
-            status: POST_STATUS.SOLD,
+            receiver_id: user_id,
+            status: TRANSACTION_STATUS.SUCCESS,
+            transaction_type: TRANSACTION_TYPE.RELEASE
         }
     })
 
     //Biểu đồ doanh thu theo từng năm
 
-    const revenueByMonthly = await posts.findAll({
+    const revenueByMonthly = await transactions.findAll({
         where: {
-            user_id: user_id,
-            is_deleted: false,
-            status: POST_STATUS.SOLD,
+            receiver_id: user_id,
+            status: TRANSACTION_STATUS.SUCCESS,
+            transaction_type: TRANSACTION_TYPE.RELEASE,
             [Op.and]: [
-                literal(`posts.create_at BETWEEN '${startDate}' AND '${endDate}'`)
+                literal(`transactions.create_at BETWEEN '${startDate}' AND '${endDate}'`)
             ]
         },
         attributes: [
             [fn('MONTH', sequelize.col('create_at')), 'month'],
-            [fn('SUM', sequelize.col('price')), 'revenue']
+            [fn('SUM', sequelize.col('amount')), 'revenue']
         ],
         group: [literal("MONTH(create_at)")],
         order: literal("MONTH(create_at) ASC"),
         raw: true
     });
 
-    const monthlyRevenue = Array(13).fill(0);
+    const monthlyRevenue = Array(12).fill(0);
     revenueByMonthly.forEach(record => {
         const month = record.month;
         const revenue = parseFloat(record.revenue);
-        monthlyRevenue[month] = revenue;
+        monthlyRevenue[month - 1] = revenue;
     });
 
 
