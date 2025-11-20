@@ -5,7 +5,7 @@ import Form from "@/features/posts/components/Form";
 import { categoriesService } from "@/features/posts/service";
 
 export default function ListingForm({ onSubmit }) {
-  const [category, setCategory] = useState(1); 
+  const [category, setCategory] = useState(1);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +30,7 @@ export default function ListingForm({ onSubmit }) {
   }, []);
 
   const handleSubmit = (formData) => {
+    console.log(formData);
     const finalListing = { category, ...formData };
     onSubmit?.(finalListing);
     toast.success("Đã tạo bài đăng thành công!");

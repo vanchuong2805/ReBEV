@@ -87,19 +87,23 @@ export default function Form({
           toast.error("Vui lòng chọn ít nhất 1 hình ảnh");
           return;
         }
-
+        console.log(vg);
         // Validate variations
         const visibleVarIds = vg.definitionIds?.length
           ? vg.definitionIds
           : vg.orderedVariationIds.filter((id) =>
               vg.titlesByVariationId.has(id)
             );
-
+        console.log(visibleVarIds);
         for (const varId of visibleVarIds) {
-          const parent = vg.parentOf.get(varId);
+          console.log(vg.parentVariationOf.get(varId));
+          const parent = vg.parentVariationOf.get(varId);
           if (parent && !selectedByVar[parent]) continue;
-
-          if (!selectedByVar[varId]) {
+          console.log(selectedByVar);
+          if (
+            !selectedByVar[varId] &&
+            vg.metaByVariationId.get(varId)?.is_require
+          ) {
             const title = vg.titlesByVariationId.get(varId) || "Thông số";
             toast.error(`Vui lòng chọn ${title}`);
             return;
@@ -132,7 +136,7 @@ export default function Form({
         setShowSuccessModal(true);
       } catch (error) {
         console.error("Submit error:", error);
-        toast.error(error?.message || "Đăng tin thất bại. Vui lòng thử lại!");
+        toast.error("Đăng tin thất bại. Vui lòng thử lại!");
       } finally {
         setIsSubmitting(false);
         setSubmitting(false);
