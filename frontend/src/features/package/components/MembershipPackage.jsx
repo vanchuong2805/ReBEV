@@ -25,7 +25,7 @@ export default function MembershipPackage() {
   const [loadingPackages, setLoadingPackages] = useState(true)
 
   const [currentUserPackage, setCurrentUserPackage] = useState(null)
-  const { user, setUser } = useUser()
+  const { user } = useUser()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -79,9 +79,6 @@ export default function MembershipPackage() {
     try {
       setLoading(true)
       const data = await createRegisterPackage(user.id, selectedPkg.id)
-      const updatedUser = { ...user, package_id: selectedPkg.id , package_start: new Date().toISOString() }
-      localStorage.setItem("user", JSON.stringify(updatedUser))
-      if (setUser) setUser(updatedUser)
 
       if (data.payUrl) {
         window.location.href = data.payUrl
