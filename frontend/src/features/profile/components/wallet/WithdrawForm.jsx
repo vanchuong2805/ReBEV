@@ -1,72 +1,17 @@
-import React from "react"
-import { useFormik } from "formik"
-import * as Yup from "yup"
+import React from "react";
+import { useFormik } from "formik";
+import { withdrawSchema } from "@/services/validations";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select"
-
-
-const WithdrawSchema = Yup.object().shape({
-  amount: Yup.number()
-    .required("Vui lòng nhập số tiền.")
-    .min(50000, "Số tiền tối thiểu là 50.000₫."),
-
-  method: Yup.string().oneOf(["momo", "bank"]).required(""),
-
-  momoPhone: Yup.string().when("method", {
-    is: "momo",
-    then: (schema) =>
-      schema
-        .required("Vui lòng nhập số điện thoại MoMo.")
-        .matches(/^[0-9]{10}$/, "Số điện thoại phải gồm đúng 10 chữ số."),
-  }),
-
-  momoName: Yup.string().when("method", {
-    is: "momo",
-    then: (schema) =>
-      schema
-        .required("Vui lòng nhập tên chủ tài khoản MoMo.")
-        .test(
-          "has-two-words",
-          "Tên phải gồm ít nhất 2 từ.",
-          (value) => value && value.trim().split(" ").length >= 2
-        ),
-  }),
-
-  bankName: Yup.string().when("method", {
-    is: "bank",
-    then: (schema) =>
-      schema.required("Vui lòng chọn ngân hàng."),
-  }),
-
-  bankNumber: Yup.string().when("method", {
-    is: "bank",
-    then: (schema) =>
-      schema
-        .required("Vui lòng nhập số tài khoản.")
-        .matches(/^[0-9]{8,16}$/, "Số tài khoản không hợp lệ."),
-  }),
-
-  bankOwner: Yup.string().when("method", {
-    is: "bank",
-    then: (schema) =>
-      schema
-        .required("Vui lòng nhập tên chủ tài khoản.")
-        .test(
-          "has-two-words",
-          "Tên phải gồm ít nhất 2 từ.",
-          (value) => value && value.trim().split(" ").length >= 2
-        ),
-  }),
-})
+} from "@/components/ui/select";
 
 export default function WithdrawForm({ balance, onCancel, onConfirm }) {
   const formik = useFormik({
@@ -82,29 +27,29 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
       bankOwner: "",
     },
 
-    validationSchema: WithdrawSchema,
+    validationSchema: withdrawSchema,
 
     onSubmit: (values) => {
       onConfirm({
         amount: Number(values.amount),
         method: values.method,
         ...values,
-      })
+      });
     },
-  })
+  });
 
-  const formatAmount = (v) => (v ? Number(v).toLocaleString("vi-VN") : "")
+  const formatAmount = (v) => (v ? Number(v).toLocaleString("vi-VN") : "");
 
   const handleAmountChange = (e) => {
-    let raw = e.target.value.replace(/\D/g, "")
-    if (!raw) return formik.setFieldValue("amount", "")
-    let numeric = Number(raw)
-    if (numeric > balance) numeric = balance
-    formik.setFieldValue("amount", numeric)
-  }
+    let raw = e.target.value.replace(/\D/g, "");
+    if (!raw) return formik.setFieldValue("amount", "");
+    let numeric = Number(raw);
+    if (numeric > balance) numeric = balance;
+    formik.setFieldValue("amount", numeric);
+  };
 
   return (
-    <Card className="rounded-2xl border border-gray-200 shadow-sm bg-white">
+    <Card className="bg-white border border-gray-200 shadow-sm rounded-2xl">
       <CardHeader className="px-6 py-5 border-b bg-gray-50 rounded-t-2xl">
         <CardTitle className="text-xl font-semibold text-gray-900">
           Yêu cầu rút tiền
@@ -114,7 +59,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
       <CardContent className="px-6 py-6 space-y-7">
         {/* ===== AMOUNT ===== */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-800">Số tiền muốn rút</label>
+          <label className="text-sm font-medium text-gray-800">
+            Số tiền muốn rút
+          </label>
 
           <Input
             name="amount"
@@ -141,13 +88,15 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
 
         {/* ===== METHOD ===== */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-800">Phương thức thanh toán</label>
+          <label className="text-sm font-medium text-gray-800">
+            Phương thức thanh toán
+          </label>
 
           <Select
             value={formik.values.method}
             onValueChange={(val) => formik.setFieldValue("method", val)}
           >
-            <SelectTrigger className="h-12 w-full rounded-xl border-gray-300 focus:border-blue-500">
+            <SelectTrigger className="w-full h-12 border-gray-300 rounded-xl focus:border-blue-500">
               <SelectValue placeholder="Chọn phương thức" />
             </SelectTrigger>
 
@@ -174,7 +123,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
                 onBlur={formik.handleBlur}
               />
               {formik.errors.momoPhone && formik.touched.momoPhone && (
-                <p className="text-xs text-red-500">{formik.errors.momoPhone}</p>
+                <p className="text-xs text-red-500">
+                  {formik.errors.momoPhone}
+                </p>
               )}
             </div>
 
@@ -220,7 +171,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
               </Select>
 
               {formik.errors.bankName && formik.touched.bankName && (
-                <p className="text-xs text-red-500 mt-1">{formik.errors.bankName}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {formik.errors.bankName}
+                </p>
               )}
             </div>
 
@@ -237,7 +190,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
                 onBlur={formik.handleBlur}
               />
               {formik.errors.bankNumber && formik.touched.bankNumber && (
-                <p className="text-xs text-red-500 mt-1">{formik.errors.bankNumber}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {formik.errors.bankNumber}
+                </p>
               )}
             </div>
 
@@ -254,7 +209,9 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
                 onBlur={formik.handleBlur}
               />
               {formik.errors.bankOwner && formik.touched.bankOwner && (
-                <p className="text-xs text-red-500 mt-1">{formik.errors.bankOwner}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {formik.errors.bankOwner}
+                </p>
               )}
             </div>
           </div>
@@ -264,7 +221,7 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
           <Button
             type="button"
             variant="outline"
-            className="flex-1 h-12 rounded-xl border-gray-300 hover:bg-gray-100"
+            className="flex-1 h-12 border-gray-300 rounded-xl hover:bg-gray-100"
             onClick={onCancel}
           >
             Hủy
@@ -272,14 +229,13 @@ export default function WithdrawForm({ balance, onCancel, onConfirm }) {
 
           <Button
             type="button"
-            className="flex-1 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700"
+            className="flex-1 h-12 text-white bg-blue-600 rounded-xl hover:bg-blue-700"
             onClick={formik.handleSubmit}
           >
             Xác nhận
           </Button>
         </div>
-
       </CardContent>
     </Card>
-  )
+  );
 }

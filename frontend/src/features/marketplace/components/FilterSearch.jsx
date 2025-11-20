@@ -61,7 +61,7 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
 
         setVariationData(grouped);
       } catch (error) {
-        console.error("❌ Error fetching variations:", error);
+        console.error(" Error fetching variations:", error);
       } finally {
         setLoading(false);
       }
@@ -74,7 +74,6 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
   // (e.g. ?variation_value_id=1&variation_value_id=2) and map them into the
   // per-section selected arrays using the variationData we fetched earlier.
   useEffect(() => {
-    // parse categories (may be single or repeated)
     const categoriesRaw = searchParams.getAll("categories");
     const categories = categoriesRaw.length ? categoriesRaw.map(Number) : [];
 
@@ -243,12 +242,6 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
           <Filter className="w-5 h-5 text-blue-600" />
           <h2 className="font-semibold text-gray-900">Bộ lọc</h2>
         </div>
-        <button
-          onClick={clearFilters}
-          className="text-sm text-red-600 hover:text-red-700"
-        >
-          <X className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Filters */}
@@ -348,11 +341,22 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
           onToggleSection={() => toggleSection("price")}
         />
       </div>
-
-      {/* Apply Button */}
-      <Button onClick={applyFilters} className="w-full">
-        Áp dụng bộ lọc
-      </Button>
+      <div className="flex items-center justify-between mt-4">
+        {/* Apply Button */}
+        <Button
+          onClick={applyFilters}
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          Áp dụng bộ lọc
+        </Button>
+        {/* Clear Filters Button */}
+        <Button
+          onClick={clearFilters}
+          className="bg-blue-500 hover:bg-blue-600"
+        >
+          Xóa bộ lọc
+        </Button>
+      </div>
     </div>
   );
 }

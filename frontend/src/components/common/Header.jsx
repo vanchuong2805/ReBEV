@@ -325,7 +325,7 @@ const Header = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 console.log("🔎 Submitting search:", localSearch);
-                // Chuyển sang trang marketplace/all với
+                // Chuyển sang trang marketplace/all
                 const searchQuery = localSearch.trim();
                 const params = new URLSearchParams(searchParams);
 
@@ -427,7 +427,7 @@ const Header = () => {
                     </div>
 
                     {/* Apply / Clear buttons */}
-                    <div className="flex items-center gap-2 mt-3">
+                    <div className="flex items-center justify-center gap-2 mt-3">
                       <button
                         type="button"
                         onClick={applyProvinceSelection}
@@ -438,9 +438,9 @@ const Header = () => {
                       <button
                         type="button"
                         onClick={clearProvinceSelection}
-                        className="px-3 py-2 text-sm text-gray-600 hover:text-red-600"
+                        className="px-4 py-2 bg-[#007BFF] text-white rounded-md hover:bg-[#0056b3]"
                       >
-                        Xóa
+                        Tất cả
                       </button>
                     </div>
                   </div>

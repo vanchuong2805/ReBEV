@@ -1,45 +1,48 @@
 // features/auth/pages/ForgotPhonePage.jsx
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
 import { getOTP } from "../service";
 import { toast } from "sonner";
+import { forgotPhoneSchema } from "@/services/validations";
+import FieldError from "../components/FieldError";
 
 export default function ForgotPhonePage() {
   const nav = useNavigate();
   const { state } = useLocation();
-  const [phone, setPhone] = useState(
-    () => state?.phone || sessionStorage.getItem("fp_phone") || ""
-  );
-  const [loading, setLoading] = useState(false);
+
+  const formik = useFormik({
+    initialValues: {
+      phone: state?.phone || sessionStorage.getItem("fp_phone") || "",
+    },
+    validationSchema: forgotPhoneSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const data = await getOTP(values.phone);
+        const otp = String(data?.otp ?? "");
+        sessionStorage.setItem("fp_phone", values.phone);
+        sessionStorage.setItem("fp_otp", otp);
+        toast.success(`Mã OTP của bạn là: ${otp}`, { duration: 10000 });
+        nav("/forgot/otp");
+      } catch (e) {
+        console.error(e);
+        if (e.response.status === 404) {
+          toast.error("Số điện thoại chưa được đăng ký");
+        } else if (e.response.status === 500) {
+          toast.error("Máy chủ gặp sự cố, vui lòng thử lại sau");
+        } else {
+          toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   useEffect(() => {
-    if (phone) sessionStorage.setItem("fp_phone", phone);
-  }, [phone]);
-
-  async function onSubmit(e) {
-    e.preventDefault();
-    if (!phone) return;
-    try {
-      setLoading(true);
-      const data = await getOTP(phone);
-      const otp = String(data?.otp ?? "");
-      sessionStorage.setItem("fp_phone", phone);
-      sessionStorage.setItem("fp_otp", otp);
-      toast.success(`Mã OTP của bạn là: ${otp}`, { duration: 10000 });
-      nav("/forgot/otp");
-    } catch (e) {
-      console.error(e);
-      if (e.response.status === 404) {
-        toast.error("Số điện thoại chưa được đăng ký");
-      } else if (e.response.status === 500) {
-        toast.error("Máy chủ gặp sự cố, vui lòng thử lại sau");
-      } else {
-        toast.error("Có lỗi xảy ra, vui lòng thử lại sau");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }
+    if (formik.values.phone)
+      sessionStorage.setItem("fp_phone", formik.values.phone);
+  }, [formik.values.phone]);
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gray-50 sm:px-6 lg:px-8">
@@ -70,7 +73,7 @@ export default function ForgotPhonePage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={onSubmit} className="space-y-6">
+          <form onSubmit={formik.handleSubmit} className="space-y-6">
             <div>
               <label
                 htmlFor="phone"
@@ -96,22 +99,29 @@ export default function ForgotPhonePage() {
                 </div>
                 <input
                   id="phone"
+                  name="phone"
                   type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.trim())}
+                  value={formik.values.phone}
+                  onChange={(e) =>
+                    formik.setFieldValue("phone", e.target.value.trim())
+                  }
+                  onBlur={formik.handleBlur}
                   placeholder="Nhập số điện thoại của bạn"
                   className="block w-full py-3 pl-10 pr-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   autoComplete="tel"
                 />
               </div>
+              <FieldError
+                message={formik.touched.phone && formik.errors.phone}
+              />
             </div>
 
             <button
               type="submit"
-              disabled={loading || !phone}
+              disabled={formik.isSubmitting || !formik.values.phone}
               className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {formik.isSubmitting ? (
                 <>
                   <svg
                     className="w-5 h-5 mr-3 -ml-1 text-white animate-spin"

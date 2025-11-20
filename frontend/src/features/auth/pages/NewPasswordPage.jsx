@@ -1,57 +1,48 @@
 // features/auth/pages/NewPasswordPage.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
 import { forgetPassword } from "../service";
 import { toast } from "sonner";
-import { validateForgetPassword } from "@/services/validations";
+import { forgetPasswordSchema } from "@/services/validations";
 import FieldError from "../components/FieldError";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function NewPasswordPage() {
   const nav = useNavigate();
-  const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const phone = sessionStorage.getItem("fp_phone") || "";
   const verified = sessionStorage.getItem("fp_verified") === "1";
-  const [pw, setPw] = useState("");
-  const [pw2, setPw2] = useState("");
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!phone || !verified) nav("/forgot");
   }, [phone, verified, nav]);
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    console.log("[submit] click");
-    const newErrors = validateForgetPassword({
-      password: pw,
-      confirmPassword: pw2,
-    });
-    console.log("[submit] errors:", newErrors);
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length) return;
-
-    try {
-      setLoading(true);
-      await forgetPassword({ phone, newPassword: pw });
-
-      sessionStorage.clear();
-      toast.success("Đổi mật khẩu thành công!");
-
-      // Đợi 1.5s cho user thấy thông báo, rồi mở home và tự tắt tab
-      setTimeout(() => {
-        window.open("/", "_self"); // mở Home ngay trên tab hiện tại
-        window.close(); // đóng tab
-      }, 1500);
-    } catch (e) {
-      console.error(e);
-      toast.error("Đổi mật khẩu thất bại.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const formik = useFormik({
+    initialValues: {
+      password: "",
+      confirmPassword: "",
+    },
+    validationSchema: forgetPasswordSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await forgetPassword({ phone, newPassword: values.password });
+        sessionStorage.clear();
+        toast.success("Đổi mật khẩu thành công!");
+        // Đợi 1.5s cho user thấy thông báo, rồi mở home và tự tắt tab
+        setTimeout(() => {
+          window.open("/", "_self"); // mở Home ngay trên tab hiện tại
+          window.close(); // đóng tab
+        }, 1500);
+      } catch (e) {
+        console.error(e);
+        toast.error("Đổi mật khẩu thất bại.");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
     <div className="flex items-center justify-center h-screen px-4 py-12 overflow-y-hidden bg-gray-50 sm:px-6 lg:px-8">
@@ -114,7 +105,7 @@ export default function NewPasswordPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={onSubmit} className="space-y-8 ">
+          <form onSubmit={formik.handleSubmit} className="space-y-8 ">
             <div>
               <label
                 htmlFor="password"
@@ -140,9 +131,11 @@ export default function NewPasswordPage() {
                 </div>
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
-                  value={pw}
-                  onChange={(e) => setPw(e.target.value)}
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)"
                   className="block w-full py-3 pl-10 pr-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   autoComplete="new-password"
@@ -154,7 +147,9 @@ export default function NewPasswordPage() {
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-                <FieldError message={errors.password} />
+                <FieldError
+                  message={formik.touched.password && formik.errors.password}
+                />
               </div>
             </div>
 
@@ -183,9 +178,11 @@ export default function NewPasswordPage() {
                 </div>
                 <input
                   id="password2"
+                  name="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
-                  value={pw2}
-                  onChange={(e) => setPw2(e.target.value)}
+                  value={formik.values.confirmPassword}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="Nhập lại mật khẩu mới"
                   className="block w-full py-3 pl-10 pr-3 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   autoComplete="new-password"
@@ -201,16 +198,21 @@ export default function NewPasswordPage() {
                     <Eye size={18} />
                   )}
                 </button>
-                <FieldError message={errors.confirmPassword} />
+                <FieldError
+                  message={
+                    formik.touched.confirmPassword &&
+                    formik.errors.confirmPassword
+                  }
+                />
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={formik.isSubmitting}
               className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
+              {formik.isSubmitting ? (
                 <>
                   <svg
                     className="w-5 h-5 mr-3 -ml-1 text-white animate-spin"

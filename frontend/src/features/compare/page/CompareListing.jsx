@@ -164,7 +164,7 @@ export default function CompareListing() {
       <div className="bg-white border-b">
         <div className="container px-4 py-4 mx-auto">
           <Link
-            to="/marketplace"
+            to="/marketplace/all"
             className="inline-flex items-center gap-2 mb-3 text-blue-600 transition-colors hover:text-blue-700"
           >
             <ArrowLeft className="w-4 h-4" />

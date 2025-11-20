@@ -19,16 +19,9 @@ export default function FilterSection({
     <div className="overflow-hidden bg-white border rounded-lg">
       <button
         onClick={onToggleSection}
-        className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition"
+        className="flex items-center justify-between w-full p-4 transition hover:bg-gray-50"
       >
-        <h3 className="text-sm font-semibold text-gray-900">
-          {title}
-          {selectedValues.length > 0 && (
-            <span className="ml-2 text-xs text-blue-600">
-              ({selectedValues.length})
-            </span>
-          )}
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         {isOpen ? (
           <ChevronUp className="w-4 h-4 text-gray-500" />
         ) : (
