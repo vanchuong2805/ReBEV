@@ -107,7 +107,12 @@ const getOrders = async (options) => {
         ],
     });
 
-    const total = await orders.count({ where });
+    const total = await orders.count({
+        where: {
+            ...where,
+            ...(order_status ? { '$order_statuses.status$': order_status } : {}),
+        },
+    });
 
     const data = {
         orders: ordersData,
