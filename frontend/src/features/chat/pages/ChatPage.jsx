@@ -42,7 +42,6 @@ export default function ChatPage() {
     [users]
   );
 
-  // ✅ Load danh sách "người đã từng chat"
   useEffect(() => {
     if (!buyerAppId) return;
     (async () => {

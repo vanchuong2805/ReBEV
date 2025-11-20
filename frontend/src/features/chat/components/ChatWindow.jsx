@@ -5,7 +5,7 @@ import {
   subscribeMessages,
   sendMessage,
 } from "../lib/chatApi";
-import { fetchUsers } from "@/features/admin/service";
+import { getUserByID } from "../service";
 
 export default function ChatWindow({ buyerAppId, sellerAppId }) {
   const [convKey, setConvKey] = useState("");
@@ -13,38 +13,16 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
   const [text, setText] = useState("");
   const unsubRef = useRef(null);
   const bottomRef = useRef(null);
-  const [users, setUsers] = useState([]);
+
+  const [seller, setSeller] = useState(null);
   useEffect(() => {
-    fetchUsers().then((data) => {
-      setUsers(data.users);
-    });
-  }, []);
-  function safeRenderMessages(conversation) {
-    if (!conversation)
-      return <div className="p-6 text-gray-500">Đang tải cuộc trò chuyện…</div>;
-    const messages = Array.isArray(conversation.messages)
-      ? conversation.messages
-      : [];
-    if (messages.length === 0) {
-      return (
-        <div className="p-6 text-gray-500">
-          Chưa có tin nhắn — gửi lời chào nào!
-        </div>
-      );
-    }
-    return messages.map((m, idx) => (
-      <div key={m.id ?? idx} className="mb-2">
-        <div className="text-xs text-gray-500">
-          {m.senderName ?? "Người dùng"}
-        </div>
-        <div>{m.text ?? ""}</div>
-      </div>
-    ));
-  }
-  const getUserById = (id) => {
-    const nguoiDung = users.find((item) => Number(item.id) === Number(id));
-    return nguoiDung;
-  };
+    const fetchData = async () => {
+      const user = await getUserByID(sellerAppId);
+      console.log("seller", user);
+      setSeller(user);
+    };
+    fetchData();
+  }, [buyerAppId, sellerAppId]);
 
   useEffect(() => {
     (async () => {
@@ -67,7 +45,6 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
     await sendMessage(convKey, content, buyerAppId);
     setText("");
   }
-  console.log(users);
   return (
     //max-w-3xl
     <div className="flex h-[90vh] min-h-[360px] w-full  flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -96,7 +73,7 @@ export default function ChatWindow({ buyerAppId, sellerAppId }) {
                     isMe ? "text-white/80 text-right" : "text-gray-500"
                   }`}
                 >
-                  {isMe ? "Bạn" : `${getUserById(sellerAppId)?.display_name}`}
+                  {isMe ? "Bạn" : `${seller?.display_name || "Loading..."}`}
                 </div>
                 <p className="text-sm">{m.content}</p>
                 <div
