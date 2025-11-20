@@ -1,7 +1,8 @@
-import cartService from "../../services/cart/cartService.js";
-import { ERROR_MESSAGE } from "../../config/constants.js";
-import { SUCCESS_MESSAGE } from "../../config/constants.js";
-import postService from "../../services/post/postService.js";
+import cartService from '../../services/cart/cartService.js';
+import { ERROR_MESSAGE } from '../../config/constants.js';
+import { SUCCESS_MESSAGE } from '../../config/constants.js';
+import postService from '../../services/post/postService.js';
+import userService from '../../services/user/userService.js';
 
 /**
  * @swagger
@@ -108,7 +109,7 @@ const createCart = async (req, res) => {
 
         const existedCart = await cartService.findCartItem({
             user_id,
-            post_id
+            post_id,
         });
 
         if (existedCart) {
@@ -121,19 +122,41 @@ const createCart = async (req, res) => {
 
         const cart = await cartService.createCart({
             user_id: user_id,
-            post_id
+            post_id,
         });
+
+        const postItem = await postService.getCartItem(post_id);
+
+        const seller_id = postItem.user_id;
+        const seller = await userService.getUser(seller_id);
+        const seller_display_name = seller.display_name;
+
+        const cartItem = {
+            seller_id,
+            seller_display_name,
+            seller_contact: postItem.seller_contact,
+            item: {
+                post_id: postItem.id,
+                title: postItem.title,
+                price: postItem.price,
+                weight: parseFloat(postItem.post_details[0]?.custom_value || 0),
+                deposit_rate: postItem.category.deposit_rate,
+                commission_rate: postItem.category.commission_rate,
+                is_deposit: postItem.category.is_deposit,
+                media: postItem.media,
+            },
+        };
 
         res.status(200).json({
             message: SUCCESS_MESSAGE.CREATE_CART_SUCCESS,
-            cart: cart,
+            cart: cartItem,
         });
     } catch (error) {
         console.error(ERROR_MESSAGE.CREATE_CART_FAIL, error);
         res.status(400).json({
-            error: error.message
+            error: error.message,
         });
     }
-}
+};
 
 export default createCart;
