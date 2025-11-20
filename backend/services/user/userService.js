@@ -292,6 +292,7 @@ const getPublicInfo = async (user_id) => {
     return data;
 }
 
+
 export default {
     getUsers,
     getUser,

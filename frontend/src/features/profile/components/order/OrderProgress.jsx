@@ -1,7 +1,7 @@
 import { Clock, Settings, Truck, CheckCircle, XCircle, RefreshCcw } from "lucide-react"
 
 export default function OrderProgress({ progressIndex = 0, isCanceled = false, type = "normal" }) {
-  //  Các bước cho đơn hàng thường
+
   const normalSteps = [
     { label: "Chờ xác nhận", icon: Clock },
     { label: "Đang xử lý", icon: Settings },
@@ -9,17 +9,14 @@ export default function OrderProgress({ progressIndex = 0, isCanceled = false, t
     { label: "Hoàn tất", icon: CheckCircle },
   ]
 
-  //  Các bước cho đơn hoàn tiền
   const returnSteps = [
     { label: "Chờ lấy hàng", icon: Clock },
     { label: "Đang trả hàng", icon: RefreshCcw },
     { label: "Hoàn tất ", icon: CheckCircle },
   ]
 
-  //  Chọn bộ step theo loại đơn
   const steps = type === "return" ? returnSteps : normalSteps
 
-  //  Nếu đơn bị hủy
   if (isCanceled)
     return (
       <div className="text-center py-10">
@@ -31,7 +28,6 @@ export default function OrderProgress({ progressIndex = 0, isCanceled = false, t
       </div>
     )
 
-  //  Render step progress
   return (
     <>
       <div className="flex items-center justify-between relative mb-2">

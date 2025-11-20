@@ -240,7 +240,14 @@ const getPosts = async (filters = {}) => {
 
     const total = Array.isArray(rows) ? rows.length : rows;
 
-    return { data, pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null };
+    const minPrice = await posts.min('price', { where: { is_deleted: false, is_hidden: false } });
+    const maxPrice = await posts.max('price', { where: { is_deleted: false, is_hidden: false } });
+
+    return {
+        data,
+        pagination: pageSize ? { page: pageNum, limit: pageSize, total } : null,
+        priceRange: { minPrice, maxPrice },
+    };
 };
 
 const getById = async (id, options) => {

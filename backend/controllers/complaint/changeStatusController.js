@@ -1,3 +1,4 @@
+import { COMPLAINT_STATUS_TRANSITION } from '../../config/constants.js';
 import { sequelize } from '../../models/index.js';
 import complaintService from '../../services/complaint/complaintService.js';
 
@@ -49,6 +50,12 @@ const changeStatus = async (req, res) => {
         const complaint = await complaintService.getById(id);
         if (!complaint) {
             return res.status(404).json({ error: 'Complaint not found' });
+        }
+
+        if (!COMPLAINT_STATUS_TRANSITION[status]?.includes(complaint.complaint_status)) {
+            return res
+                .status(400)
+                .json({ error: `Invalid status transition from ${complaint.complaint_status} to ${status}` });
         }
 
         await complaintService.updateStatus(id, status, { transaction: t });

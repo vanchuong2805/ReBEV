@@ -18,6 +18,7 @@ import {
 import GenericSaleCard from "@/features/profile/components/sales/GenericSaleCard"
 import SaleHeader from "@/features/profile/components/sales/SaleHeader"
 import SaleFooter from "@/features/profile/components/sales/SaleFooter"
+import DeliveryProofModal from "@/features/profile/components/sales/DeliveryProofModal"
 import { toast } from "sonner"
 
 const SalesSection = () => {
@@ -30,8 +31,12 @@ const SalesSection = () => {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { user } = useUser()
+  const [proofModal, setProofModal] = useState({ open: false, order: null })
 
-  const getStatus = (order) => order?.order_statuses?.at(-1)?.status || ""
+  const getStatus = (order) =>
+  order?.order_statuses?.at(-1)?.status ||
+  order?.order_status?.at(-1)?.status ||
+  ""
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -91,6 +96,38 @@ const SalesSection = () => {
       state: { from: `/profile/sales?type=${type}` },
     })
   }
+  const handleDelivered = (order) => {
+    setProofModal({ open: true, order })
+  }
+
+  const submitDelivered = async ({ orderId, media }) => {
+    try {
+      await changeOrderStatus(orderId, "DELIVERED","Đã giao hàng", media)
+      updateOrderStatus(orderId, "DELIVERED")
+      toast.success("Đã cập nhật trạng thái thành công: ĐÃ GIAO HÀNG.")
+    } catch (err) {
+      console.error(err)
+      toast.error("Lỗi khi cập nhật trạng thái.")
+    }
+  }
+  const handleReturned = async (order) => {
+    if (!window.confirm("Xác nhận bạn đã nhận hàng hoàn trả?")) return
+    try {
+      await changeOrderStatus(order.id, "RETURNED", "Người bán đã nhận hàng hoàn trả")
+      setRefunds((prev) =>
+        prev.map((c) =>
+          c.id === order.id
+            ? { ...c, order_statuses: [...c.order_statuses, { status: "RETURNED" }] }
+            : c
+        )
+      )
+      console.log("Đơn hoàn trả đã cập nhật:", order.id)
+      toast.success("Trạng thái đơn đã cập nhật sang 'Đã nhận hàng hoàn trả'.")
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
+      toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại.")
+    }
+  }
 
   // === Phân loại trạng thái ===
   const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
@@ -122,7 +159,8 @@ const SalesSection = () => {
           return (
             <GenericSaleCard
               key={detail.id}
-              sale={product}
+              detail={detail}
+              post={product}
               type={
                 status === "PAID"
                   ? "pending"
@@ -146,6 +184,7 @@ const SalesSection = () => {
           onAccept={handleAccept}
           onCancel={handleCancel}
           onDelivering={handleDelivering}
+          onDelivered={handleDelivered}
           onComplete={handleComplete}
           onView={handleView}
         />
@@ -163,18 +202,20 @@ const SalesSection = () => {
       >
         <SaleHeader customer={item.customer} />
         <GenericSaleCard
-          sale={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
+          post={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
+          detail={item.order_details?.[0]}
           status={status}
           type="refunded"
         />
         <SaleFooter
           order={item}
-          status="REFUNDED"
+          status={status}
           onView={() =>
             navigate(`/profile/returns/${item.id}`, {
               state: { order: item },
             })
           }
+          onReturned={handleReturned}
         />
       </div>
     )
@@ -190,91 +231,100 @@ const SalesSection = () => {
 
   // === Giao diện chính ===
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Đơn bán của tôi</CardTitle>
-            <CardDescription>
-              Quản lý tất cả đơn bán theo trạng thái
-            </CardDescription>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Đơn bán của tôi</CardTitle>
+              <CardDescription>
+                Quản lý tất cả đơn bán theo trạng thái
+              </CardDescription>
+            </div>
           </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
 
-      <CardContent>
-        <Tabs value={type} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-6">
-            <TabsTrigger value="all">Tất cả</TabsTrigger>
-            <TabsTrigger value="pending">Chờ xác nhận</TabsTrigger>
-            <TabsTrigger value="processing">Đang xử lý</TabsTrigger>
-            <TabsTrigger value="shipping">Đang vận chuyển</TabsTrigger>
-            <TabsTrigger value="success">Hoàn tất</TabsTrigger>
-            <TabsTrigger value="canceled">Đã huỷ</TabsTrigger>
-            <TabsTrigger value="refunded">Hoàn trả</TabsTrigger>
-          </TabsList>
+        <CardContent>
+          <Tabs value={type} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-7 mb-6">
+              <TabsTrigger value="all">Tất cả</TabsTrigger>
+              <TabsTrigger value="pending">Chờ xác nhận</TabsTrigger>
+              <TabsTrigger value="processing">Đang xử lý</TabsTrigger>
+              <TabsTrigger value="shipping">Đang vận chuyển</TabsTrigger>
+              <TabsTrigger value="success">Hoàn tất</TabsTrigger>
+              <TabsTrigger value="canceled">Đã huỷ</TabsTrigger>
+              <TabsTrigger value="refunded">Hoàn trả</TabsTrigger>
+            </TabsList>
 
-          {/* === ALL === */}
-          <TabsContent value="all" className="space-y-4">
-            {total === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                Chưa có đơn bán
-              </div>
-            ) : (
-              orders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            {/* === ALL === */}
+            <TabsContent value="all" className="space-y-4">
+              {total === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  Chưa có đơn bán
+                </div>
+              ) : (
+                orders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="pending" className="space-y-4">
-            {pendingOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn chờ xác nhận</div>
-            ) : (
-              pendingOrders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            <TabsContent value="pending" className="space-y-4">
+              {pendingOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn chờ xác nhận</div>
+              ) : (
+                pendingOrders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="processing" className="space-y-4">
-            {processingOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn đang xử lý</div>
-            ) : (
-              processingOrders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            <TabsContent value="processing" className="space-y-4">
+              {processingOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn đang xử lý</div>
+              ) : (
+                processingOrders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="shipping" className="space-y-4">
-            {shippingOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn đang vận chuyển</div>
-            ) : (
-              shippingOrders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            <TabsContent value="shipping" className="space-y-4">
+              {shippingOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn đang vận chuyển</div>
+              ) : (
+                shippingOrders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="success" className="space-y-4">
-            {successOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn hoàn tất</div>
-            ) : (
-              successOrders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            <TabsContent value="success" className="space-y-4">
+              {successOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn hoàn tất</div>
+              ) : (
+                successOrders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="canceled" className="space-y-4">
-            {canceledOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn đã huỷ</div>
-            ) : (
-              canceledOrders.map(renderSaleCard)
-            )}
-          </TabsContent>
+            <TabsContent value="canceled" className="space-y-4">
+              {canceledOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn đã huỷ</div>
+              ) : (
+                canceledOrders.map(renderSaleCard)
+              )}
+            </TabsContent>
 
-          <TabsContent value="refunded" className="space-y-4">
-            {refundedOrders.length === 0 ? (
-              <div className="text-gray-500">Không có đơn hoàn trả</div>
-            ) : (
-              refundedOrders.map(renderRefundCard)
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            <TabsContent value="refunded" className="space-y-4">
+              {refundedOrders.length === 0 ? (
+                <div className="text-gray-500">Không có đơn hoàn trả</div>
+              ) : (
+                refundedOrders.map(renderRefundCard)
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      {/* Modal xác nhận giao hàng */}
+      <DeliveryProofModal
+        open={proofModal.open}
+        order={proofModal.order}
+        onClose={() => setProofModal({ open: false, order: null })}
+        onSubmit={submitDelivered}
+      />
+    </>
   )
 }
 

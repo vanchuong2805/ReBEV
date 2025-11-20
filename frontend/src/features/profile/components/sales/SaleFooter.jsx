@@ -6,8 +6,9 @@ export default function SaleFooter({
   onAccept,
   onCancel,
   onDelivering,
-  onComplete,
   onView,
+  onDelivered,
+  onReturned,
 }) {
 
   const isDeposit = order.order_type === 2
@@ -20,10 +21,10 @@ export default function SaleFooter({
 
   const formattedDate = appointmentTime
     ? new Date(appointmentTime).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
     : null
 
   return (
@@ -37,7 +38,7 @@ export default function SaleFooter({
           {(order.total_amount + order.delivery_price)?.toLocaleString("vi-VN")} ₫
         </p>
 
-        {/* 🕓 Hiển thị lịch hẹn nếu có */}
+        {/* Hiển thị lịch hẹn nếu có */}
         {formattedDate && (
           <p className="text-sm text-gray-600 mt-1">
             <span className="font-medium text-gray-700">{appointmentLabel}:</span>{" "}
@@ -66,6 +67,15 @@ export default function SaleFooter({
             </Button>
           </>
         )}
+        {status === "DELIVERING" && !isDeposit &&(
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => onDelivered(order)}
+          >
+            Đã giao cho khách
+          </Button>
+        )}
 
         {/* Đơn cọc (xe) → sau khi xác nhận thì chuyển sang bàn giao */}
         {status === "CONFIRMED" && !isDeposit && (
@@ -78,6 +88,15 @@ export default function SaleFooter({
           </Button>
         )}
 
+        {status === "RETURNING" && (
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
+            onClick={() => onReturned(order)}
+          >
+            Đã nhận
+          </Button>
+        )}
         <Button
           size="sm"
           variant="outline"
@@ -86,6 +105,7 @@ export default function SaleFooter({
         >
           Xem chi tiết
         </Button>
+
       </div>
     </div>
   )

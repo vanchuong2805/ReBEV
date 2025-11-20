@@ -179,7 +179,7 @@ export const updatePostById = async (postId, data) => {
 }
  export const changePostById = async (postId,status) => {
   const token = localStorage.getItem("accessToken");
-  const res = await axios.patch(`${API_BASE_URL}/posts/${postId}/status`, { status }, {
+  const res = await axios.patch(`${API_BASE_URL}/posts/${postId}/status`, { status}, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -245,11 +245,11 @@ export const getOrderById = async (orderId) => {
   return res.data;
 };
 
-export const changeOrderStatus = async (orderId, status, description) => {
+export const changeOrderStatus = async (orderId, status, description,media) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.post(
     `${API_BASE_URL}/orders/${orderId}/status`,
-    { status, description },
+    { status, description, media },
     {
       headers: {
         "Content-Type": "application/json",
