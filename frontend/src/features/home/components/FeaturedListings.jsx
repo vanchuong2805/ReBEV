@@ -77,23 +77,18 @@ export default function FeaturedListings() {
   const pages = useMemo(() => {
     if (totalPages === 1) return [1];
 
-    const delta = 2;
+    const delta = 1;
     const left = Math.max(2, page - delta);
     const right = Math.min(totalPages - 1, page + delta);
     const range = [];
 
-    // Thêm trang 1
     range.push(1);
     if (left > 2) range.push("...");
-
-    // Thêm các trang ở giữa
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) range.push(i);
     }
     if (right < totalPages - 1) range.push("...");
-
     if (totalPages > 1) range.push(totalPages);
-
     return range;
   }, [page, totalPages]);
 
