@@ -43,7 +43,8 @@ const getStatistics = async (year) => {
             [Op.and]: [Sequelize.literal(`[transactions].[create_at] BETWEEN '${startDate}' AND '${endDate}'`),
             Sequelize.literal(`[transactions].[transaction_type] in (${TRANSACTION_TYPE.PACKAGE_FEE}, ${TRANSACTION_TYPE.RELEASE})`)
 
-            ]
+            ],
+            status: 0
         },
 
         include: [
@@ -131,8 +132,6 @@ const getStatistics = async (year) => {
             commission_sum: record.get('commission_sum')
         });
     });
-
-
 
     return {
         totalUsers,
