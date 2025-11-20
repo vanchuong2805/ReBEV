@@ -7,7 +7,8 @@ export default function SaleFooter({
   onCancel,
   onDelivering,
   onView,
-  onDelivered
+  onDelivered,
+  onReturned,
 }) {
 
   const isDeposit = order.order_type === 2
@@ -37,7 +38,7 @@ export default function SaleFooter({
           {(order.total_amount + order.delivery_price)?.toLocaleString("vi-VN")} ₫
         </p>
 
-        {/* 🕓 Hiển thị lịch hẹn nếu có */}
+        {/* Hiển thị lịch hẹn nếu có */}
         {formattedDate && (
           <p className="text-sm text-gray-600 mt-1">
             <span className="font-medium text-gray-700">{appointmentLabel}:</span>{" "}
@@ -87,6 +88,15 @@ export default function SaleFooter({
           </Button>
         )}
 
+        {status === "RETURNING" && (
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
+            onClick={() => onReturned(order)}
+          >
+            Đã nhận
+          </Button>
+        )}
         <Button
           size="sm"
           variant="outline"
@@ -95,6 +105,7 @@ export default function SaleFooter({
         >
           Xem chi tiết
         </Button>
+
       </div>
     </div>
   )

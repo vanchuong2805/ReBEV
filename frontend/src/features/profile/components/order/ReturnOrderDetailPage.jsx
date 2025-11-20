@@ -30,10 +30,11 @@ export default function ReturnOrderDetailPage() {
     )
   }
 
-  const complaintStatus = order.complaint_status
+  let complaintStatus = order.complaint_status
+  if (order.complaint_status === undefined) {complaintStatus = 1}
   const isApproved = complaintStatus === 1
 
-  const latest = order.order_status?.at(-1)?.status || "PENDING"
+  const latest = order.order_status?.at(-1)?.status ||order.order_statuses?.at(-1)?.status|| "PENDING"
   const canceled = ["CANCELLED", "CUSTOMER_CANCELLED", "SELLER_CANCELLED"].includes(latest)
   const returnStatuses = ["PENDING", "RETURNING", "RETURNED"]
   const progress = returnStatuses.indexOf(latest)
@@ -67,7 +68,9 @@ export default function ReturnOrderDetailPage() {
           thumbnailUrl,
         }
       })
-
+      console.log("latest status:", latest)
+      console.log("progress index:", progress )
+      console.log("complaint status:", complaintStatus)
       setPosts(enriched)
     }
 

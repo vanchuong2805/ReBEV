@@ -35,7 +35,7 @@ export default function TransactionCard({ tx }) {
       return
     }
     if (tx.related_package_id) {
-      navigate(`/profile/membership`)
+      navigate(`/upgrade`)
       return
     }
   }

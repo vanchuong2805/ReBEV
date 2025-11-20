@@ -47,43 +47,41 @@ const PurchasesSection = () => {
       return order.order_status.at(-1).status
     return ""
   }
+  const fetchAllData = async () => {
+    if (!user?.id) return
+    try {
+      const res = await getOrderByCustomer(user.id)
+      const data = res.orders
+
+      const complaintRes = await getComplaintByUserId(user.id)
+
+      const withReviewed = await Promise.all(
+        data.map(async (order) => {
+          const reviewed = order.order_details.some(
+            (detail) => detail.user_reviews?.length > 0
+          )
+          return { ...order, reviewed }
+        })
+      )
+      console.log("Complaints:", complaintRes)
+      setOrders(withReviewed)
+      setComplaints(complaintRes)
+    } catch (err) {
+      console.error("Lỗi tải dữ liệu:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user?.id) return
-      try {
-        const res = await getOrderByCustomer(user.id)
-        const data = res.orders
-        const res1 = await getComplaintByUserId(user.id)
-
-        const withReviewed = await Promise.all(
-          data.map(async (order) => {
-            const reviewed = order.order_details.some(
-              (detail) =>
-                detail.user_reviews && detail.user_reviews.length > 0
-            )
-            return { ...order, reviewed }
-          })
-        )
-
-        setOrders(withReviewed)
-        setComplaints(res1)
-        console.log("Đơn hàng đã tải:", withReviewed)
-        console.log("Khiếu nại đã tải:", res1)
-      } catch (error) {
-        console.error("Lỗi tải đơn hàng:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchOrders()
+    fetchAllData()
   }, [user])
+
 
   const handleReview = (detail, reviewed) => {
     setSelectedOrder(detail)
-    setShowReview(true)
     setReviewed(reviewed)
+    setShowReview(true)
   }
 
   const handleComplaint = (detail) => {
@@ -95,16 +93,10 @@ const PurchasesSection = () => {
     if (!window.confirm("Bạn có chắc muốn huỷ đơn hàng này không?")) return
     try {
       await changeOrderStatus(order.id, "CANCELLED", "Người mua đã huỷ đơn hàng")
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === order.id
-            ? { ...o, order_statuses: [...o.order_statuses, { status: "CANCELLED" }] }
-            : o
-        )
-      )
       toast.success("Đơn hàng đã được huỷ thành công!")
+      fetchAllData()
     } catch (error) {
-      console.error("Lỗi khi huỷ đơn:", error)
+      console.error("Lỗi huỷ đơn:", error)
       toast.error("Huỷ đơn thất bại, vui lòng thử lại.")
     }
   }
@@ -113,17 +105,11 @@ const PurchasesSection = () => {
     if (!window.confirm("Bạn có chắc muốn hoàn tất đơn hàng này không?")) return
     try {
       await changeOrderStatus(order.id, "COMPLETED", "Người mua đã hoàn tất đơn hàng")
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === order.id
-            ? { ...o, order_statuses: [...o.order_statuses, { status: "COMPLETED" }] }
-            : o
-        )
-      )
-      toast.success("Đơn hàng đã hoàn tất thành công!")
+      toast.success("Đơn hàng đã hoàn tất!")
+      fetchAllData()
     } catch (error) {
-      console.error("Lỗi khi hoàn tất đơn:", error)
-      toast.error("Hoàn tất đơn thất bại, vui lòng thử lại.")
+      console.error("Lỗi hoàn tất:", error)
+      toast.error("Hoàn tất đơn thất bại.")
     }
   }
 
@@ -131,41 +117,21 @@ const PurchasesSection = () => {
     if (!window.confirm("Xác nhận bạn đã bàn giao hàng hoàn trả?")) return
     try {
       await changeOrderStatus(order.return_order_id, "RETURNING", "Người mua đã bàn giao hàng hoàn trả")
-      setComplaints((prev) =>
-        prev.map((c) =>
-          c.id === order.order_detail_id
-            ? { ...c, order_status: [...c.order_status, { status: "RETURNING" }] }
-            : c
-        )
-      )
-      console.log("Đơn hoàn trả đã cập nhật:", order.order_detail_id)
-      toast.success("Trạng thái đơn đã cập nhật sang 'Đang bàn giao hàng'.")
+      toast.success("Cập nhật trạng thái hoàn trả thành công!")
+      fetchAllData()
     } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
-      toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại.")
+      console.error("Lỗi khi cập nhật hoàn trả:", error)
+      toast.error("Cập nhật trạng thái thất bại.")
     }
   }
 
-  const handleUpdateAppointmente = async (order, appointment_time) => {
+  const handleUpdateAppointment = async (order, appointment_time) => {
     try {
       await updateAppointmentTim(order.id, appointment_time)
       toast.success("Cập nhật lịch hẹn thành công!")
-
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === order.id
-            ? {
-                ...o,
-                order_details: o.order_details.map((d) => ({
-                  ...d,
-                  appointment_time,
-                })),
-              }
-            : o
-        )
-      )
+      fetchAllData()
     } catch (err) {
-      console.error("Lỗi cập nhật lịch hẹn:", err)
+      console.error("Lỗi lịch hẹn:", err)
       toast.error("Cập nhật lịch hẹn thất bại.")
     }
   }
@@ -176,7 +142,6 @@ const PurchasesSection = () => {
     })
   }
 
-  // === Nhóm đơn hàng theo trạng thái ===
   const pendingOrders = orders.filter((o) => getStatus(o) === "PAID")
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
   const shippingOrders = orders.filter((o) => getStatus(o) === "DELIVERING")
@@ -206,8 +171,8 @@ const PurchasesSection = () => {
           const product = detail.post
           return (
             <GenericPurchaseCard
-              detail={detail}
               key={detail.id}
+              detail={detail}
               post={product}
               status={status}
               reviewed={order.reviewed}
@@ -237,7 +202,7 @@ const PurchasesSection = () => {
           onCancel={handleCancel}
           onComplete={handleComplete}
           onView={handleView}
-          onUpdateAppointment={handleUpdateAppointmente}
+          onUpdateAppointment={handleUpdateAppointment}
         />
       </div>
     )
@@ -254,12 +219,8 @@ const PurchasesSection = () => {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Đơn mua của tôi</CardTitle>
-              <CardDescription>Quản lý tất cả đơn mua theo trạng thái</CardDescription>
-            </div>
-          </div>
+          <CardTitle>Đơn mua của tôi</CardTitle>
+          <CardDescription>Quản lý tất cả đơn mua theo trạng thái</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -274,7 +235,7 @@ const PurchasesSection = () => {
               <TabsTrigger value="refunded">Hoàn trả</TabsTrigger>
             </TabsList>
 
-            {/* === Các tab trạng thái === */}
+            {/* ALL */}
             <TabsContent value="all" className="space-y-4">
               {total === 0 ? (
                 <div className="text-center py-12 text-gray-500">Chưa có đơn mua</div>
@@ -283,6 +244,7 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* PENDING */}
             <TabsContent value="pending" className="space-y-4">
               {pendingOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn chờ xác nhận</div>
@@ -291,6 +253,7 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* PROCESSING */}
             <TabsContent value="processing" className="space-y-4">
               {processingOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn đang xử lý</div>
@@ -299,6 +262,7 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* SHIPPING */}
             <TabsContent value="shipping" className="space-y-4">
               {shippingOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn đang vận chuyển</div>
@@ -307,6 +271,7 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* SUCCESS */}
             <TabsContent value="success" className="space-y-4">
               {successOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn hoàn tất</div>
@@ -315,6 +280,7 @@ const PurchasesSection = () => {
               )}
             </TabsContent>
 
+            {/* CANCELED */}
             <TabsContent value="canceled" className="space-y-4">
               {canceledOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn đã huỷ</div>
@@ -322,7 +288,8 @@ const PurchasesSection = () => {
                 canceledOrders.map(renderPurchaseCard)
               )}
             </TabsContent>
-            
+
+            {/* REFUNDED */}
             <TabsContent value="refunded" className="space-y-4">
               {refundedOrders.length === 0 ? (
                 <div className="text-gray-500">Không có đơn hoàn trả</div>
@@ -335,7 +302,6 @@ const PurchasesSection = () => {
                       className="border border-gray-200 rounded-lg p-4 mb-4 bg-white shadow-sm"
                     >
                       <PurchaseHeader order={item} seller={item.seller} />
-
                       <GenericPurchaseCard
                         type="refunded"
                         order={item}
@@ -368,34 +334,27 @@ const PurchasesSection = () => {
         </CardContent>
       </Card>
 
+      {/* REVIEW MODAL */}
       <ReviewModal
         reviewed={reviewed}
         open={showReview}
         onClose={() => setShowReview(false)}
         detail={selectedOrder}
-        onSubmit={() => setShowReview(false)}
+        onSubmit={() => {
+          setShowReview(false)
+          fetchAllData()
+        }}
       />
 
+      {/* COMPLAINT MODAL */}
       <ComplaintModal
         open={showComplaint}
         onClose={() => setShowComplaint(false)}
         detail={selectedOrder}
-        onSubmitComplaint={() => {
+        onSubmitComplaint={async () => {
           setShowComplaint(false)
-          setOrders((prev) =>
-            prev.map((o) =>
-              o.order_details.some((d) => d.id === selectedOrder.id)
-                ? {
-                    ...o,
-                    order_details: o.order_details.map((d) =>
-                      d.id === selectedOrder.id
-                        ? { ...d, complaints: [{ id: Date.now() }] }
-                        : d
-                    ),
-                  }
-                : o
-            )
-          )
+          await fetchAllData()
+          toast.success("Tạo khiếu nại thành công!")
         }}
       />
     </>

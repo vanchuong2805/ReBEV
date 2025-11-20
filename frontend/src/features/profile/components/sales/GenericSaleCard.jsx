@@ -1,7 +1,7 @@
 import Frame from '../CardFrame'
 
-export default function GenericSaleCard({ type, sale, status }) {
-  const isCar = sale?.category_id === 1
+export default function GenericSaleCard({ type, post, detail, status }) {
+  const isCar = post?.category_id === 1
 
 
   const config = {
@@ -21,9 +21,14 @@ export default function GenericSaleCard({ type, sale, status }) {
       note:  (isCar ? 'Đơn đang trên đường đến người mua.' : 'Đơn đang trên đường đến người mua.'),
     },
     success: {
-      tone: 'success',
-      badgeText: 'Hoàn tất',
-      note: 'Giao dịch đã hoàn tất thành công.',
+      tone: "success",
+            badgeText:
+                detail?.complaints?.length > 0
+                    ? "Khiếu nại"
+                    : status === "DELIVERED"
+                        ? "Đã giao hàng"
+                        : "Đã hoàn tất",
+            note: "Giao dịch đã hoàn tất thành công.",
     },
     canceled: {
       tone: 'danger',
@@ -36,7 +41,7 @@ export default function GenericSaleCard({ type, sale, status }) {
                 status === "PENDING"
                     ? "Chờ bàn giao hàng"
                     : status === "RETURNING"
-                        ? "Đang bàn giao hàng"
+                        ? "Đang giao hàng"
                         : status === "RETURNED"
                             ? "Đã hoàn hàng"
                             : "Đơn đã huỷ",
@@ -53,7 +58,7 @@ export default function GenericSaleCard({ type, sale, status }) {
 
   return (
     <Frame
-      listing={sale}
+      listing={post}
       tone={cfg.tone}
       badgeText={cfg.badgeText}
       note={cfg.note}

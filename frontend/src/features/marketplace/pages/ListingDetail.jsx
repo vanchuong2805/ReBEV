@@ -53,6 +53,10 @@ const ListingDetail = () => {
   }, [listingId]);
 
   useEffect(() => {
+    setPageOther(1);
+    setPageSimilar(1);
+    setHasMoreOther(true);
+    setHasMoreSimilar(true);
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -76,8 +80,8 @@ const ListingDetail = () => {
             typeof postRes.media === "string"
               ? JSON.parse(postRes.media)
               : Array.isArray(postRes.media)
-              ? postRes.media
-              : [];
+                ? postRes.media
+                : [];
         } catch {
           mediaParsed = [];
         }
@@ -157,26 +161,34 @@ const ListingDetail = () => {
     try {
       if (type === "other") {
         const next = pageOther + 1;
-        const res = await getPosts({
+        const raw = await getPosts({
           user_id: listing.user_id,
           status: 1,
           page: next,
           limit,
         });
-        setOtherPosts((prev) => [...prev, ...res]);
+        const filtered = (Array.isArray(raw) ? raw : []).filter(
+          (p) => p.id !== listing.id
+        );
+        setOtherPosts((prev) => [...prev, ...filtered]);
         setPageOther(next);
-        setHasMoreOther(res.length >= limit);
+        setHasMoreOther((raw?.length || 0) >= limit);
       } else {
         const next = pageSimilar + 1;
-        const res = await getPosts({
+
+        const raw = await getPosts({
           category_id: listing.category_id,
           status: 1,
           page: next,
           limit,
         });
-        setSimilarPosts((prev) => [...prev, ...res]);
+        const filtered = (Array.isArray(raw) ? raw : []).filter(
+          (p) => p.id !== listing.id
+        );
+
+        setSimilarPosts((prev) => [...prev, ...filtered]);
         setPageSimilar(next);
-        setHasMoreSimilar(res.length >= limit);
+        setHasMoreSimilar((raw?.length || 0) >= limit);
       }
     } catch (err) {
       console.error("Lỗi tải thêm bài:", err);

@@ -81,7 +81,7 @@ export default function GenericPurchaseCard({
                 status === "PENDING"
                     ? "Chờ bàn giao hàng"
                     : status === "RETURNING"
-                        ? "Đang bàn giao hàng"
+                        ? "Đang giao hàng"
                         : status === "RETURNED"
                             ? "Đã hoàn hàng"
                             : "Đơn đã huỷ",
