@@ -1,5 +1,5 @@
 // src/components/common/MyInputPlus.jsx
-// 📌 Input component dùng chung cho các variation field:
+// Input component dùng chung cho các variation field:
 // - Hỗ trợ danh sách chọn (dropdown) hoặc nhập tay (free text)
 // - Nếu có options -> hiện dropdown để chọn
 // - Nếu không có options -> cho phép gõ tự do (vd: Biển số, số km...)

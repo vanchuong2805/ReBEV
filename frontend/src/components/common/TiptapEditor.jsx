@@ -1,6 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
+import { useEffect } from "react";
 
 import {
   Bold,
@@ -14,7 +15,6 @@ import {
   AlignRight,
 } from "lucide-react";
 
-// Component con ToolbarButton
 const ToolbarButton = ({ onClick, disabled, isActive, children }) => (
   <button
     type="button"
@@ -30,15 +30,11 @@ const ToolbarButton = ({ onClick, disabled, isActive, children }) => (
   </button>
 );
 
-// Thanh công cụ (Toolbar)
 const MenuBar = ({ editor }) => {
-  if (!editor) {
-    return null;
-  }
+  if (!editor) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border border-b-0 border-gray-300 rounded-t-md">
-      {/* Các nút chính */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -46,6 +42,7 @@ const MenuBar = ({ editor }) => {
       >
         <Bold className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
@@ -53,6 +50,7 @@ const MenuBar = ({ editor }) => {
       >
         <Italic className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
@@ -60,41 +58,44 @@ const MenuBar = ({ editor }) => {
       >
         <Strikethrough className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().setParagraph().run()}
         isActive={editor.isActive("paragraph")}
       >
         <Pilcrow className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
-        onClick={() => {
-          editor.chain().focus().toggleBulletList().run(),
-            console.log(editor.getHTML());
-        }}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
         isActive={editor.isActive("bulletList")}
       >
         <List className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
         isActive={editor.isActive("orderedList")}
       >
         <ListOrdered className="w-5 h-5" />
       </ToolbarButton>
-      {/* 4.Các nút căn lề  */}
-      <div className="w-px h-6 mx-1 bg-gray-300"></div> {/* Dải phân cách */}
+
+      <div className="w-px h-6 mx-1 bg-gray-300"></div>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign("left").run()}
         isActive={editor.isActive({ textAlign: "left" })}
       >
         <AlignLeft className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign("center").run()}
         isActive={editor.isActive({ textAlign: "center" })}
       >
         <AlignCenter className="w-5 h-5" />
       </ToolbarButton>
+
       <ToolbarButton
         onClick={() => editor.chain().focus().setTextAlign("right").run()}
         isActive={editor.isActive({ textAlign: "right" })}
@@ -105,7 +106,6 @@ const MenuBar = ({ editor }) => {
   );
 };
 
-// Component Tiptap chính
 export default function TiptapEditor({ content, onChange, placeholder }) {
   const editor = useEditor({
     extensions: [
@@ -114,9 +114,8 @@ export default function TiptapEditor({ content, onChange, placeholder }) {
         blockquote: false,
         codeBlock: false,
       }),
-      // 3. Cấu hình extension Text Align
       TextAlign.configure({
-        types: ["heading", "paragraph"], // Cho phép căn lề cho cả tiêu đề và đoạn văn
+        types: ["heading", "paragraph"],
       }),
     ],
     content: content,
@@ -129,6 +128,15 @@ export default function TiptapEditor({ content, onChange, placeholder }) {
       },
     },
   });
+
+  // update content mỗi khi Formik reset
+  useEffect(() => {
+    if (!editor) return;
+
+    if (content !== editor.getHTML()) {
+      editor.commands.setContent(content || "");
+    }
+  }, [content, editor]);
 
   return (
     <div>
