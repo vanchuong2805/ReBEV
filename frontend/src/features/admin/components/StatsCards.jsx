@@ -1,7 +1,7 @@
 import React from "react";
 import { Card } from "../../../components/ui/card";
 
-export default function StatsCards({ title, number, icon }) {
+export default function StatsCards({ title, number }) {
   return (
     <>
       <Card className="p-6" style={{ padding: "10px" }}>

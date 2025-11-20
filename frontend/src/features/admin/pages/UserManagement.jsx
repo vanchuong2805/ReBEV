@@ -135,10 +135,10 @@ const UserManagement = () => {
     // Create new staff user
 
     await createStaffAccount({ email: staff.email, phone: staff.phone })
-      .then(() => {
-        setUsers((prevUsers) => [...prevUsers, staff]);
+      .then((data) => {
+        setUsers((prevUsers) => [data?.user, ...prevUsers]);
         handleCloseStaffForm();
-        alert("Tài khoản nhân viên đã được tạo thành công!");
+        toast.success("Đã tạo tài khoản nhân viên thành công.");
       })
       .catch((error) => {
         console.error("Error creating staff account:", error);

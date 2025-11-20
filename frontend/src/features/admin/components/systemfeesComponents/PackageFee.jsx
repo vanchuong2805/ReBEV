@@ -22,7 +22,7 @@ export default function PackageFee() {
     try {
       const data = await createPackage(newPackage);
       console.log(data);
-      setPackageList((prev) => [...prev, data.package]);
+      setPackageList((prev) => [data.package, ...prev]);
       toast.success("Đã thêm gói mới");
       setShowAddPackage(false);
     } catch (e) {

@@ -1,5 +1,6 @@
 // components/system-fees/Tabs.jsx
 import { cn } from "@/lib/utils"; // nếu có
+import RefeshButton from "../RefeshButton";
 
 export default function Tabs({ tabs, activeId, onChange }) {
   return (
@@ -23,6 +24,9 @@ export default function Tabs({ tabs, activeId, onChange }) {
             </button>
           );
         })}
+        <div className="ml-[620px]">
+          <RefeshButton />
+        </div>
       </nav>
     </div>
   );

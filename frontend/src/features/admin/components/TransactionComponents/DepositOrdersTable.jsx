@@ -22,7 +22,27 @@ export default function DepositOrdersTable({ orders, setOrders }) {
     if (!file) return;
     const data = await upload(file);
     const url = data?.url?.split(" ")[1];
+    console.log(url);
     await updateContractFile(id, url);
+    setOrders((prev) =>
+      prev.map((order) => {
+        // order_details là mảng, nhưng bạn chỉ cần so id của phần tử đầu tiên
+        if (order.order_details[0].id === id) {
+          return {
+            ...order,
+            order_details: order.order_details.map((detail) =>
+              detail.id === id
+                ? {
+                    ...detail,
+                    contract_file: url, // cập nhật contract_file mới
+                  }
+                : detail
+            ),
+          };
+        }
+        return order;
+      })
+    );
   };
 
   const handleUpdateStatus = async (id, status) => {
@@ -169,18 +189,18 @@ export default function DepositOrdersTable({ orders, setOrders }) {
               {orders?.map((item) => {
                 const st = item.order_statuses?.[0];
                 return (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-gray-50"
-                    onClick={() => handleOpenDetail(item)}
-                  >
-                    <td className="px-3 py-2 text-sm text-gray-900">
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td
+                      className="px-3 py-2 text-sm text-gray-900"
+                      onClick={() => handleOpenDetail(item)}
+                    >
                       {item.id}
                     </td>
 
                     <td
                       className="px-3 py-2 break-words text-sm text-gray-900"
                       title={String(item.customer.display_name)}
+                      onClick={() => handleOpenDetail(item)}
                     >
                       {item.customer.display_name}
                     </td>
@@ -188,32 +208,42 @@ export default function DepositOrdersTable({ orders, setOrders }) {
                     <td
                       className="px-3 py-2 break-words text-sm text-gray-900"
                       title={String(item.seller_id)}
+                      onClick={() => handleOpenDetail(item)}
                     >
                       {item.seller.display_name}
                     </td>
 
-                    <td className="px-3 py-2 text-sm text-gray-900">
+                    <td
+                      className="px-3 py-2 text-sm text-gray-900"
+                      onClick={() => handleOpenDetail(item)}
+                    >
                       {item.total_amount.toLocaleString("vi-VN")} VND
                     </td>
 
-                    <td className="px-3 py-2">
+                    <td
+                      className="px-3 py-2"
+                      onClick={() => handleOpenDetail(item)}
+                    >
                       {/* Chỉ hiển thị badge, bỏ chữ trạng thái lặp lại */}
                       {getStatusBadge(st?.status?.toUpperCase?.() || "N/A")}
                     </td>
 
-                    <td className="px-3 py-2 text-xs text-gray-900">
+                    <td
+                      className="px-3 py-2 text-xs text-gray-900"
+                      onClick={() => handleOpenDetail(item)}
+                    >
                       {st?.create_at?.replace("T", " ").replace("Z", "") || "—"}
                     </td>
 
                     <td
                       className="px-3 py-2 break-words text-sm text-gray-900"
                       title={st?.create_by_user?.display_name || "N/A"}
+                      onClick={() => handleOpenDetail(item)}
                     >
                       {st?.create_by_user?.display_name
                         ? st?.create_by_user?.display_name
                         : "N/A"}
                     </td>
-
                     <td className="px-3 py-2 hidden md:table-cell">
                       {/* Nút gọn mở input file ẩn */}
                       {console.log(item)}
