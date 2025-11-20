@@ -70,10 +70,12 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     fetchVariations();
   }, []);
 
-  // Load filters từ URL. We support variation_value_id as repeated params
-  // (e.g. ?variation_value_id=1&variation_value_id=2) and map them into the
-  // per-section selected arrays using the variationData we fetched earlier.
+  // Load filters từ URL chỉ khi component mount hoặc variationData thay đổi
+  // KHÔNG load lại khi searchParams thay đổi để giữ lại selections
   useEffect(() => {
+    // Chỉ load nếu variationData đã sẵn sàng và chưa có filters nào được chọn
+    if (!variationData.brands || filters.categories.length > 0) return;
+
     const categoriesRaw = searchParams.getAll("categories");
     const categories = categoriesRaw.length ? categoriesRaw.map(Number) : [];
 
@@ -103,7 +105,8 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     const minFromUrl = Number(searchParams.get("min_price")) || priceMin;
     const maxFromUrl = Number(searchParams.get("max_price")) || priceMax;
     setPriceRange([minFromUrl, maxFromUrl]);
-  }, [searchParams, priceMin, priceMax, variationData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [variationData]);
 
   // Update price range when props change
   useEffect(() => {
@@ -242,6 +245,10 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
           <Filter className="w-5 h-5 text-blue-600" />
           <h2 className="font-semibold text-gray-900">Bộ lọc</h2>
         </div>
+        {/* Clear Filters Button */}
+        <button onClick={clearFilters} className="hover:text-red-500">
+          Xóa bộ lọc
+        </button>
       </div>
 
       {/* Filters */}
@@ -348,13 +355,6 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
           className="bg-blue-500 hover:bg-blue-600"
         >
           Áp dụng bộ lọc
-        </Button>
-        {/* Clear Filters Button */}
-        <Button
-          onClick={clearFilters}
-          className="bg-blue-500 hover:bg-blue-600"
-        >
-          Xóa bộ lọc
         </Button>
       </div>
     </div>

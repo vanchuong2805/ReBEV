@@ -23,6 +23,7 @@ export const loginUser = async (credentials) => {
 
 export const googleLogin = async (id_token) => {
   const response = await api.post("/users/login/google", { id_token });
+  console.log("Google login response:", response);
   return response.data;
 };
 

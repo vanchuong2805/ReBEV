@@ -42,6 +42,7 @@ import ComplaintDetail from "@/features/admin/components/TransactionComponents/C
 import DepositPage from "@/features/transactions/pages/DepositPage.jsx";
 import PackageFee from "@/features/admin/components/systemfeesComponents/PackageFee.jsx";
 import SystemFee from "@/features/admin/components/systemfeesComponents/Systemfee.jsx";
+import Terms from "@/features/terms/Terms.jsx";
 
 export default function AppRoutes() {
   return (
@@ -168,6 +169,7 @@ export default function AppRoutes() {
         <Route path={"forgot"} element={<ForgotPhonePage />} />
         <Route path={"forgot/new"} element={<NewPasswordPage />} />
         <Route path={"forgot/otp"} element={<OtpPage />} />
+        <Route path={ROUTES.TERMS} element={<Terms />} />
       </Routes>
     </>
   );

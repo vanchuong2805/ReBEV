@@ -113,7 +113,7 @@ export function usePostForm({ categoryId, requireBase, onSubmit }) {
         category_id: categoryId,
         title: title.trim(),
         seller_contact_id: categoryId === 2 ? sellerContactId || null : null,
-        price: Number(String(price).replaceAll(/[,_]/g, "")),
+        price: Number(String(price).replaceAll(/[,._]/g, "")),
         description: String(description || "").trim(),
         base_id: requireBase ? baseId || null : null,
         details,

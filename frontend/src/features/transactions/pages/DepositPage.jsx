@@ -2,21 +2,39 @@ import { useUser } from "@/contexts/UserContext";
 import { basesService } from "@/features/posts/service";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
-import { getContactByUserId } from "@/features/profile/service";
+import { getContactByUserId, deleteContact } from "@/features/profile/service";
 import { getPostById } from "@/features/marketplace/service";
 import { createOrder } from "../service";
+import AddAddressModal from "@/features/profile/components/settings/AddAddressModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 function DepositPage() {
   const location = useLocation();
   const [base, setBase] = useState(null);
   const { user } = useUser();
   const { orderData } = location.state || {};
-  const [customerContacts, setCustomerContacts] = useState(null);
+  const [customerContacts, setCustomerContacts] = useState([]);
   const [listing, setListing] = useState(null);
-  const [toContact, setToContact] = useState(null);
+  const [selectedContact, setSelectedContact] = useState(null);
   const [appointmentTime, setAppointmentTime] = useState(null);
+  const [addressOpen, setAddressOpen] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [contactsLoading, setContactsLoading] = useState(false);
 
   const handleDeposit = async () => {
-    orderData.to_contact_id = parseInt(toContact);
+    if (!selectedContact) {
+      toast.error("Vui lòng chọn địa chỉ nhận hàng");
+      return;
+    }
+    orderData.to_contact_id = selectedContact.id;
     orderData.order_details[0].appointment_time = appointmentTime;
     const paymentInfo = {
       total_amount: orderData.total_amount,
@@ -30,6 +48,53 @@ function DepositPage() {
     console.log({ orders, paymentInfo });
   };
 
+  // handlers cho modal danh sách địa chỉ
+  const addNew = () => {
+    setEditing(null);
+    setShowAdd(true);
+  };
+
+  const editOne = (contact) => {
+    setEditing(contact);
+    setShowAdd(true);
+  };
+
+  const saveAddress = async (payload) => {
+    try {
+      setShowAdd(false);
+      setEditing(null);
+      if (!user?.id) return;
+      setContactsLoading(true);
+      const data = await getContactByUserId(user.id);
+      const list = Array.isArray(data) ? data.filter((c) => !c.is_deleted) : [];
+      setCustomerContacts(list);
+      const maybe = list.find(
+        (c) =>
+          (payload?.id && c.id === payload.id) ||
+          (c.phone === payload?.phone && c.detail === payload?.detail)
+      );
+      setSelectedContact(maybe || list[0] || null);
+    } catch (e) {
+      console.error("saveAddress reload failed:", e);
+    } finally {
+      setContactsLoading(false);
+    }
+  };
+
+  const removeOne = async (id) => {
+    if (!confirm("Bạn có chắc muốn xoá địa chỉ này không?")) return;
+    try {
+      await deleteContact(id);
+      setCustomerContacts((prev) => prev.filter((c) => c.id !== id));
+      if (selectedContact?.id === id) {
+        setSelectedContact(customerContacts[0] || null);
+      }
+    } catch (e) {
+      console.error("deleteContact failed:", e);
+      toast.error("Xoá thất bại, vui lòng thử lại.");
+    }
+  };
+
   useEffect(() => {
     if (!orderData || !user) return;
     const fetchBase = async () => {
@@ -40,10 +105,13 @@ function DepositPage() {
         );
         const customerContacts = await getContactByUserId(user.id);
         const post = await getPostById(orderData.order_details[0].post_id);
+        const list = Array.isArray(customerContacts)
+          ? customerContacts.filter((c) => !c.is_deleted)
+          : [];
         setListing(post);
         setBase(baseAddress);
-        setCustomerContacts(customerContacts);
-        setToContact(customerContacts[0]?.id || null);
+        setCustomerContacts(list);
+        setSelectedContact(list.find((c) => c.is_default) || list[0] || null);
         setAppointmentTime(new Date().toISOString().slice(0, 10));
       } catch (error) {
         console.error("Error fetching base:", error);
@@ -179,23 +247,48 @@ function DepositPage() {
                 </div>
               </div>
 
-              {/* Địa chỉ khách hàng */}
-              <div>
-                <label className="block mb-3 text-sm font-semibold text-gray-700">
-                  Chọn địa chỉ khách hàng
-                </label>
-                <select
-                  name="customer_contact"
-                  className="w-full px-4 py-3 text-gray-900 transition-all bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  onChange={(e) => setToContact(e.target.value)}
-                  value={toContact || ""}
-                >
-                  {customerContacts.map((contact) => (
-                    <option key={contact.id} value={contact.id}>
-                      {`${contact.detail}, ${contact.ward_name}, ${contact.district_name}, ${contact.province_name} - ${contact.phone} - ${contact.name}`}
-                    </option>
-                  ))}
-                </select>
+              {/* Địa chỉ nhận hàng */}
+              <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 className="mb-3 text-lg font-semibold text-gray-800">
+                  Địa chỉ nhận hàng
+                </h3>
+                {selectedContact ? (
+                  <div className="space-y-2">
+                    <div className="font-medium text-gray-900">
+                      {selectedContact.name} • {selectedContact.phone}
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      {selectedContact.detail}
+                      {", "}
+                      {[
+                        selectedContact.ward_name,
+                        selectedContact.district_name,
+                        selectedContact.province_name,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </div>
+                    <button
+                      onClick={() => setAddressOpen(true)}
+                      className="mt-2 text-blue-600 hover:underline"
+                    >
+                      Thay đổi
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="mb-2 text-sm text-gray-500">
+                      Bạn chưa chọn địa chỉ. Vui lòng chọn để giao hàng chính
+                      xác.
+                    </p>
+                    <button
+                      onClick={() => setAddressOpen(true)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Chọn địa chỉ
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Lịch hẹn */}
@@ -224,6 +317,105 @@ function DepositPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal chọn địa chỉ */}
+      <Dialog open={addressOpen} onOpenChange={setAddressOpen}>
+        <DialogContent className="max-w-2xl" aria-describedby={undefined}>
+          <DialogHeader>
+            <DialogTitle>Chọn địa chỉ nhận hàng</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex items-center justify-between mb-3">
+            <Button variant="outline" onClick={addNew}>
+              + Thêm địa chỉ
+            </Button>
+          </div>
+
+          <div className="max-h-[65vh] overflow-auto space-y-3">
+            {contactsLoading ? (
+              <div className="py-8 text-center text-gray-500">Đang tải…</div>
+            ) : customerContacts.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                Chưa có địa chỉ. Nhấn "Thêm địa chỉ".
+              </div>
+            ) : (
+              customerContacts.map((c) => {
+                const active = selectedContact?.id === c.id;
+                return (
+                  <div
+                    key={c.id}
+                    onClick={() => {
+                      setSelectedContact(c);
+                    }}
+                    className={`cursor-pointer rounded-lg border p-3 transition ${
+                      active ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {c.name} • {c.phone}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {c.detail}
+                          {", "}
+                          {[c.ward_name, c.district_name, c.province_name]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            editOne(c);
+                          }}
+                        >
+                          Sửa
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeOne(c.id);
+                          }}
+                        >
+                          Xoá
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setAddressOpen(false)}>
+              Đóng
+            </Button>
+            <Button
+              onClick={() => setAddressOpen(false)}
+              disabled={!selectedContact}
+            >
+              Dùng địa chỉ này
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AddAddressModal
+        open={showAdd}
+        onClose={() => {
+          setShowAdd(false);
+          setEditing(null);
+        }}
+        onSave={saveAddress}
+        contact={editing}
+      />
     </div>
   );
 }
