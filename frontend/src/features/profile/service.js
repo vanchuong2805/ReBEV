@@ -346,7 +346,7 @@ export const createWithdraw = async (user_id, amount) => {
   return res.data;
 };
 //appointments
-export const updateAppointmentTim = async (order_id,appointment_time) => {
+export const updateAppointmentTime = async (order_id,appointment_time) => {
   const token = localStorage.getItem("accessToken");
   const res = await axios.put(
     `${API_BASE_URL}/order-details/${order_id}/appointmentTime`,

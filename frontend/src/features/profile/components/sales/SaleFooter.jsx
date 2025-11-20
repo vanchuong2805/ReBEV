@@ -8,7 +8,6 @@ export default function SaleFooter({
   onDelivering,
   onView,
   onDelivered,
-  onReturned,
 }) {
 
   const isDeposit = order.order_type === 2
@@ -87,16 +86,20 @@ export default function SaleFooter({
             Đã bàn giao
           </Button>
         )}
-
-        {status === "RETURNING" && (
+        {status === "COMPLETED" && order?.order_details?.[0]?.contract_file && (
           <Button
             size="sm"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
-            onClick={() => onReturned(order)}
+            variant="outline"
+            className="border-gray-300 text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+            onClick={() =>
+              window.open(order.order_details[0].contract_file, "_blank")
+            }
           >
-            Đã nhận
+            Tải hợp đồng
           </Button>
         )}
+
+        
         <Button
           size="sm"
           variant="outline"
