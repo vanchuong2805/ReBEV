@@ -5,10 +5,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary"; // đường dẫn theo project
 
 import { useUser } from "@/contexts/UserContext";
-import { fetchUsers } from "@/features/admin/service";
 
 import ChatWindow from "../components/ChatWindow";
 import { getRelatedAppUserIds } from "../lib/chatApi";
+import { fetchUsers } from "../service";
 
 export default function ChatPage() {
   const navigate = useNavigate();
@@ -25,9 +25,16 @@ export default function ChatPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    fetchUsers().then((data) => {
-      setUsers(data.users);
-    });
+    const fetchData = async () => {
+      try {
+        const data = await fetchUsers();
+        console.log("user", data);
+        setUsers(data.data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+    fetchData();
   }, []);
 
   const getUserById = useCallback(
@@ -84,6 +91,7 @@ export default function ChatPage() {
     return getUserById(activeSellerId) ?? null;
   }, [activeSellerId, getUserById]);
 
+  console.log(users);
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200">
       <div className="grid min-h-screen grid-cols-1 overflow-hidden border-y border-slate-200 bg-white/90 backdrop-blur-sm sm:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr]">
