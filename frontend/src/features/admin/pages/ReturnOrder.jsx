@@ -6,40 +6,45 @@ import { ArrowUpDown } from "lucide-react";
 import SortSelector from "../components/SortSelector";
 
 export default function ReturnOrder() {
-  const [returnOrders, setReturnOrders] = useState([]);
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    order_status: "",
+    priority: "",
+  });
+  const searchKey = `&order_id=${filSearch.searchTerm}&order_status=${filSearch.order_status}&priority=${filSearch.priority}`;
+  const [allOrders, setAllOrders] = useState([]);
+
   useEffect(() => {
-    const fetchReturnOrders = async () => {
-      const response = await getOrders(3);
-      console.log(response);
-      setReturnOrders(response.orders);
+    const fetchData = async () => {
+      const data = await getOrders(3, searchKey);
+      setAllOrders(data.orders);
     };
-    fetchReturnOrders();
-  }, []);
-  console.log(returnOrders);
+    fetchData();
+  }, [filSearch]);
+  console.log(allOrders);
   return (
     <div className="space-y-4">
       {/* Search */}
 
       <FilterBar
-        searchPlaceholder="Mã đơn hàng..."
+        setFilSearch={setFilSearch}
+        filSearch={filSearch}
+        searchPlaceholder="Tìm kiếm id đơn mua ..."
         selects={[
           {
             key: "status",
-            value: "",
+            value: filSearch.order_status,
+            onChange: (v) =>
+              setFilSearch((pre) => ({ ...pre, order_status: v })),
             options: [
               { value: "", label: "Tất cả trạng thái" },
-              { value: 0, label: "Chờ duyệt" },
-              { value: 1, label: "Đã duyệt" },
-              { value: 2, label: "Từ chối" },
-              { value: 3, label: "Hoàn tất giao dịch" },
-              { value: 4, label: "Đang trong quá trình hoàn tất" },
-              { value: 5, label: "Đã dừng lại" },
-              { value: 6, label: "Đang xác minh" },
-              { value: 7, label: "Đang giao dịch" },
+              { value: "PENDING", label: "PENDING" },
+              { value: "RETURNING", label: "RETURNING" },
+              { value: "RETURNED", label: "RETURNED" },
             ],
           },
         ]}
-      ></FilterBar>
+      />
       <div className="flex flex-wrap gap-4 justify-between">
         <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
         {/* Sort Selector */}
@@ -49,8 +54,8 @@ export default function ReturnOrder() {
       </div>
       {/* Orders List */}
       <ReturnOrdertable
-        returnOrders={returnOrders}
-        setReturnOrders={setReturnOrders}
+        returnOrders={allOrders}
+        setReturnOrders={setAllOrders}
       />
     </div>
   );

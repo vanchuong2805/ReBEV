@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
 import { useCart } from "@/contexts/CartContext";
 import { createOrder } from "../service";
 import CheckoutBar from "../components/CheckoutBar";
@@ -22,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import GroupCheckout from "../components/GroupCheckout";
 
 export default function CheckoutPage() {
-  const navigate = useNavigate();
   const { selectedTotal, selectedGroups } = useCart();
   const [paymentGroup, setPaymentGroup] = useState({});
   const [loading, setLoading] = useState(0);
@@ -34,14 +32,6 @@ export default function CheckoutPage() {
 
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
-
-  // Chặn truy cập trực tiếp nếu chưa chọn sản phẩm
-  useEffect(() => {
-    if (!selectedGroups || selectedGroups.length === 0 || selectedTotal === 0) {
-      toast.error("Vui lòng chọn sản phẩm trước khi thanh toán");
-      navigate("/", { replace: true });
-    }
-  }, [selectedGroups, selectedTotal, navigate]);
 
   useEffect(() => {
     const totalDeliveryFee = Object.values(paymentGroup).reduce(
@@ -112,7 +102,7 @@ export default function CheckoutPage() {
         post_id: item.post_id,
         price: item.price,
         deposit_amount: item.price * item.deposit_rate,
-        commission_amount: item.commission_rate * item.price / 100,
+        commission_amount: (item.commission_rate * item.price) / 100,
         appointment_time,
       }));
       return {
@@ -173,7 +163,7 @@ export default function CheckoutPage() {
       setContacts((prev) => prev.filter((c) => c.id !== id));
     } catch (e) {
       console.error("deleteContact failed:", e);
-      alert("Xoá thất bại, vui lòng thử lại.");
+      toast.error("Xoá thất bại, vui lòng thử lại.");
     }
   };
 

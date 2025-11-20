@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import FilterBar from "../components/FilterBar";
 import { ArrowUpDown } from "lucide-react";
 import SortSelector from "../components/SortSelector";
 import ComplaintsTable from "../components/TransactionComponents/ComplaintsTable";
 import { Outlet } from "react-router";
+import { getComplaints } from "../service";
 
 export default function ComplaintOrder() {
   const orderSortOptions = [
@@ -14,26 +15,46 @@ export default function ComplaintOrder() {
     { value: "completed", label: "Giao dịch thành công" },
   ];
   const [orderSortOption, setOrderSortOption] = useState("status"); // Default sort by status
-
+  const [orders, setOrders] = useState([]);
+  const [filSearch, setFilSearch] = useState({
+    searchTerm: "",
+    complaint_status: "",
+    priority: "",
+  });
+  const searchKey = `?id=${filSearch.searchTerm}&complaint_status=${filSearch.complaint_status}&priority=${filSearch.priority}`;
+  useEffect(() => {
+    (async () => {
+      const data = await getComplaints(searchKey);
+      setOrders(data.complaints || []);
+    })();
+  }, [filSearch]);
   return (
     <>
       <div className="space-y-4">
         {/* Filter */}
 
         <FilterBar
+          setFilSearch={setFilSearch}
+          filSearch={filSearch}
+          searchPlaceholder="Tìm kiếm id ..."
           selects={[
             {
               key: "status",
-              value: "",
+              value: filSearch.order_status,
+              onChange: (v) =>
+                setFilSearch((pre) => ({ ...pre, order_status: v })),
               options: [
                 { value: "", label: "Tất cả trạng thái" },
-                { value: 0, label: "Chờ duyệt" },
-                { value: 1, label: "Đã duyệt" },
-                { value: 2, label: "Từ chối" },
+                { value: "PENDING", label: "Chờ duyệt" },
+                { value: "PAID", label: "PAID" },
+                { value: "CUSTOMER_CANCELLED", label: "CUSTOMER_CANCELLED" },
+                { value: "SELLER_CANCELLED", label: "SELLER_CANCELLED" },
+                { value: "CANCELLED", label: "CANCELLED" },
+                { value: "COMPLETED", label: "COMPLETED" },
               ],
             },
           ]}
-        ></FilterBar>
+        />
         <div className="flex flex-wrap gap-4 justify-between">
           <div className="flex flex-wrap gap-4">{/* Category Filter */}</div>
           {/* Sort Selector */}
@@ -47,7 +68,7 @@ export default function ComplaintOrder() {
           </div>
         </div>
         {/* Orders List */}
-        <ComplaintsTable />
+        <ComplaintsTable complaints={orders} setComplaints={setOrders} />
       </div>
     </>
   );

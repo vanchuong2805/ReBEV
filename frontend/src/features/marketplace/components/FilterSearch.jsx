@@ -70,26 +70,41 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     fetchVariations();
   }, []);
 
-  // Load filters từ URL
+  // Load filters từ URL. We support variation_value_id as repeated params
+  // (e.g. ?variation_value_id=1&variation_value_id=2) and map them into the
+  // per-section selected arrays using the variationData we fetched earlier.
   useEffect(() => {
-    const parseParam = (key) =>
-      searchParams.get(key)?.split(",").filter(Boolean) || [];
+    // parse categories (may be single or repeated)
+    const categoriesRaw = searchParams.getAll("categories");
+    const categories = categoriesRaw.length ? categoriesRaw.map(Number) : [];
+
+    // parse variation ids from repeated params
+    const variationIds = searchParams
+      .getAll("variation_value_id")
+      .map((v) => Number(v));
+
+    // Helper to pick ids that belong to a group
+    const pickIds = (groupItems) => {
+      if (!groupItems || groupItems.length === 0) return [];
+      const ids = groupItems.map((it) => it.id);
+      return variationIds.filter((vid) => ids.includes(vid));
+    };
 
     setFilters({
-      categories: parseParam("categories").map(Number),
-      brands: parseParam("brands"),
-      powers: parseParam("powers"),
-      years: parseParam("years"),
-      origins: parseParam("origins"),
-      batteryTypes: parseParam("batteryTypes"),
-      batteryBrands: parseParam("batteryBrands"),
-      batteryConditions: parseParam("batteryConditions"),
+      categories,
+      brands: pickIds(variationData.brands || []),
+      powers: pickIds(variationData.powers || []),
+      years: pickIds(variationData.years || []),
+      origins: pickIds(variationData.origins || []),
+      batteryTypes: pickIds(variationData.batteryTypes || []),
+      batteryBrands: pickIds(variationData.batteryBrands || []),
+      batteryConditions: pickIds(variationData.batteryConditions || []),
     });
 
-    const minFromUrl = Number(searchParams.get("minPrice")) || priceMin;
-    const maxFromUrl = Number(searchParams.get("maxPrice")) || priceMax;
+    const minFromUrl = Number(searchParams.get("min_price")) || priceMin;
+    const maxFromUrl = Number(searchParams.get("max_price")) || priceMax;
     setPriceRange([minFromUrl, maxFromUrl]);
-  }, [searchParams, priceMin, priceMax]);
+  }, [searchParams, priceMin, priceMax, variationData]);
 
   // Update price range when props change
   useEffect(() => {
@@ -128,12 +143,11 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
         return newFilters;
       }
 
-      // Normal toggle
-      const current = prev[filterType];
-      const updated = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      return { ...prev, [filterType]: updated };
+      // For other filters: enforce single-select behavior
+      // If value is already selected -> clear it. Otherwise set as the only selection.
+      const current = prev[filterType] || [];
+      const isSelected = current.includes(value);
+      return { ...prev, [filterType]: isSelected ? [] : [value] };
     });
   };
 
@@ -142,15 +156,18 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
   };
 
   const applyFilters = () => {
-    // Tạo params mới, chỉ giữ search query nếu có
+    // Tạo params mới, giữ các params quan trọng như search và province_id
     const params = new URLSearchParams();
 
     // Giữ search query nếu có
     const searchQuery = searchParams.get("search");
-    if (searchQuery) {
-      params.set("search", searchQuery);
-    }
+    if (searchQuery) params.set("search", searchQuery);
 
+    // Preserve province_id so it doesn't get lost
+    const provinceId = searchParams.get("province_id");
+    if (provinceId) params.set("province_id", provinceId);
+
+    // Helper to set comma-separated numeric lists
     const setParam = (key, values) => {
       if (values && values.length > 0) {
         params.set(key, values.join(","));
@@ -158,13 +175,27 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     };
 
     setParam("categories", filters.categories);
-    setParam("brands", filters.brands);
-    setParam("powers", filters.powers);
-    setParam("years", filters.years);
-    setParam("origins", filters.origins);
-    setParam("batteryTypes", filters.batteryTypes);
-    setParam("batteryBrands", filters.batteryBrands);
-    setParam("batteryConditions", filters.batteryConditions);
+
+    // Collect all selected variation value ids into a single variation_value_id param
+    const variationIds = [
+      ...(filters.brands || []),
+      ...(filters.powers || []),
+      ...(filters.years || []),
+      ...(filters.origins || []),
+      ...(filters.batteryTypes || []),
+      ...(filters.batteryBrands || []),
+      ...(filters.batteryConditions || []),
+    ].filter(Boolean);
+
+    if (variationIds.length > 0) {
+      // Keep the previous behavior: send as a single comma-separated value
+      // e.g. ?variation_value_id=1,2,3 which the backend expects.
+      params.set("variation_value_id", variationIds.join(","));
+    }
+
+    // Do NOT add human-readable filter params (brands, powers, ...) to URL
+    // Only send numeric variation_value_id to backend for filtering. Keeping
+    // those readable params in the URL caused mismatch with backend expectations.
 
     if (priceRange[0] !== priceMin || priceRange[1] !== priceMax) {
       params.set("min_price", priceRange[0]);
@@ -190,9 +221,9 @@ export default function FilterSearch({ priceMin = 0, priceMax = 0 }) {
     // Tạo params mới, chỉ giữ search query
     const params = new URLSearchParams();
     const searchQuery = searchParams.get("search");
-    if (searchQuery) {
-      params.set("search", searchQuery);
-    }
+    const provinceId = searchParams.get("province_id");
+    if (searchQuery) params.set("search", searchQuery);
+    if (provinceId) params.set("province_id", provinceId);
     setSearchParams(params);
   };
 

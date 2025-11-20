@@ -1,23 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  getOrders,
-  updateContractFile,
-  updateOrderStatus,
-} from "../../service";
+import React, { useRef } from "react";
+import { updateContractFile, updateOrderStatus } from "../../service";
 import { useUpload } from "@/hooks/posts/useUpload";
 import { Button } from "@/components/ui/button";
 
-export default function DepositOrdersTable() {
+export default function DepositOrdersTable({ orders, setOrders }) {
   const { upload } = useUpload();
   const fileRef = useRef(null);
-  const [orders, setOrders] = useState([]);
-
-  useEffect(() => {
-    (async () => {
-      const data = await getOrders(2);
-      setOrders(data.orders || []);
-    })();
-  }, []);
 
   const handleAddContract = async (e, id) => {
     const file = e.target.files?.[0];
@@ -211,15 +199,27 @@ export default function DepositOrdersTable() {
 
                   <td className="px-3 py-2 hidden md:table-cell">
                     {/* Nút gọn mở input file ẩn */}
+                    {console.log(item)}
                     <input
-                      ref={fileRef}
+                      id={`file-${item.id}`}
                       type="file"
                       accept="application/pdf"
                       className="hidden"
-                      onChange={(e) =>
-                        handleAddContract(e, item.order_details?.[0]?.id)
-                      }
+                      onChange={(e) => {
+                        // reset value để có thể chọn cùng file nhiều lần nếu cần
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        handleAddContract(e, item.order_details[0]?.id);
+                        e.target.value = "";
+                      }}
                     />
+
+                    <label
+                      htmlFor={`file-${item.id}`}
+                      className="px-2 py-1 text-xs rounded-md border bg-white hover:bg-gray-50 cursor-pointer"
+                    >
+                      Tải hợp đồng
+                    </label>
                     {item.order_details[0].contract_file && (
                       <a
                         href={item.order_details[0].contract_file}
@@ -232,12 +232,6 @@ export default function DepositOrdersTable() {
                       </a>
                     )}
                     <br />
-                    <button
-                      onClick={() => fileRef.current?.click()}
-                      className="px-2 py-1 text-xs rounded-md border bg-white hover:bg-gray-50"
-                    >
-                      Tải hợp đồng
-                    </button>
                   </td>
 
                   <td className="px-3 py-3">

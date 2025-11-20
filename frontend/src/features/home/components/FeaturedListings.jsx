@@ -1,11 +1,14 @@
 // src/features/home/components/FeaturedListings.jsx
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, GitCompare } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { getFeaturedProducts } from "../service";
 import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
 import { useCart } from "@/contexts/CartContext";
 import { useProductSearch } from "@/hooks/useProductSearch";
+import { useCompare } from "@/hooks/useCompare";
+import CompareFloatingToolbar from "@/features/compare/components/CompareFloatingToolbar";
 
 function currency(v) {
   return typeof v === "number" ? v.toLocaleString("vi-VN") + " ₫" : v;
@@ -19,7 +22,7 @@ export default function FeaturedListings() {
   // Sử dụng search từ zustand store thay vì URL
   const { searchQuery } = useProductSearch();
 
-  // nhận page/limit từ URL (không lấy search từ URL nữa)
+  // nhận page/limit từ URL
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 10);
 
@@ -98,6 +101,14 @@ export default function FeaturedListings() {
   }, [page, totalPages]);
 
   const { isFavorite, toggleFavorite } = useFavorite();
+  const {
+    addToCompare,
+    removeFromCompare,
+    isInCompare,
+    getCompareCount,
+    compareList,
+  } = useCompare();
+
   return (
     <section className="container mx-auto mt-8">
       <div className="flex items-end justify-between mb-3">
@@ -141,6 +152,34 @@ export default function FeaturedListings() {
                         isFavorite(it.id)
                           ? "text-red-500 fill-red-500"
                           : "text-gray-400 hover:text-red-400"
+                      }`}
+                    />
+                  </button>
+
+                  {/* Compare button */}
+                  <button
+                    className="absolute p-2 transition-all duration-200 rounded-full shadow-lg right-3 top-14 bg-white/95 backdrop-blur-sm hover:bg-white hover:scale-110"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (isInCompare(it.id)) {
+                        removeFromCompare(it.id);
+                        toast.success("Đã xóa khỏi danh sách so sánh");
+                      } else {
+                        if (getCompareCount() >= 4) {
+                          toast.error("Chỉ có thể so sánh tối đa 4 sản phẩm");
+                          return;
+                        }
+                        addToCompare(it.id);
+                        toast.success("Đã thêm vào danh sách so sánh");
+                      }
+                    }}
+                  >
+                    <GitCompare
+                      className={`w-5 h-5 transition-colors ${
+                        isInCompare(it.id)
+                          ? "text-blue-500 fill-blue-500"
+                          : "text-gray-400 hover:text-blue-400"
                       }`}
                     />
                   </button>
@@ -225,6 +264,39 @@ export default function FeaturedListings() {
           )}
         </>
       )}
+
+      {/* Floating compare bar */}
+      <CompareFloatingToolbar
+        compareList={compareList
+          .map((id) => {
+            const item = items.find((it) => it.id === id);
+            return item
+              ? {
+                  id: item.id,
+                  title: item.title,
+                  price: item.price,
+                  image: getThumbnail(item.media),
+                }
+              : null;
+          })
+          .filter(Boolean)}
+        setCompareList={(newList) => {
+          // Convert back to IDs
+          const ids = Array.isArray(newList)
+            ? newList.map((item) => item.id)
+            : [];
+          ids.forEach((id) => {
+            if (!compareList.includes(id)) {
+              addToCompare(id);
+            }
+          });
+          compareList.forEach((id) => {
+            if (!ids.includes(id)) {
+              removeFromCompare(id);
+            }
+          });
+        }}
+      />
     </section>
   );
 }
