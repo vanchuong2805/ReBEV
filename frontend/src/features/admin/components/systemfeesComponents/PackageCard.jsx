@@ -81,7 +81,7 @@ export default function PackageCard({ pkg, onDelete }) {
                   Đặc quyền
                 </p>
                 <ul className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {perks.map(({ key, icon: label }) => (
+                  {perks.map(({ key, icon: Icon, label }) => (
                     <li
                       key={key}
                       className="flex items-center gap-2 rounded-xl border border-gray-200/70 bg-gray-50 px-3 py-2"
