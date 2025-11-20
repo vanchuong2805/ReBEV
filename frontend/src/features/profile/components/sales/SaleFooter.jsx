@@ -6,8 +6,8 @@ export default function SaleFooter({
   onAccept,
   onCancel,
   onDelivering,
-  onComplete,
   onView,
+  onDelivered
 }) {
 
   const isDeposit = order.order_type === 2
@@ -20,10 +20,10 @@ export default function SaleFooter({
 
   const formattedDate = appointmentTime
     ? new Date(appointmentTime).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
     : null
 
   return (
@@ -65,6 +65,15 @@ export default function SaleFooter({
               Huỷ đơn
             </Button>
           </>
+        )}
+        {status === "DELIVERING" && !isDeposit &&(
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => onDelivered(order)}
+          >
+            Đã giao cho khách
+          </Button>
         )}
 
         {/* Đơn cọc (xe) → sau khi xác nhận thì chuyển sang bàn giao */}
