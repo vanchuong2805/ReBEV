@@ -1,4 +1,3 @@
-// components/transactions/TransactionSection.jsx
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import TransactionCard from "./TransactionCard"
