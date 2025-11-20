@@ -13,7 +13,7 @@ import {
   getOrderByCustomer,
   changeOrderStatus,
   getComplaintByUserId,
-  updateAppointmentTim,
+  updateAppointmentTime,
 } from "@/features/profile/service"
 
 import ReviewModal from "@/features/profile/components/purchases/ReviewModal"
@@ -127,7 +127,7 @@ const PurchasesSection = () => {
 
   const handleUpdateAppointment = async (order, appointment_time) => {
     try {
-      await updateAppointmentTim(order.id, appointment_time)
+      await updateAppointmentTime(order.id, appointment_time)
       toast.success("Cập nhật lịch hẹn thành công!")
       fetchAllData()
     } catch (err) {
@@ -141,6 +141,24 @@ const PurchasesSection = () => {
       state: { from: `/profile/purchases?type=${type}` },
     })
   }
+
+  const handleReturned = async (order) => {
+  if (!window.confirm("Xác nhận bạn đã nhận hàng hoàn trả?")) return
+
+  try {
+    await changeOrderStatus(
+      order.return_order_id,
+      "RETURNED",
+      "Người bán đã nhận hàng hoàn trả"
+    )
+    toast.success("Cập nhật trạng thái thành công: ĐÃ NHẬN HÀNG HOÀN TRẢ")
+    fetchAllData()
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
+    toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại.")
+  }
+}
+
 
   const pendingOrders = orders.filter((o) => getStatus(o) === "PAID"|| getStatus(o) === "PENDING")
   const processingOrders = orders.filter((o) => getStatus(o) === "CONFIRMED")
@@ -325,6 +343,7 @@ const PurchasesSection = () => {
                             state: { order: item },
                           })
                         }
+                        onReturned={handleReturned}
                       />
                     </div>
                   )

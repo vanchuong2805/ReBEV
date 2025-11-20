@@ -14,6 +14,7 @@ export default function PurchaseFooter({
   onView,
   onUpdateAppointment,
   onReturn,
+  onReturned
 }) {
   const [open, setOpen] = useState(false)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -140,6 +141,15 @@ export default function PurchaseFooter({
             onClick={() => onReturn(order)}
           >
             Bàn giao
+          </Button>
+        )}
+        {status === "RETURNING" && (
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white px-4 rounded-md font-medium transition-all duration-200"
+            onClick={() => onReturned(order)}
+          >
+            Đã giao
           </Button>
         )}
 
