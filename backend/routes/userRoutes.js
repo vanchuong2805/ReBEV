@@ -19,7 +19,7 @@ import getOTPPassword from '../controllers/user/getOTPController.js';
 import getByUser from '../controllers/complaint/getByUserController.js';
 import getTransactionByUser from '../controllers/transaction/getByUserController.js';
 import withdrawController from '../controllers/user/withdrawController.js';
-
+import getStatistics from '../controllers/user/statisticsController.js';
 const userRouter = express.Router();
 
 /**
@@ -47,5 +47,6 @@ userRouter.post('/logout', authMiddleware, logout);
 userRouter.get('/:id/complaints', authMiddleware, getByUser);
 userRouter.get('/:id/transactions', authMiddleware, getTransactionByUser);
 userRouter.post('/:id/withdraw', authMiddleware, withdrawController);
+userRouter.get('/:user_id/statistics', authMiddleware, getStatistics);
 
 export default userRouter;
