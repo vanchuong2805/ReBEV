@@ -38,9 +38,6 @@ export default function FeaturedListings() {
         const userRaw = localStorage.getItem("user");
         const user = userRaw ? JSON.parse(userRaw) : null;
 
-        // Lấy province_id từ URL
-        const provinceId = searchParams.get("province_id");
-
         const pagination = {
           page,
           limit,
@@ -49,11 +46,10 @@ export default function FeaturedListings() {
           is_featured: false,
           ...(searchQuery && { search: searchQuery }),
           ...(user?.id && { iUser_id: user.id }),
-          ...(provinceId && { province_id: provinceId }),
         };
 
         const res = await getFeaturedProducts(pagination);
-
+        console.log(res);
         setItems(res.data || []);
 
         const calculatedTotalPages = res.pagination
@@ -75,7 +71,6 @@ export default function FeaturedListings() {
     const next = new URLSearchParams(searchParams);
     next.set("page", String(np));
     setSearchParams(next, { replace: true });
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // build dải trang gọn (1 ... n)
@@ -269,35 +264,7 @@ export default function FeaturedListings() {
 
       {/* Floating compare bar */}
       <CompareFloatingToolbar
-        compareList={compareList
-          .map((id) => {
-            const item = items.find((it) => it.id === id);
-            return item
-              ? {
-                  id: item.id,
-                  title: item.title,
-                  price: item.price,
-                  image: getThumbnail(item.media),
-                }
-              : null;
-          })
-          .filter(Boolean)}
-        setCompareList={(newList) => {
-          // Convert back to IDs
-          const ids = Array.isArray(newList)
-            ? newList.map((item) => item.id)
-            : [];
-          ids.forEach((id) => {
-            if (!compareList.includes(id)) {
-              addToCompare(id);
-            }
-          });
-          compareList.forEach((id) => {
-            if (!ids.includes(id)) {
-              removeFromCompare(id);
-            }
-          });
-        }}
+        compareList={compareList}
       />
     </section>
   );

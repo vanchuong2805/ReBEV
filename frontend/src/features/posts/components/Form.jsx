@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
 import { getVariationValues, basesService } from "@/features/posts/service";
 import { useVariationGraph } from "@/hooks/posts/useVariations";
 import { usePostForm } from "@/hooks/posts/usePostForm";
 import { toast } from "sonner";
 import { getContactByUserId } from "@/features/profile/service";
-import { validatePostFormSubmission } from "@/services/validations";
 import { buildPostDetails } from "../utils";
+import { createPostSchema } from "@/services/validations";
 import MediaPicker from "./MediaPicker";
 import VariationsSection from "./VariationsSection";
 import BaseField from "./BaseField";
@@ -35,17 +36,10 @@ export default function Form({
     submitCore,
   } = usePostForm({ categoryId, requireBase, onSubmit });
 
-  // local fields
-  const [title, setTitle] = useState("");
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
-  const [coverImageIndex, setCoverImageIndex] = useState(0);
-
   // contacts
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.id;
   const [contacts, setContacts] = useState([]);
-  const [sellerContactId, setSellerContactId] = useState("");
 
   // variations
   const [rows, setRows] = useState([]);
@@ -56,7 +50,6 @@ export default function Form({
 
   // bases
   const [bases, setBases] = useState([]);
-  const [baseId, setBaseId] = useState("");
 
   // submitting state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,17 +57,100 @@ export default function Form({
   // success modal state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  // const handlePriceChange = (e) => {
-  //   let raw = e.target.value.replace(/\D/g, ""); // bỏ dấu và chữ
+  // cover image index
+  const [coverImageIndex, setCoverImageIndex] = useState(0);
 
-  //   if (!raw) {
-  //     setPrice("");
-  //     return;
-  //   }
+  // Formik setup
+  const formik = useFormik({
+    initialValues: {
+      title: "",
+      price: "",
+      description: "",
+      sellerContactId: "",
+      baseId: "",
+    },
+    validationSchema: createPostSchema({ categoryId, requireBase }),
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        // Additional validations
+        if (!user?.id) {
+          toast.error("Vui lòng đăng nhập để đăng tin");
+          return;
+        }
 
-  //   let formatted = Number(raw).toLocaleString("vi-VN");
-  //   setPrice(formatted);
-  // };
+        if (!user?.package_id || user.package_id === null) {
+          toast.error("Bạn cần đăng ký gói trước khi có thể đăng tin");
+          return;
+        }
+
+        if (imagePreviews.length === 0) {
+          toast.error("Vui lòng chọn ít nhất 1 hình ảnh");
+          return;
+        }
+
+        // Validate variations
+        const visibleVarIds = vg.definitionIds?.length
+          ? vg.definitionIds
+          : vg.orderedVariationIds.filter((id) =>
+              vg.titlesByVariationId.has(id)
+            );
+
+        for (const varId of visibleVarIds) {
+          const parent = vg.parentOf.get(varId);
+          if (parent && !selectedByVar[parent]) continue;
+
+          if (!selectedByVar[varId]) {
+            const title = vg.titlesByVariationId.get(varId) || "Thông số";
+            toast.error(`Vui lòng chọn ${title}`);
+            return;
+          }
+        }
+
+        setIsSubmitting(true);
+
+        const details = buildPostDetails(selectedByVar, vg);
+
+        // Remove formatting from price
+        const rawPrice = values.price.replace(/\D/g, "");
+
+        await submitCore({
+          title: values.title,
+          price: rawPrice,
+          description: values.description,
+          baseId: values.baseId,
+          details,
+          coverImageIndex,
+          sellerContactId: values.sellerContactId,
+        });
+
+        // Reset form
+        resetForm();
+        setSelectedByVar({});
+        setCoverImageIndex(0);
+
+        // Show success modal
+        setShowSuccessModal(true);
+      } catch (error) {
+        console.error("Submit error:", error);
+        toast.error(error?.message || "Đăng tin thất bại. Vui lòng thử lại!");
+      } finally {
+        setIsSubmitting(false);
+        setSubmitting(false);
+      }
+    },
+  });
+
+  const handlePriceChange = (e) => {
+    let raw = e.target.value.replace(/\D/g, "");
+
+    if (!raw) {
+      formik.setFieldValue("price", "");
+      return;
+    }
+
+    let formatted = Number(raw).toLocaleString("vi-VN");
+    formik.setFieldValue("price", formatted);
+  };
 
   // Load variation values (re-fetch khi đổi categoryId)
   useEffect(() => {
@@ -147,62 +223,6 @@ export default function Form({
     });
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    // Validate form using centralized validation
-    const validation = validatePostFormSubmission({
-      user,
-      title,
-      price,
-      imagePreviews,
-      categoryId,
-      sellerContactId,
-      requireBase,
-      baseId,
-      visibleVarIds,
-      selectedByVar,
-      vg,
-    });
-
-    if (!validation.ok) {
-      return toast.error(validation.message);
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const details = buildPostDetails(selectedByVar, vg);
-
-      await submitCore({
-        title,
-        price,
-        description,
-        baseId,
-        details,
-        coverImageIndex,
-        sellerContactId,
-      });
-
-      // Reset form
-      setTitle("");
-      setPrice("");
-      setDescription("");
-      setSelectedByVar({});
-      setBaseId("");
-      setCoverImageIndex(0);
-      setSellerContactId("");
-
-      // Show success modal
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error("Submit error:", error);
-      toast.error(error?.message || "Đăng tin thất bại. Vui lòng thử lại!");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   // chỉ render variations có tiêu đề hợp lệ (đúng category)
   const visibleVarIds = useMemo(() => {
     const ids = vg.definitionIds?.length
@@ -213,19 +233,14 @@ export default function Form({
 
   const handleResetForm = () => {
     handleReset();
-    setTitle("");
-    setPrice("");
-    setDescription("");
+    formik.resetForm();
     setSelectedByVar({});
-    setBaseId("");
     setCoverImageIndex(0);
-    setSellerContactId("");
   };
 
   // Modal handlers
   const handlePostAgain = () => {
     setShowSuccessModal(false);
-    // Form đã được reset trong handleSubmit
   };
 
   const handleViewListings = () => {
@@ -249,7 +264,7 @@ export default function Form({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="pt-6 border-t">
+    <form onSubmit={formik.handleSubmit} className="pt-6 border-t">
       {loadingVars && (
         <div className="mb-3 text-sm text-gray-500">Đang tải danh mục…</div>
       )}
@@ -279,11 +294,20 @@ export default function Form({
             </label>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              name="title"
+              value={formik.values.title}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
               placeholder="Nhập tiêu đề bài đăng"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 form-input"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 form-input ${
+                formik.touched.title && formik.errors.title
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
             />
+            {formik.touched.title && formik.errors.title && (
+              <p className="mt-1 text-sm text-red-600">{formik.errors.title}</p>
+            )}
           </div>
 
           <div>
@@ -292,11 +316,20 @@ export default function Form({
             </label>
             <input
               type="text"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              name="price"
+              value={formik.values.price}
+              onChange={handlePriceChange}
+              onBlur={formik.handleBlur}
               placeholder="Nhập giá bán (VND)"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                formik.touched.price && formik.errors.price
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
             />
+            {formik.touched.price && formik.errors.price && (
+              <p className="mt-1 text-sm text-red-600">{formik.errors.price}</p>
+            )}
           </div>
 
           {/* Variations */}
@@ -309,23 +342,53 @@ export default function Form({
 
           {/* Seller Contact - CHỈ CHO CATEGORY 2 */}
           {categoryId === 2 && (
-            <SellerContactField
-              contacts={contacts}
-              sellerContactId={sellerContactId}
-              onContactChange={setSellerContactId}
-            />
+            <div>
+              <SellerContactField
+                contacts={contacts}
+                sellerContactId={formik.values.sellerContactId}
+                onContactChange={(value) =>
+                  formik.setFieldValue("sellerContactId", value)
+                }
+              />
+              {formik.touched.sellerContactId &&
+                formik.errors.sellerContactId && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {formik.errors.sellerContactId}
+                  </p>
+                )}
+            </div>
           )}
 
           {/* Base Field - Cơ sở kiểm định */}
           {requireBase && (
-            <BaseField bases={bases} baseId={baseId} onBaseChange={setBaseId} />
+            <div>
+              <BaseField
+                bases={bases}
+                baseId={formik.values.baseId}
+                onBaseChange={(value) => formik.setFieldValue("baseId", value)}
+              />
+              {formik.touched.baseId && formik.errors.baseId && (
+                <p className="mt-1 text-sm text-red-600">
+                  {formik.errors.baseId}
+                </p>
+              )}
+            </div>
           )}
 
           {/* Description */}
-          <DescriptionField
-            description={description}
-            onDescriptionChange={setDescription}
-          />
+          <div>
+            <DescriptionField
+              description={formik.values.description}
+              onDescriptionChange={(value) =>
+                formik.setFieldValue("description", value)
+              }
+            />
+            {formik.touched.description && formik.errors.description && (
+              <p className="mt-1 text-sm text-red-600">
+                {formik.errors.description}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

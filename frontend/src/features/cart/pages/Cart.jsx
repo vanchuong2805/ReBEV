@@ -4,9 +4,15 @@ import CartItem from "../components/CartItem";
 import CartSummary from "../components/CartSummary";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import GroupCart from "../components/GroupCart";
+import { useEffect } from "react";
 
 export default function Cart() {
-  // Giả sử useCart đã được cập nhật để cung cấp các hàm và state mới
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
   const {
     items,
     toggleAllSelection, // Hàm để chọn/bỏ chọn tất cả

@@ -1,7 +1,6 @@
 //src/contexts/CartContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getCartItems, deleteCartItem } from "@/features/cart/service.js";
-import PromotionBanner from "@/features/home/components/PromotionBanner";
 import { addCarts } from "@/features/marketplace/service";
 import { useUser } from "./UserContext";
 
@@ -28,15 +27,17 @@ export function CartProvider({ children }) {
       if (user) {
         console.log(user.id);
         const data = await getCartItems(user.id);
-        const cartItems = data.map((item) => ({
+        let cartItems = data.map((item) => ({
           ...item,
           items: item.items.map((it) => ({
             ...it,
-            selected: it.post_id === buyNowItem,
+            selected: false,
           })),
           selected: false,
         }));
-        console.log(cartItems);
+        // console.log("before", cartItems);
+        // cartItems = [...cartItems].reverse();
+        // console.log("after", cartItems);
         setItems(cartItems);
       } else {
         setItems([]);
@@ -44,11 +45,48 @@ export function CartProvider({ children }) {
     };
     fetchData();
     //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refresh, user]);
+  }, [user]);
+
+  useEffect(() => {
+    if (buyNowItem) {
+      toggleAllSelection(false);
+      toggleSelection(buyNowItem);
+    }
+  }, [refresh]);
 
   const addToCart = async (userId, postId) => {
     try {
-      await addCarts(userId, postId);
+      const data = await addCarts(userId, postId);
+      const newItem = data.cart;
+      newItem.item.selected = false;
+      const cartItem = items.find(
+        (p) =>
+          p.seller_id === newItem.seller_id &&
+          p.seller_contact.id === newItem.seller_contact.id
+      );
+
+      console.log("exist", cartItem);
+
+      if (cartItem) {
+        cartItem.items.push(newItem.item);
+        setItems((prev) => [
+          cartItem,
+          ...prev.filter(
+            (p) =>
+              p.seller_id !== newItem.seller_id &&
+              p.seller_contact.id !== newItem.seller_contact.id
+          ),
+        ]);
+      } else {
+        const cart = {
+          seller_id: newItem.seller_id,
+          seller_contact: newItem.seller_contact,
+          seller_display_name: newItem.seller_display_name,
+          items: [newItem.item],
+          selected: false,
+        };
+        setItems((prev) => [cart, ...prev]);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -111,6 +149,7 @@ export function CartProvider({ children }) {
 
   // Lấy ra danh sách các sản phẩm đã được chọn
   const selectedGroups = useMemo(() => {
+    console.log("items", items);
     const groups = items.filter((p) => p.items.some((it) => it.selected));
     const groupItems = groups.map((p) => ({
       ...p,

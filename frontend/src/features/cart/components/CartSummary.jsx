@@ -52,11 +52,10 @@ export default function CartSummary({
                 total > 0
                   ? "bg-blue-600 hover:bg-blue-700"
                   : "bg-gray-400 cursor-not-allowed"
-              }`}
-              // Vô hiệu hóa nút nếu không có sản phẩm nào được chọn
+              }`}              
               onClick={(e) => total === 0 && e.preventDefault()}
             >
-              Thanh toán
+              Đặt hàng
             </Link>
           </div>
         </div>

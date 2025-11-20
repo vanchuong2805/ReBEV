@@ -1,4 +1,5 @@
-import { Trash2 } from "lucide-react";
+import { Trash2, Package } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 
 const formatCurrency = (amount) => {
@@ -10,10 +11,11 @@ const formatCurrency = (amount) => {
 
 export default function CartItem({ item }) {
   const { toggleSelection, deleteItem } = useCart();
+
   return (
-    <div className="relative flex items-center gap-4 p-5 mb-3 transition-all duration-200 bg-white border border-gray-200 group rounded-xl hover:shadow-md hover:border-blue-300 last:mb-0">
+    <div className="relative flex items-start gap-4 p-4 transition-all duration-200 bg-white border-b border-gray-100 group last:border-b-0 hover:bg-gray-50">
       {/* Checkbox */}
-      <div className="flex items-center">
+      <div className="flex items-start pt-2">
         <input
           type="checkbox"
           className="w-5 h-5 text-blue-600 transition-all border-2 border-gray-300 rounded cursor-pointer focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 hover:border-blue-400"
@@ -22,57 +24,44 @@ export default function CartItem({ item }) {
         />
       </div>
 
-      {/* Image */}
-      <div className="relative flex-shrink-0 overflow-hidden rounded-lg shadow-sm">
+      {/* Image - Clickable */}
+      <Link
+        to={`/marketplace/listing/${item.post_id}`}
+        className="relative flex-shrink-0 overflow-hidden transition-transform duration-200 rounded-lg shadow-sm hover:scale-105"
+      >
         <img
           src={item.media.split(" ")[1]}
           alt={item.title}
-          className="object-cover w-24 h-24 transition-transform duration-300 lg:w-28 lg:h-28 group-hover:scale-105"
+          className="object-cover w-20 h-20 lg:w-24 lg:h-24"
         />
-        <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-t from-black/20 to-transparent group-hover:opacity-100" />
-      </div>
+        <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-black/10 group-hover:opacity-100" />
+      </Link>
 
       {/* Product Info */}
-      <div className="flex flex-col justify-center flex-1 min-w-0">
-        <h3 className="text-base font-semibold text-gray-900 transition-colors line-clamp-2 group-hover:text-blue-600 lg:text-lg">
-          {item.title}
-        </h3>
-
-        {/* Mobile Price */}
-        <div className="flex items-center gap-2 mt-2 lg:hidden">
-          <span className="text-lg font-bold text-red-600">
-            {formatCurrency(item.price)}
-          </span>
-        </div>
-      </div>
-
-      {/* Desktop Price & Actions */}
-      <div className="items-center hidden gap-6 lg:flex">
-        {/* Price */}
-        <div className="flex flex-col items-end min-w-[140px]">
-          <span className="text-xl font-bold text-red-600">
-            {formatCurrency(item.price)}
-          </span>
-        </div>
-
-        {/* Delete Button */}
-        <button
-          onClick={() => deleteItem(item.post_id)}
-          className="p-2.5 text-gray-400 transition-all duration-200 bg-gray-100 rounded-lg hover:bg-red-50 hover:text-red-600 hover:scale-110 active:scale-95"
-          aria-label="Xóa sản phẩm"
+      <div className="flex flex-col justify-between flex-1 min-w-0">
+        {/* Title - Clickable */}
+        <Link
+          to={`/marketplace/listing/${item.post_id}`}
+          className="text-sm font-semibold text-gray-900 transition-colors line-clamp-2 hover:text-blue-600 lg:text-base"
         >
-          <Trash2 className="w-5 h-5" />
-        </button>
-      </div>
+          {item.title}
+        </Link>
 
-      {/* Mobile Delete Button */}
-      <button
-        onClick={() => deleteItem(item.post_id)}
-        className="absolute p-2 text-gray-400 transition-all duration-200 bg-white border border-gray-200 rounded-lg shadow-sm top-3 right-3 lg:hidden hover:bg-red-50 hover:text-red-600 hover:border-red-200 active:scale-95"
-        aria-label="Xóa sản phẩm"
-      >
-        <Trash2 className="w-4 h-4" />
-      </button>
+        {/* Price & Delete */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-lg font-bold text-red-600 lg:text-xl">
+            {formatCurrency(item.price)}
+          </span>
+
+          <button
+            onClick={() => deleteItem(item.post_id)}
+            className="p-2 text-gray-400 transition-all duration-200 rounded-lg hover:bg-red-50 hover:text-red-600 active:scale-95"
+            aria-label="Xóa sản phẩm"
+          >
+            <Trash2 className="w-4 h-4 lg:w-5 lg:h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

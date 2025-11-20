@@ -1,4 +1,5 @@
 // src/services/validations.js
+import * as Yup from "yup";
 
 // ===== Helpers =====
 export const bytesToMB = (bytes) => bytes / (1024 * 1024);
@@ -58,194 +59,169 @@ export function validatePostFields({ title, price }) {
   if (!Number.isFinite(n) || n <= 0) return res(false, "Giá phải là số > 0");
   return res(true);
 }
-
-// Regex SĐT VN (bạn đang dùng)
-export const VN_PHONE_REGEX =
-  /^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/;
-
-export const PASSWORD_REGEX =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?`~]).{6,}$/;
-
-export function validateForgetPassword({ password, confirmPassword }) {
-  const errors = {};
-  // password
-  if (!password || password.trim() === "") {
-    errors.password = "Vui lòng nhập mật khẩu";
-  } else if (password.length < 6) {
-    errors.password = "Mật khẩu cần ít nhất 6 ký tự";
-  } else if (!PASSWORD_REGEX.test(password)) {
-    errors.password =
-      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt";
-  }
-
-  // confirmPassword
-  if (!confirmPassword || confirmPassword.trim() === "") {
-    errors.confirmPassword = "Vui lòng xác nhận mật khẩu";
-  } else if (confirmPassword !== password) {
-    errors.confirmPassword = "Mật khẩu xác nhận không khớp";
-  }
-
-  return errors;
-}
-
-export function validateRegister(form = {}) {
-  const errors = {};
-  const password = String(form.password ?? "");
-  const confirmPassword = String(form.confirmPassword ?? "");
-  // display_name
-  if (!form.display_name?.trim()) {
-    errors.display_name = "Vui lòng nhập họ tên";
-  } else if (form.display_name.trim().length < 3) {
-    errors.display_name = "Tên quá ngắn, vui lòng nhập đầy đủ họ tên";
-  }
-  // phone
-  if (!form.phone?.trim()) {
-    errors.phone = "Vui lòng nhập số điện thoại";
-  } else if (!VN_PHONE_REGEX.test(form.phone.trim())) {
-    errors.phone = "Số điện thoại không hợp lệ";
-  }
-  // password
-  if (!password || password.trim() === "") {
-    errors.password = "Vui lòng nhập mật khẩu";
-  } else if (password.length < 6) {
-    errors.password = "Mật khẩu cần ít nhất 6 ký tự";
-  } else if (!PASSWORD_REGEX.test(password)) {
-    errors.password =
-      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt";
-  }
-  // confirmPassword
-  if (!confirmPassword || confirmPassword.trim() === "") {
-    errors.confirmPassword = "Vui lòng xác nhận mật khẩu";
-  } else if (confirmPassword !== password) {
-    errors.confirmPassword = "Mật khẩu xác nhận không khớp";
-  }
-
-  return errors;
-}
-
-export function validateLogin({ phone, password }) {
-  const errors = {};
-  if (!phone || phone.trim() === "") {
-    errors.phone = "Vui lòng nhập số điện thoại ";
-  } else if (!VN_PHONE_REGEX.test(phone.trim())) {
-    errors.phone = "Số điện thoại không hợp lệ";
-  }
-  if (!password || password.trim() === "") {
-    errors.password = "Vui lòng nhập mật khẩu";
-  }
-  return errors;
-}
-
-// ===== Post Form Validations =====
+// ===== Yup Validation Schemas =====
 
 /**
- * Validate user package before posting
+ * Post Form Schema
  */
-export function validateUserPackage(user) {
-  if (!user?.package_id || user.package_id === null) {
-    return res(false, "Bạn phải đăng ký gói trước khi đăng tin");
-  }
-  return res(true);
-}
-
-/**
- * Validate basic post information
- */
-export function validatePostBasicInfo({ title, price, imagePreviews = [] }) {
-  if (!title?.trim()) {
-    return res(false, "Vui lòng nhập tiêu đề bài đăng");
-  }
-  if (!price || Number(price) <= 0) {
-    return res(false, "Vui lòng nhập giá hợp lệ");
-  }
-  if (imagePreviews.length === 0) {
-    return res(false, "Vui lòng thêm ít nhất 1 ảnh");
-  }
-  return res(true);
-}
-
-/**
- * Validate category specific requirements
- */
-export function validateCategoryRequirements({
-  categoryId,
-  sellerContactId,
-  requireBase,
-  baseId,
-}) {
-  if (categoryId === 2 && !sellerContactId) {
-    return res(false, "Vui lòng chọn liên hệ người bán");
-  }
-  if (requireBase && !baseId) {
-    return res(false, "Vui lòng chọn cơ sở kiểm định");
-  }
-  return res(true);
-}
-
-/**
- * Validate required variations
- */
-export function validateRequiredVariations({
-  visibleVarIds,
-  selectedByVar,
-  vg,
-}) {
-  const requiredVarIds = visibleVarIds.filter((varId) => {
-    const meta = vg.metaByVariationId?.get(varId);
-    return meta?.is_require === true;
+export const createPostSchema = ({ categoryId, requireBase }) =>
+  Yup.object({
+    title: Yup.string()
+      .required("Vui lòng nhập tiêu đề bài đăng")
+      .min(10, "Tiêu đề phải có ít nhất 10 ký tự")
+      .max(200, "Tiêu đề không được vượt quá 200 ký tự"),
+    price: Yup.string().required("Vui lòng nhập giá bán"),
+    description: Yup.string().max(5000, "Mô tả không được vượt quá 5000 ký tự"),
+    sellerContactId:
+      categoryId === 2
+        ? Yup.string().required("Vui lòng chọn thông tin liên hệ người bán")
+        : Yup.string(),
+    baseId: requireBase
+      ? Yup.string().required("Vui lòng chọn cơ sở kiểm định")
+      : Yup.string(),
   });
 
-  for (const varId of requiredVarIds) {
-    const value = selectedByVar[varId];
-    const label = vg.titlesByVariationId.get(varId);
-    if (!value || String(value).trim().length === 0) {
-      return res(false, `Vui lòng nhập ${label}`);
-    }
-  }
+/**
+ * Withdraw Form Schema
+ */
+export const withdrawSchema = Yup.object().shape({
+  amount: Yup.number()
+    .required("Vui lòng nhập số tiền.")
+    .min(50000, "Số tiền tối thiểu là 50.000₫."),
 
-  return res(true);
-}
+  method: Yup.string().oneOf(["momo", "bank"]).required(""),
+
+  momoPhone: Yup.string().when("method", {
+    is: "momo",
+    then: (schema) =>
+      schema
+        .required("Vui lòng nhập số điện thoại MoMo.")
+        .matches(/^[0-9]{10}$/, "Số điện thoại phải gồm đúng 10 chữ số."),
+  }),
+
+  momoName: Yup.string().when("method", {
+    is: "momo",
+    then: (schema) =>
+      schema
+        .required("Vui lòng nhập tên chủ tài khoản MoMo.")
+        .test(
+          "has-two-words",
+          "Tên phải gồm ít nhất 2 từ.",
+          (value) => value && value.trim().split(" ").length >= 2
+        ),
+  }),
+
+  bankName: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) => schema.required("Vui lòng chọn ngân hàng."),
+  }),
+
+  bankNumber: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) =>
+      schema
+        .required("Vui lòng nhập số tài khoản.")
+        .matches(/^[0-9]{8,16}$/, "Số tài khoản không hợp lệ."),
+  }),
+
+  bankOwner: Yup.string().when("method", {
+    is: "bank",
+    then: (schema) =>
+      schema
+        .required("Vui lòng nhập tên chủ tài khoản.")
+        .test(
+          "has-two-words",
+          "Tên phải gồm ít nhất 2 từ.",
+          (value) => value && value.trim().split(" ").length >= 2
+        ),
+  }),
+});
 
 /**
- * Main validation for post form submission
+ * Address Form Schema
  */
-export function validatePostFormSubmission({
-  user,
-  title,
-  price,
-  imagePreviews,
-  categoryId,
-  sellerContactId,
-  requireBase,
-  baseId,
-  visibleVarIds,
-  selectedByVar,
-  vg,
-}) {
-  // 1. Check user package
-  const packageCheck = validateUserPackage(user);
-  if (!packageCheck.ok) return packageCheck;
+export const addressSchema = Yup.object({
+  name: Yup.string().required("Vui lòng nhập họ và tên."),
+  phone: Yup.string()
+    .matches(/^(0|\+84)\d{9}$/, "Số điện thoại không hợp lệ.")
+    .required("Vui lòng nhập số điện thoại."),
+  detail: Yup.string().required("Vui lòng nhập địa chỉ chi tiết."),
+  province_id: Yup.string().required("Vui lòng chọn Tỉnh/Thành phố."),
+  district_id: Yup.string().required("Vui lòng chọn Quận/Huyện."),
+  ward_name: Yup.string().required("Vui lòng chọn Phường/Xã."),
+});
 
-  // 2. Check basic info
-  const basicCheck = validatePostBasicInfo({ title, price, imagePreviews });
-  if (!basicCheck.ok) return basicCheck;
+/**
+ * Forget Password Schema
+ */
+export const forgetPasswordSchema = Yup.object({
+  password: Yup.string()
+    .required("Vui lòng nhập mật khẩu")
+    .min(6, "Mật khẩu cần ít nhất 6 ký tự")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?`~]).{6,}$/,
+      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt"
+    ),
+  confirmPassword: Yup.string()
+    .required("Vui lòng xác nhận mật khẩu")
+    .oneOf([Yup.ref("password")], "Mật khẩu xác nhận không khớp"),
+});
 
-  // 3. Check category requirements
-  const categoryCheck = validateCategoryRequirements({
-    categoryId,
-    sellerContactId,
-    requireBase,
-    baseId,
-  });
-  if (!categoryCheck.ok) return categoryCheck;
+/**
+ * Register Schema
+ */
+export const registerSchema = Yup.object({
+  display_name: Yup.string()
+    .required("Vui lòng nhập họ tên")
+    .min(3, "Tên quá ngắn, vui lòng nhập đầy đủ họ tên"),
+  phone: Yup.string()
+    .required("Vui lòng nhập số điện thoại")
+    .matches(
+      /^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/,
+      "Số điện thoại không hợp lệ"
+    ),
+  password: Yup.string()
+    .required("Vui lòng nhập mật khẩu")
+    .min(6, "Mật khẩu cần ít nhất 6 ký tự")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=[\]{};':"\\|,.<>/?`~]).{6,}$/,
+      "Mật khẩu cần ít nhất 1 chữ thường, 1 chữ hoa, 1 số và 1 ký tự đặc biệt"
+    ),
+  confirmPassword: Yup.string()
+    .required("Vui lòng xác nhận mật khẩu")
+    .oneOf([Yup.ref("password")], "Mật khẩu xác nhận không khớp"),
+});
 
-  // 4. Check required variations
-  const variationCheck = validateRequiredVariations({
-    visibleVarIds,
-    selectedByVar,
-    vg,
-  });
-  if (!variationCheck.ok) return variationCheck;
+/**
+ * Login Schema
+ */
+export const loginSchema = Yup.object({
+  phone: Yup.string()
+    .required("Vui lòng nhập số điện thoại")
+    .matches(
+      /^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/,
+      "Số điện thoại không hợp lệ"
+    ),
+  password: Yup.string().required("Vui lòng nhập mật khẩu"),
+});
 
-  return res(true);
-}
+/**
+ * Forgot Phone Schema
+ */
+export const forgotPhoneSchema = Yup.object({
+  phone: Yup.string()
+    .required("Vui lòng nhập số điện thoại")
+    .matches(
+      /^(0)(3[2-9]|5[25689]|7[0-9]|8[1-9]|9[0-9])[0-9]{7}$/,
+      "Số điện thoại không hợp lệ"
+    ),
+});
+
+/**
+ * OTP Schema
+ */
+export const otpSchema = Yup.object({
+  otp: Yup.string()
+    .required("Vui lòng nhập mã OTP")
+    .matches(/^[0-9]{6}$/, "Mã OTP phải gồm 6 chữ số"),
+});

@@ -1,40 +1,26 @@
 // src/features/home/pages/ListingList.jsx
 import React, { useState, useMemo, useEffect } from "react";
-import {
-  useParams,
-  Link,
-  useLocation,
-  useSearchParams,
-} from "react-router-dom";
-import { Heart, Filter, MapPin, GitCompare } from "lucide-react";
+import { useParams, Link, useSearchParams } from "react-router-dom";
+import { Filter, GitCompare } from "lucide-react";
 import { getFeaturedProducts } from "@/features/home/service";
 import { toast } from "sonner";
 import FilterSearch from "../components/FilterSearch";
 import CompareFloatingToolbar from "@/features/compare/components/CompareFloatingToolbar";
-import { useFavorite } from "@/contexts/FavoritesContexts.jsx";
-
-function currency(v) {
-  return Number(v || 0).toLocaleString("vi-VN") + " ₫";
-}
-
-function getThumb(media) {
-  try {
-    const arr = JSON.parse(media);
-    const pick = arr.find((m) => m.is_thumbnail) || arr[0];
-    if (!pick?.url) return "/placeholder.webp";
-    return pick.url.replace(/^(image|video)\s+/, "");
-  } catch {
-    return "/placeholder.webp";
-  }
-}
+import { useCompare } from "@/hooks/useCompare";
+import ListingCard from "../components/ListingCard";
 
 export default function ListingList() {
-  const location = useLocation();
   const { category } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // State cho so sánh sản phẩm
-  const [compareList, setCompareList] = useState([]);
+  // Hook cho so sánh sản phẩm
+  const {
+    addToCompare,
+    removeFromCompare,
+    isInCompare,
+    getCompareCount,
+    compareList,
+  } = useCompare();
 
   // Nếu route chứa category (ví dụ /marketplace/xe hoặc /marketplace/pin),
   // nhưng URL query chưa có `categories`, thì tự động gắn vào searchParams
@@ -57,9 +43,7 @@ export default function ListingList() {
 
   const [allItems, setAllItems] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  //  Dùng context yêu thích
-  const { isFavorite, toggleFavorite } = useFavorite();
+  const [priceRange, setPriceRange] = useState({ minPrice: 0, maxPrice: 0 });
 
   // Lấy search từ URL query params
   const searchFromUrl = searchParams.get("search") || "";
@@ -100,6 +84,30 @@ export default function ListingList() {
   // Pagination from URL
   const page = Number(searchParams.get("page") || 1);
   const limit = Number(searchParams.get("limit") || 10);
+
+  // Load province_id từ localStorage khi component mount
+  useEffect(() => {
+    const savedProvinceId = localStorage.getItem("selected_province_id");
+    const currentProvinceId = searchParams.get("province_id");
+
+    if (!currentProvinceId && savedProvinceId) {
+      const params = new URLSearchParams(searchParams);
+      params.set("province_id", savedProvinceId);
+      setSearchParams(params, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Lưu province_id vào localStorage khi URL thay đổi
+  useEffect(() => {
+    const provinceId = searchParams.get("province_id");
+    if (provinceId) {
+      localStorage.setItem("selected_province_id", provinceId);
+    } else {
+      // Xóa khỏi localStorage khi province_id bị xóa khỏi URL
+      localStorage.removeItem("selected_province_id");
+    }
+  }, [searchParams]);
 
   // Fetch API với filter params
   useEffect(() => {
@@ -189,11 +197,18 @@ export default function ListingList() {
 
         const normalized = (list || []).map((p) => ({
           ...p,
-          image: getThumb(p.media),
           created_at: p.create_at || p.created_at || null,
         }));
 
         setAllItems(normalized);
+
+        // Lưu priceRange từ API
+        if (res?.priceRange) {
+          setPriceRange({
+            minPrice: res.priceRange.minPrice || 0,
+            maxPrice: res.priceRange.maxPrice || 0,
+          });
+        }
 
         const calculatedTotalPages = res?.pagination
           ? Math.ceil(res.pagination.total / res.pagination.limit)
@@ -214,15 +229,9 @@ export default function ListingList() {
     return [...allItems];
   }, [allItems]);
 
-  // Calculate price range từ filtered items
-  const { priceMin, priceMax } = useMemo(() => {
-    if (filteredItems.length === 0) return { priceMin: 0, priceMax: 0 };
-    const prices = filteredItems.map((item) => Number(item.price) || 0);
-    return {
-      priceMin: Math.min(...prices),
-      priceMax: Math.max(...prices),
-    };
-  }, [filteredItems]);
+  // Sử dụng priceRange từ API thay vì tính từ filteredItems
+  const priceMin = priceRange.minPrice;
+  const priceMax = priceRange.maxPrice;
 
   // Server-side pagination: displayItems are the items returned for current page
   const displayItems = filteredItems;
@@ -239,21 +248,20 @@ export default function ListingList() {
   const pages = useMemo(() => {
     if (totalPages === 1) return [1];
 
-    const delta = 2;
+    const delta = 1; // Giảm từ 2 xuống 1 để gọn hơn
     const left = Math.max(2, page - delta);
     const right = Math.min(totalPages - 1, page + delta);
     const range = [];
 
+    // Luôn có trang 1
     range.push(1);
     if (left > 2) range.push("...");
-
+    // Thêm các trang ở giữa
     for (let i = left; i <= right; i++) {
       if (i !== 1 && i !== totalPages) range.push(i);
     }
     if (right < totalPages - 1) range.push("...");
-
     if (totalPages > 1) range.push(totalPages);
-
     return range;
   }, [page, totalPages]);
 
@@ -275,20 +283,17 @@ export default function ListingList() {
 
   // Handler cho so sánh sản phẩm
   const toggleCompare = (item) => {
-    setCompareList((prev) => {
-      const exists = prev.find((p) => p.id === item.id);
-      if (exists) {
-        toast.info("Đã xóa khỏi danh sách so sánh");
-        return prev.filter((p) => p.id !== item.id);
-      } else {
-        if (prev.length >= 4) {
-          toast.error("Chỉ có thể so sánh tối đa 4 sản phẩm");
-          return prev;
-        }
-        toast.success("Đã thêm vào danh sách so sánh");
-        return [...prev, item];
+    if (isInCompare(item.id)) {
+      removeFromCompare(item.id);
+      toast.info("Đã xóa khỏi danh sách so sánh");
+    } else {
+      if (getCompareCount() >= 4) {
+        toast.error("Chỉ có thể so sánh tối đa 4 sản phẩm");
+        return;
       }
-    });
+      addToCompare(item.id);
+      toast.success("Đã thêm vào danh sách so sánh");
+    }
   };
 
   const categoryTitle =
@@ -351,8 +356,8 @@ export default function ListingList() {
               <div className="flex gap-2">
                 {[
                   { key: "newest", label: "Mới nhất" },
-                  { key: "price-asc", label: "Giá thấp" },
-                  { key: "price-desc", label: "Giá cao" },
+                  { key: "price-asc", label: "Giá thấp tới cao" },
+                  { key: "price-desc", label: "Giá cao tới thấp" },
                 ].map((opt) => (
                   <button
                     key={opt.key}
@@ -381,100 +386,36 @@ export default function ListingList() {
             ) : (
               <div className="space-y-4">
                 {displayItems.map((item, idx) => (
-                  <div
-                    key={`${item.id}-${idx}`}
-                    className={`relative flex gap-4 p-4 transition-all bg-white border-2 rounded-lg hover:shadow-md ${
-                      compareList.some((p) => p.id === item.id)
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200"
-                    }`}
-                  >
-                    <Link
-                      to={`/marketplace/listing/${item.id}`}
-                      state={{ from: location.pathname + location.search }}
-                      className="shrink-0"
+                  <div key={`${item.id}-${idx}`} className="relative">
+                    {/* Wrapper để thêm ring khi được chọn so sánh */}
+                    <div
+                      className={`rounded-lg ${
+                        compareList.some((p) => p.id === item.id)
+                          ? "ring-2 ring-blue-500 ring-offset-2"
+                          : ""
+                      }`}
                     >
-                      <div className="flex items-center justify-center w-48 h-32 overflow-hidden bg-gray-100 rounded-lg">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="object-contain max-w-full max-h-full"
-                          loading="lazy"
-                        />
-                      </div>
-                    </Link>
-
-                    <div className="flex flex-col justify-between flex-1">
-                      <div>
-                        <Link
-                          to={`/marketplace/listing/${item.id}`}
-                          state={{ from: location.pathname + location.search }}
-                        >
-                          <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600">
-                            {item.title}
-                          </h3>
-                        </Link>
-                      </div>
-
-                      <div className="flex items-center justify-between mt-3">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {currency(item.price)}
-                        </div>
-
-                        <div className="flex gap-2">
-                          {/* Nút yêu thích dùng useFavorite */}
-                          <button
-                            onClick={() => toggleCompare(item)}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              compareList.some((p) => p.id === item.id)
-                                ? "bg-blue-50 text-blue-600 border border-blue-600"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                          >
-                            <GitCompare className="w-4 h-4" />
-                            {compareList.some((p) => p.id === item.id)
-                              ? "Đã chọn"
-                              : "So sánh"}
-                          </button>
-
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              toggleFavorite(item);
-                              toast.dismiss();
-                              toast.success(
-                                isFavorite(item.id)
-                                  ? "Đã xoá khỏi yêu thích"
-                                  : "Đã thêm vào yêu thích"
-                              );
-                            }}
-                            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                              isFavorite(item.id)
-                                ? "bg-red-50 text-red-600 hover:bg-red-100"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                          >
-                            <Heart
-                              className={`w-4 h-4 transition-transform ${
-                                isFavorite(item.id)
-                                  ? "fill-current scale-110"
-                                  : ""
-                              }`}
-                            />
-                            {isFavorite(item.id) ? "Đã thích" : "Yêu thích"}
-                          </button>
-
-                          {/* 🔍 Xem chi tiết */}
-                          <Link
-                            to={`/marketplace/listing/${item.id}`}
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-                          >
-                            Xem chi tiết
-                          </Link>
-                        </div>
-                      </div>
+                      <ListingCard item={item} />
                     </div>
+
+                    {/* Nút so sánh overlay */}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleCompare(item);
+                      }}
+                      className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors shadow-sm z-10 ${
+                        isInCompare(item.id)
+                          ? "bg-blue-600 text-white"
+                          : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                      }`}
+                    >
+                      <GitCompare className="w-3.5 h-3.5" />
+                      {isInCompare(item.id)
+                        ? "Đã chọn"
+                        : "So sánh"}
+                    </button>
                   </div>
                 ))}
 
@@ -530,7 +471,6 @@ export default function ListingList() {
       {/* Floating Compare Toolbar */}
       <CompareFloatingToolbar
         compareList={compareList}
-        setCompareList={setCompareList}
       />
     </div>
   );

@@ -6,9 +6,9 @@
 export function parseWeightToGrams(input) {
   if (input == null) return null;
   let s = String(input).trim().toLowerCase();
-  s = s.replace(/,/g, "."); // 1,5 -> 1.5
+  s = s.replace(/,/g, "."); 
 
-  const m = s.match(/([\d.]+)/); // bắt số
+  const m = s.match(/([\d.]+)/);
   if (!m) return null;
   const num = parseFloat(m[1]);
   if (!Number.isFinite(num)) return null;
@@ -31,18 +31,18 @@ export function buildPostDetails(selectedByVar, vg) {
       const variation_id = Number(variationIdStr);
       const rawStr = String(raw).trim();
 
-      // 1) tập option-id hợp lệ cho variation này
+      // tập option-id hợp lệ cho variation này
       const options = vg.byVariationId.get(variation_id) || [];
       const optionIdSet = new Set(options.map((o) => String(o.id)));
 
-      // 2) meta + label
+      // meta + label
       const meta = vg.metaByVariationId?.get(variation_id);
       const isNum = !!meta?.is_number;
       const label = (
         vg.titlesByVariationId.get(variation_id) || ""
       ).toLowerCase();
 
-      // 3) nếu người dùng chọn đúng 1 option trong list
+      // nếu người dùng chọn đúng 1 option trong list
       if (optionIdSet.has(rawStr)) {
         return {
           variation_id,
@@ -51,7 +51,7 @@ export function buildPostDetails(selectedByVar, vg) {
         };
       }
 
-      // 4) custom_value - nếu là "Trọng lượng" -> đổi sang gram
+      // custom_value - nếu là "Trọng lượng" -> đổi sang gram
       const isWeight = variation_id === 13 || label.includes("trọng lượng");
       if (isWeight) {
         const grams = parseWeightToGrams(rawStr);

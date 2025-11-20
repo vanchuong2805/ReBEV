@@ -5,7 +5,7 @@ import Form from "@/features/posts/components/Form";
 import { categoriesService } from "@/features/posts/service";
 
 export default function ListingForm({ onSubmit }) {
-  const [category, setCategory] = useState(1); // luôn dùng number
+  const [category, setCategory] = useState(1); 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 

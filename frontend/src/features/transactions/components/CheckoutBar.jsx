@@ -61,7 +61,7 @@ export default function CheckoutBar({
               }
               className="flex-shrink-0  min-w-[160px] rounded-md bg-blue-500 px-6 py-2.5 text-white shadow hover:bg-blue-600 disabled:opacity-60"
             >
-              {loading ? "Đang xử lý..." : "Đặt hàng"}
+              {loading ? "Đang xử lý..." : "Thanh toán"}
             </button>
           </div>
         </div>

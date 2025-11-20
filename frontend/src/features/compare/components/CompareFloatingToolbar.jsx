@@ -1,33 +1,72 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GitCompare, X } from "lucide-react";
 import { toast } from "sonner";
+import { getPostById } from "../../marketplace/service";
+import { useCompare } from "@/hooks/useCompare";
 
-function currency(v) {
-  return Number(v || 0).toLocaleString("vi-VN") + " ₫";
+// Helper để parse media và lấy thumbnail
+function getThumb(media) {
+  try {
+    const arr = typeof media === "string" ? JSON.parse(media) : media || [];
+    const pick = arr.find((m) => m.is_thumbnail) || arr[0];
+    if (!pick?.url) return "/placeholder.webp";
+    return pick.url.replace(/^(image|video)\s+/, "");
+  } catch {
+    return "/placeholder.webp";
+  }
 }
 
-export default function CompareFloatingToolbar({
-  compareList,
-  setCompareList,
-}) {
+export default function CompareFloatingToolbar({ compareList }) {
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const { removeFromCompare, clearCompare } = useCompare();
 
-  const removeFromCompare = (itemId) => {
-    setCompareList((prev) => prev.filter((p) => p.id !== itemId));
+  // Fetch product details if compareList contains IDs
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!compareList || compareList.length === 0) {
+        setProducts([]);
+        return;
+      }
+
+      // Check if compareList contains IDs (numbers) or full objects
+      const firstItem = compareList[0];
+      if (typeof firstItem === "number") {
+        // Fetch product details for IDs
+        try {
+          const productsData = await Promise.all(
+            compareList.map((id) => getPostById(id))
+          );
+          setProducts(productsData);
+        } catch (error) {
+          console.error("Error fetching products:", error);
+          setProducts([]);
+        }
+      } else {
+        // Already have full objects
+        setProducts(compareList);
+      }
+    };
+
+    fetchProducts();
+  }, [compareList]);
+
+  const handleRemoveFromCompare = (itemId) => {
+    removeFromCompare(itemId);
     toast.info("Đã xóa khỏi danh sách so sánh");
   };
 
   const handleCompare = () => {
-    if (compareList.length === 0) {
+    if (products.length === 0) {
       toast.error("Vui lòng chọn ít nhất 1 sản phẩm để so sánh");
       return;
     }
-    const ids = compareList.map((p) => p.id).join(",");
+    const ids = products.map((p) => p.id).join(",");
     navigate(`/marketplace/compare?ids=${ids}`);
   };
 
-  if (compareList.length === 0) return null;
+  if (!compareList || compareList.length === 0) return null;
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-2xl">
@@ -50,16 +89,16 @@ export default function CompareFloatingToolbar({
               </div>
             </div>
 
-            <div className="flex flex-wrap w-full gap-3 md:w-auto">
-              {compareList.map((item) => (
+            <div className="grid w-full grid-cols-4 gap-3 md:w-auto">
+              {products.map((item) => (
                 <div
                   key={item.id}
-                  className="relative flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg group min-w-[200px] hover:shadow-md transition-all"
+                  className="relative flex gap-2 px-3 py-2 bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg group w-[180px] hover:shadow-md transition-all"
                 >
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      removeFromCompare(item.id);
+                      handleRemoveFromCompare(item.id);
                     }}
                     className="absolute z-50 flex items-center justify-center w-6 h-6 text-white transition-all bg-red-500 rounded-full shadow-lg -top-2 -right-2 hover:bg-red-600 hover:scale-110"
                     title="Xóa"
@@ -67,16 +106,16 @@ export default function CompareFloatingToolbar({
                     <X className="w-3.5 h-3.5" />
                   </button>
                   <img
-                    src={item.image}
+                    src={getThumb(item.media)}
                     alt={item.title}
-                    className="object-cover w-12 h-12 border-2 border-white rounded shadow-sm"
+                    className="flex-shrink-0 object-cover w-12 h-12 border-2 border-white rounded shadow-sm"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
+                    <p
+                      className="text-sm font-semibold text-gray-900 line-clamp-2"
+                      title={item.title}
+                    >
                       {item.title}
-                    </p>
-                    <p className="text-xs font-bold text-blue-600">
-                      {currency(item.price)}
                     </p>
                   </div>
                 </div>
@@ -86,7 +125,7 @@ export default function CompareFloatingToolbar({
 
           <div className="flex w-full gap-3 md:w-auto">
             <button
-              onClick={() => setCompareList([])}
+              onClick={() => clearCompare()}
               className="flex-1 md:flex-none px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all hover:shadow-md"
             >
               Xóa tất cả

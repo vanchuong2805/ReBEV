@@ -1,81 +1,79 @@
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Pencil, Trash2, CheckCircle } from "lucide-react"
-import AddAddressModal from "./AddAddressModal"
-import { useUser } from "@/contexts/UserContext"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Pencil, Trash2, CheckCircle } from "lucide-react";
+import AddAddressModal from "./AddAddressModal";
+import { useUser } from "@/contexts/UserContext";
 import {
   getContactByUserId,
   deleteContact,
-  setDefaultContact
-} from "@/features/profile/service"
-import { toast } from "sonner"
+  setDefaultContact,
+} from "@/features/profile/service";
+import { toast } from "sonner";
 
 export default function ContactAddressSection() {
-  const { user, loading } = useUser()
-  const [contacts, setContacts] = useState([])
-  const [showModal, setShowModal] = useState(false)
-  const [editing, setEditing] = useState(null)
+  const { user, loading } = useUser();
+  const [contacts, setContacts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const loadContact = async () => {
-    if (!user?.id) return
+    if (!user?.id) return;
     try {
-      const data = await getContactByUserId(user.id)
+      const data = await getContactByUserId(user.id);
       const activeContacts = Array.isArray(data)
         ? data.filter((c) => !c.is_deleted)
-        : []
-      setContacts(activeContacts)
+        : [];
+      setContacts(activeContacts);
     } catch (err) {
-      console.error("Lỗi tải contact:", err)
-      setContacts([])
+      console.error("Lỗi tải contact:", err);
+      setContacts([]);
     }
-  }
+  };
 
   useEffect(() => {
-    loadContact()
-  }, [user])
+    loadContact();
+  }, [user]);
 
   const handleSetDefault = async (id) => {
     try {
-      await setDefaultContact(id)
+      await setDefaultContact(id);
 
-    
       setContacts((prev) =>
         prev.map((c) => ({
           ...c,
-          is_default: c.id === id
+          is_default: c.id === id,
         }))
-      )
-
-      toast.success("Đã đặt làm địa chỉ mặc định!")
+      );
+      toast.success("Đã đặt làm địa chỉ mặc định!");
     } catch (err) {
-      console.error("Lỗi đặt mặc định:", err)
-      toast.error("Không thể đặt mặc định, vui lòng thử lại.")
+      console.error("Lỗi đặt mặc định:", err);
+      toast.error("Không thể đặt mặc định, vui lòng thử lại.");
     }
-  }
+  };
 
   const handleAdd = () => {
-    setEditing(null)
-    setShowModal(true)
-  }
+    setEditing(null);
+    setShowModal(true);
+  };
 
   const handleEdit = (contact) => {
-    setEditing(contact)
-    setShowModal(true)
-  }
+    setEditing(contact);
+    setShowModal(true);
+  };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xoá địa chỉ này không?")) return
+    if (!window.confirm("Bạn có chắc muốn xoá địa chỉ này không?")) return;
 
     try {
-      await deleteContact(id)
-      setContacts((prev) => prev.filter((c) => c.id !== id))
-      toast.success("Đã xoá địa chỉ thành công!")
+      await deleteContact(id);
+      setContacts((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Đã xoá địa chỉ thành công!");
     } catch (err) {
-      console.error("Lỗi xoá contact:", err)
-      toast.error("Xoá thất bại, vui lòng thử lại.")
+      console.error("Lỗi xoá contact:", err);
+      toast.error("Xoá thất bại, vui lòng thử lại.");
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -84,7 +82,7 @@ export default function ContactAddressSection() {
           Đang tải thông tin...
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -123,7 +121,11 @@ export default function ContactAddressSection() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" size="icon" onClick={() => handleEdit(c)}>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => handleEdit(c)}
+              >
                 <Pencil className="w-4 h-4" />
               </Button>
 
@@ -151,11 +153,11 @@ export default function ContactAddressSection() {
       <AddAddressModal
         open={showModal}
         onClose={() => {
-          setShowModal(false)
-          loadContact()
+          setShowModal(false);
+          loadContact();
         }}
         contact={editing}
       />
     </div>
-  )
+  );
 }

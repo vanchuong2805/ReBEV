@@ -23,7 +23,7 @@ import GroupCheckout from "../components/GroupCheckout";
 export default function CheckoutPage() {
   const { selectedTotal, selectedGroups } = useCart();
   const [paymentGroup, setPaymentGroup] = useState({});
-  const [loading, setLoading] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [shippingFee, setShippingFee] = useState(0);
   const [addressOpen, setAddressOpen] = useState(false);
   const [contacts, setContacts] = useState([]);
@@ -47,23 +47,9 @@ export default function CheckoutPage() {
     typeof window !== "undefined" ? localStorage.getItem("user") : null;
   const user = userRaw ? JSON.parse(userRaw) : null;
 
+  // load contact từ DB khi component mount
   useEffect(() => {
-    if (!contacts.length) return;
-
-    if (!selectedContact) {
-      setSelectedContact(contacts[0]);
-      return;
-    }
-
-    const stillExists = contacts.some((c) => c.id === selectedContact.id);
-    if (!stillExists) {
-      setSelectedContact(contacts[0]);
-    }
-  }, [contacts, selectedContact]);
-
-  // mở modal -> load contact từ DB
-  useEffect(() => {
-    if (!addressOpen || !user?.id) return;
+    if (!user?.id) return;
     (async () => {
       try {
         setContactsLoading(true);
@@ -72,9 +58,7 @@ export default function CheckoutPage() {
           ? data.filter((c) => !c.is_deleted)
           : [];
         setContacts(list);
-        if (list.length > 0) {
-          setSelectedContact(list[0]);
-        }
+        setSelectedContact(list.find((c) => c.is_default) || list[0] || null);
         console.log("abcxyz");
       } catch (e) {
         console.error("Load contacts failed:", e);
@@ -83,44 +67,54 @@ export default function CheckoutPage() {
         setContactsLoading(false);
       }
     })();
-  }, [loading, user?.id, addressOpen]);
+  }, [user?.id]);
 
   const placeOrder = async () => {
-    // selectedGroups, selectedContact, paymentGroup
-    const paymentInfo = {
-      total_amount: selectedTotal + shippingFee,
-      redirectUrl: `${window.location.origin}`,
-    };
+    if (loading) return;
 
-    const orders = selectedGroups.map((group) => {
-      const key = `${group.seller_id}_${group.seller_contact.id}`;
-      const weight = paymentGroup[key]?.weight || 0;
-      const delivery_price = paymentGroup[key]?.delivery_price || 0;
-      const appointment_time = paymentGroup[key]?.appointment_time || "";
-      const total_amount = paymentGroup[key]?.total_amount || 0;
-      const order_details = group.items.map((item) => ({
-        post_id: item.post_id,
-        price: item.price,
-        deposit_amount: item.price * item.deposit_rate,
-        commission_amount: (item.commission_rate * item.price) / 100,
-        appointment_time,
-      }));
-      return {
-        seller_id: group.seller_id,
-        order_type: 1,
-        from_contact_id: group.seller_contact.id,
-        to_contact_id: selectedContact.id,
-        weight,
-        delivery_price,
-        total_amount,
-        order_details,
+    try {
+      setLoading(true);
+
+      // selectedGroups, selectedContact, paymentGroup
+      const paymentInfo = {
+        total_amount: selectedTotal + shippingFee,
+        redirectUrl: `${window.location.origin}`,
       };
-    });
-    const orderData = { orders, paymentInfo };
-    console.log(orderData);
-    const { payUrl } = await createOrder(orderData);
-    console.log(payUrl);
-    window.location.href = payUrl;
+
+      const orders = selectedGroups.map((group) => {
+        const key = `${group.seller_id}_${group.seller_contact.id}`;
+        const weight = paymentGroup[key]?.weight || 0;
+        const delivery_price = paymentGroup[key]?.delivery_price || 0;
+        const appointment_time = paymentGroup[key]?.appointment_time || "";
+        const total_amount = paymentGroup[key]?.total_amount || 0;
+        const order_details = group.items.map((item) => ({
+          post_id: item.post_id,
+          price: item.price,
+          deposit_amount: item.price * item.deposit_rate,
+          commission_amount: (item.commission_rate * item.price) / 100,
+          appointment_time,
+        }));
+        return {
+          seller_id: group.seller_id,
+          order_type: 1,
+          from_contact_id: group.seller_contact.id,
+          to_contact_id: selectedContact.id,
+          weight,
+          delivery_price,
+          total_amount,
+          order_details,
+        };
+      });
+      const orderData = { orders, paymentInfo };
+      console.log(orderData);
+      const { payUrl } = await createOrder(orderData);
+      console.log(payUrl);
+      window.location.href = payUrl;
+    } catch (error) {
+      console.error("Place order failed:", error);
+      toast.error("Đặt hàng thất bại. Vui lòng thử lại!");
+      setLoading(false);
+    }
   };
 
   // ==== handlers cho modal danh sách địa chỉ ====
@@ -175,19 +169,18 @@ export default function CheckoutPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold">Địa chỉ nhận hàng</h2>
-              {selectedContact || contacts[0] ? (
+              {selectedContact ? (
                 <div className="mt-1 text-sm text-gray-700">
                   <div className="font-medium">
-                    {(selectedContact || contacts[0]).name} •{" "}
-                    {(selectedContact || contacts[0]).phone}
+                    {selectedContact.name} • {selectedContact.phone}
                   </div>
                   <div>
-                    {(selectedContact || contacts[0]).detail}
+                    {selectedContact.detail}
                     {", "}
                     {[
-                      (selectedContact || contacts[0]).ward_name,
-                      (selectedContact || contacts[0]).district_name,
-                      (selectedContact || contacts[0]).province_name,
+                      selectedContact.ward_name,
+                      selectedContact.district_name,
+                      selectedContact.province_name,
                     ]
                       .filter(Boolean)
                       .join(", ")}
