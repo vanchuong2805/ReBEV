@@ -2,13 +2,12 @@ import axios from "axios"
 
 const GHN_API = import.meta.env.VITE_GHN_API
 const TOKEN = import.meta.env.VITE_GHN_TOKEN
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const headers = {
   "Content-Type": "application/json",
   Token: TOKEN,
 }
-
-const API_BASE_URL = "https://rebev.up.railway.app/api";
 
 export const getBases = async () => {
   const res = await axios.get(`${API_BASE_URL}/bases`)
