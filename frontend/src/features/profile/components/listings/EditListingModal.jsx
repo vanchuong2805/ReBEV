@@ -41,7 +41,7 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
     if (open) fetchPost()
   }, [open, listing])
 
-  
+
   const handleChange = (field, value) =>
     setFormData((prev) => ({ ...prev, [field]: value }))
 
@@ -109,18 +109,26 @@ export default function EditListingModal({ open, onClose, listing, onUpdate }) {
               </div>
 
               {/* Mô tả chi tiết */}
-              <div>
+              <div className="pt-2">
                 <Label className="text-gray-700 font-medium mb-2 block">
                   Mô tả chi tiết
                 </Label>
-                <div className="border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100/40 transition-all">
+
+                <div
+                  className="rounded-xl border bg-gray-50 overflow-y-auto"
+                  style={{
+                    maxHeight: "300px", 
+                  }}
+                >
                   <TiptapEditor
                     content={formData.description}
                     onChange={(value) => handleChange("description", value)}
                     placeholder="Nhập mô tả chi tiết về sản phẩm..."
+                    style={{ whiteSpace: "pre-wrap" }}
                   />
                 </div>
               </div>
+
 
               {/* Giá */}
               <div>

@@ -13,7 +13,7 @@ const STATUS_MAP = {
   CANCELLED: "Đã hủy",
   CUSTOMER_CANCELLED: "Đã hủy (người mua)",
   SELLER_CANCELLED: "Đã hủy (người bán)",
-  FAIL_PAY: "Thanh toán thất bại",
+  FAIL_PAY: "Đã huỷ",
 }
 
 export default function OrderTimeline({ timeline = [], isCanceled = false }) {
@@ -27,7 +27,7 @@ export default function OrderTimeline({ timeline = [], isCanceled = false }) {
   const latest = timeline[0]
 
   const handleOpenMedia = (mediaRaw) => {
-    setMediaString(mediaRaw)     // truyền string JSON nguyên vẹn
+    setMediaString(mediaRaw)    
     setOpenMedia(true)
   }
 

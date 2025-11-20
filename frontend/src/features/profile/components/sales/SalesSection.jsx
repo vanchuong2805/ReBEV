@@ -33,7 +33,10 @@ const SalesSection = () => {
   const { user } = useUser()
   const [proofModal, setProofModal] = useState({ open: false, order: null })
 
-  const getStatus = (order) => order?.order_statuses?.at(-1)?.status || ""
+  const getStatus = (order) =>
+  order?.order_statuses?.at(-1)?.status ||
+  order?.order_status?.at(-1)?.status ||
+  ""
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -97,7 +100,6 @@ const SalesSection = () => {
     setProofModal({ open: true, order })
   }
 
-  // 👉 logic submit từ modal
   const submitDelivered = async ({ orderId, media }) => {
     try {
       await changeOrderStatus(orderId, "DELIVERED","Đã giao hàng", media)
@@ -106,6 +108,24 @@ const SalesSection = () => {
     } catch (err) {
       console.error(err)
       toast.error("Lỗi khi cập nhật trạng thái.")
+    }
+  }
+  const handleReturned = async (order) => {
+    if (!window.confirm("Xác nhận bạn đã nhận hàng hoàn trả?")) return
+    try {
+      await changeOrderStatus(order.id, "RETURNED", "Người bán đã nhận hàng hoàn trả")
+      setRefunds((prev) =>
+        prev.map((c) =>
+          c.id === order.id
+            ? { ...c, order_statuses: [...c.order_statuses, { status: "RETURNED" }] }
+            : c
+        )
+      )
+      console.log("Đơn hoàn trả đã cập nhật:", order.id)
+      toast.success("Trạng thái đơn đã cập nhật sang 'Đã nhận hàng hoàn trả'.")
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái hoàn trả:", error)
+      toast.error("Cập nhật trạng thái thất bại, vui lòng thử lại.")
     }
   }
 
@@ -139,7 +159,8 @@ const SalesSection = () => {
           return (
             <GenericSaleCard
               key={detail.id}
-              sale={product}
+              detail={detail}
+              post={product}
               type={
                 status === "PAID"
                   ? "pending"
@@ -181,18 +202,20 @@ const SalesSection = () => {
       >
         <SaleHeader customer={item.customer} />
         <GenericSaleCard
-          sale={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
+          post={item.order_details?.[0].post || { title: "Không rõ sản phẩm" }}
+          detail={item.order_details?.[0]}
           status={status}
           type="refunded"
         />
         <SaleFooter
           order={item}
-          status="REFUNDED"
+          status={status}
           onView={() =>
             navigate(`/profile/returns/${item.id}`, {
               state: { order: item },
             })
           }
+          onReturned={handleReturned}
         />
       </div>
     )
