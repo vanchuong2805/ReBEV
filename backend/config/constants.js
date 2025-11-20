@@ -53,6 +53,7 @@ export const ERROR_MESSAGE = {
     CATEGORY_UPDATE_FAILED: 'Updating category failed',
     CONTACT_UPDATE_FAILED: 'Updating contact failed',
     UNAUTHORIZED_ACTION: 'You are not authorized to perform this action',
+    GET_USER_STATISTICS_FAILED: 'Getting user statistics failed',
 }
 
 export const SUCCESS_MESSAGE = {
@@ -80,6 +81,7 @@ export const SUCCESS_MESSAGE = {
     DELETE_REVIEW_SUCCESS: 'Review deleted successfully',
     CATEGORY_UPDATED_SUCCESSFULLY: 'Category updated successfully',
     CONTACT_UPDATED: 'Contact updated successfully',
+    USER_STATISTICS_RETRIEVED: 'User statistics retrieved successfully',
 }
 
 export const POST_STATUS = {
