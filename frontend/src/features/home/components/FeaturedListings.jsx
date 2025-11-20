@@ -263,9 +263,7 @@ export default function FeaturedListings() {
       )}
 
       {/* Floating compare bar */}
-      <CompareFloatingToolbar
-        compareList={compareList}
-      />
+      <CompareFloatingToolbar compareList={compareList} />
     </section>
   );
 }

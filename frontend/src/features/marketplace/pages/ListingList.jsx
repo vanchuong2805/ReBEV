@@ -412,9 +412,7 @@ export default function ListingList() {
                       }`}
                     >
                       <GitCompare className="w-3.5 h-3.5" />
-                      {isInCompare(item.id)
-                        ? "Đã chọn"
-                        : "So sánh"}
+                      {isInCompare(item.id) ? "Đã chọn" : "So sánh"}
                     </button>
                   </div>
                 ))}
@@ -469,9 +467,7 @@ export default function ListingList() {
       </div>
 
       {/* Floating Compare Toolbar */}
-      <CompareFloatingToolbar
-        compareList={compareList}
-      />
+      <CompareFloatingToolbar compareList={compareList} />
     </div>
   );
 }
