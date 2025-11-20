@@ -108,6 +108,18 @@ const getOrders = async (options) => {
     });
 
     const total = await orders.count({
+        include: [
+            {
+                association: 'order_statuses',
+                where: {
+                    create_at: {
+                        [Op.eq]: Sequelize.literal(
+                            `(SELECT MAX(create_at) FROM order_status WHERE order_status.order_id = orders.id)`
+                        ),
+                    },
+                },
+            },
+        ],
         where: {
             ...where,
             ...(order_status ? { '$order_statuses.status$': order_status } : {}),
